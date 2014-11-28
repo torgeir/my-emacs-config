@@ -4,6 +4,10 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file)
 
+;; Set badckup directory to ~/.emacs.d/backups/
+(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+					       "backups"))))
+
 ;; Turn off mouse interface early in startup to avoid momentary display
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
@@ -21,22 +25,23 @@
 (setq package-archives
       '(("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
-        ("melpa"       . "http://melpa.milkbox.net/packages/")
-        ("marmalade"   . "http://marmalade-repo.org/packages/")))
+        ("melpa"       . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
 
-;; Use "M-x install-important-packages" to install packages on a new machine
-(defun install-important-packages ()
-  "Install only the sweetest of packages."
-  (interactive)
-  (package-refresh-contents)
-  (mapc #'(lambda (package)
-            (unless (package-installed-p package)
-              (package-install package)))
-        '(exec-path-from-shell
-	  browse-kill-ring
-	  dired+
-	  )))
+(defvar my-packages '(idle-highlight-mode ; Hightlight word under cursor
+		      exec-path-from-shell ; Fix Mac OSX $PATH
+		      helm
+		      projectile
+		      helm-projectile
+		      ggtags
+		      helm-gtags
+		      company
+		      yasnippet
+		      ))
+
+(dolist (p my-packages)
+  (when (not (package-installed-p p))
+    (package-install p)))
 
 ;;;; macros
 (defmacro after (mode &rest body)
@@ -55,16 +60,13 @@
 
 ;;;; global key bindings
 
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+
 ;; Mac OSX
 (when (eq system-type 'darwin)
   ;; swap <command> and <alt>
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'control))
-
-;; Quick open recent files
-(require 'recentf)
-(recentf-mode 1)
-(global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
 ;;;; emacs lisp
 (defun imenu-elisp-sections ()
@@ -72,5 +74,77 @@
   (add-to-list 'imenu-generic-expression '("Sections" "^;;;; \\(.+\\)$" 1) t))
 
 (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
+
+;;;; Misc
+(show-paren-mode 1)
+(idle-highlight-mode 1)
+
+;;;;;;;;;;
+;; Helm ;;
+;;;;;;;;;;
+(require 'helm-config)
+
+;; helm prefix: "C-x c" => 'C-c h
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+(helm-mode 1)
+
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x b") 'helm-mini)
+(global-set-key (kbd "C-x f") 'helm-recentf)
+(global-set-key (kbd "M-y") 'helm-show-kill-ring)
+(global-set-key (kbd "C-c h o") 'helm-occur)
+
+;;;;;;;;;;;;;;;;
+;; Projectile ;;
+;;;;;;;;;;;;;;;;
+
+(projectile-global-mode)
+(setq projectile-completion-system 'helm)
+(require 'helm-projectile)
+(helm-projectile-on)
+
+;;;;;;;;;;;;
+;; ggtags ;;
+;;;;;;;;;;;;
+
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (when (derived-mode-p 'c-mode 'asm-mode)
+              (ggtags-mode 1))))
+
+(require 'helm-gtags)
+;; Enable helm-gtags-mode
+(add-hook 'dired-mode-hook 'helm-gtags-mode)
+(add-hook 'eshell-mode-hook 'helm-gtags-mode)
+(add-hook 'c-mode-hook 'helm-gtags-mode)
+(add-hook 'asm-mode-hook 'helm-gtags-mode)
+
+;;;;;;;;;;;;;
+;; company ;;
+;;;;;;;;;;;;;
+(require 'company)
+(add-hook 'after-init-hook 'global-company-mode)
+
+;; With clang (not work yet, using company-gtags which is enabled by default)
+;; (setq company-backends (delete 'company-semantic company-backends))
+
+(semantic-mode)
+(global-semantic-idle-summary-mode 1)
+
+;;;;;;;;;;;;;;;
+;; yasnippet ;;
+;;;;;;;;;;;;;;;
+
+(require 'yasnippet)
+(yas-global-mode 1)
+
+;; Compile
+(global-set-key (kbd "<f5>") (lambda ()
+                               (interactive)
+                               (setq-local compilation-read-command nil)
+                               (call-interactively 'compile)))
 
 ;;; init.el ends here

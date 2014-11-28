@@ -46,3 +46,6 @@ secret.org
 .emacs.desktop*
 .*~
 agent/*
+
+projectile-bookmarks.eld
+semanticdb/
