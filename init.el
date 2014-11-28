@@ -1,5 +1,9 @@
 ;;; init.el --- My Emacs configuration file
 
+;; Load custom.el first
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file)
+
 ;; Turn off mouse interface early in startup to avoid momentary display
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
@@ -45,7 +49,8 @@
   (message "python has been loaded")
   )
 
-(after "exec-path-from-shell-autoloads"
+;; Fix PATH on Mac OSX
+(when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
 ;;;; global key bindings
