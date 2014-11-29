@@ -75,7 +75,36 @@
 
 (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 
+;;;; C
+
+(defun my-c-mode-hook ()
+  (setq-default c-basic-offset 4
+		c-default-style "linux")
+  )
+(add-hook 'c-mode-hook 'my-c-mode-hook)
+
+;; activate whitespace-mode to view all whitespace characters
+(global-set-key (kbd "C-c w") 'whitespace-mode)
+
+;; show unncessary whitespace that can mess up your diff
+(add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
+
+;; use space to indent by default
+(setq-default indent-tabs-mode nil)
+
+;; set appearance of a tab that is represented by 4 spaces
+(setq-default tab-width 4)
+
 ;;;; Misc
+
+;; "yes or no" => 'y or n"
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+;; dired
+(require 'dired-x)
+(setq-default dired-omit-files-p t) ; Buffer-local variable
+(setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
+
 (show-paren-mode 1)
 (idle-highlight-mode 1)
 
