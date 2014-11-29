@@ -62,6 +62,10 @@
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
+;; This is set by default
+;; (global-set-key (kbd "M-<f10>") 'toggle-frame-maximized)
+(global-set-key (kbd "M-<f11>") 'toggle-frame-fullscreen)
+
 ;; Mac OSX
 (when (eq system-type 'darwin)
   ;; swap <command> and <alt>
