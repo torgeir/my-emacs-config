@@ -25,7 +25,7 @@
 (setq package-archives
       '(("gnu"         . "http://elpa.gnu.org/packages/")
         ("org"         . "http://orgmode.org/elpa/")
-        ("melpa"       . "http://melpa.milkbox.net/packages/")))
+        ("melpa"       . "http://melpa.org/packages/")))
 (package-initialize)
 
 (defvar my-packages '(idle-highlight-mode ; Hightlight word under cursor
@@ -62,6 +62,8 @@
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
+(global-set-key (kbd "C-x w") 'elfeed)
+
 ;; This is set by default
 ;; (global-set-key (kbd "M-<f10>") 'toggle-frame-maximized)
 (global-set-key (kbd "M-<f11>") 'toggle-frame-fullscreen)
@@ -91,7 +93,7 @@
 (global-set-key (kbd "C-c w") 'whitespace-mode)
 
 ;; show unncessary whitespace that can mess up your diff
-(add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
+;; (add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
 
 ;; use space to indent by default
 (setq-default indent-tabs-mode nil)
@@ -106,6 +108,18 @@
 (global-set-key "\C-cb" 'org-iswitchb)
 
 ;;;; Misc
+
+;; Multiple cursor
+(require 'multiple-cursors)
+;; base on an active region
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+;; base on keywords
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+;; auto insert pairs
+(electric-pair-mode 1)
 
 ;; "yes or no" => 'y or n"
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -179,6 +193,14 @@
 
 (require 'yasnippet)
 (yas-global-mode 1)
+
+;;;;;;;;;;;;;;
+;; nyam Cat ;;
+;;;;;;;;;;;;;;
+(nyan-mode 1)
+
+;; Show column number too
+(column-number-mode 1)
 
 ;; Compile
 (global-set-key (kbd "<f5>") (lambda ()
