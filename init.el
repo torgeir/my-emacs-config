@@ -6,7 +6,7 @@
 
 ;; Set badckup directory to ~/.emacs.d/backups/
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
-					       "backups"))))
+                                               "backups"))))
 
 ;; Turn off mouse interface early in startup to avoid momentary display
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
@@ -29,15 +29,15 @@
 (package-initialize)
 
 (defvar my-packages '(idle-highlight-mode ; Hightlight word under cursor
-		      exec-path-from-shell ; Fix Mac OSX $PATH
-		      helm
-		      projectile
-		      helm-projectile
-		      ggtags
-		      helm-gtags
-		      company
-		      yasnippet
-		      ))
+                      exec-path-from-shell ; Fix Mac OSX $PATH
+                      helm
+                      projectile
+                      helm-projectile
+                      ggtags
+                      helm-gtags
+                      company
+                      yasnippet
+                      ))
 
 (dolist (p my-packages)
   (when (not (package-installed-p p))
@@ -85,7 +85,7 @@
 
 (defun my-c-mode-hook ()
   (setq-default c-basic-offset 4
-		c-default-style "linux")
+                c-default-style "linux")
   )
 (add-hook 'c-mode-hook 'my-c-mode-hook)
 
@@ -197,15 +197,30 @@
 ;;;;;;;;;;;;;;
 ;; nyam Cat ;;
 ;;;;;;;;;;;;;;
-(nyan-mode 1)
+;; disable it, I want to custom mode line
+;; (nyan-mode 1)
 
 ;; Show column number too
 (column-number-mode 1)
+
+;; Mode line
+;; see http://www.lunaryorn.com/2014/07/26/make-your-emacs-mode-line-more-useful.html
+;; and http://amitp.blogspot.sg/2011/08/emacs-custom-mode-line.html
+
+;; use smart-mode-line for now
+;; (sml/setup)
 
 ;; Compile
 (global-set-key (kbd "<f5>") (lambda ()
                                (interactive)
                                (setq-local compilation-read-command nil)
                                (call-interactively 'compile)))
+
+;;;;;;;;;;;;;;
+;; Flycheck ;;
+;;;;;;;;;;;;;;
+
+;; Enable globally
+(add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;;; init.el ends here
