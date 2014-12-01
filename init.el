@@ -1,8 +1,5 @@
 ;;; init.el --- My Emacs configuration file
 
-;; Load custom.el first
-(setq custom-file "~/.emacs.d/custom.el")
-(load custom-file)
 
 ;; Set badckup directory to ~/.emacs.d/backups/
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
@@ -17,8 +14,8 @@
 
 ;; Font
 (when (member "DejaVu Sans Mono" (font-family-list))
-  (add-to-list 'initial-frame-alist '(font . "DejaVu Sans Mono-13.5"))
-  (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-13.5")))
+  (add-to-list 'initial-frame-alist '(font . "DejaVu Sans Mono-14"))
+  (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-14")))
 
 ;;;; package.el
 (require 'package)
@@ -108,6 +105,9 @@
 (global-set-key "\C-cb" 'org-iswitchb)
 
 ;;;; Misc
+
+;; Hightlight current line globally
+(global-hl-line-mode)
 
 ;; Multiple cursor
 (require 'multiple-cursors)
@@ -222,5 +222,9 @@
 
 ;; Enable globally
 (add-hook 'after-init-hook #'global-flycheck-mode)
+
+;; Load custom.el first
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file)
 
 ;;; init.el ends here
