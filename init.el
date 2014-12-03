@@ -1,6 +1,5 @@
 ;;; init.el --- My Emacs configuration file
 
-
 ;; Set badckup directory to ~/.emacs.d/backups/
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
@@ -59,6 +58,13 @@
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
+;; Window switch
+(windmove-default-keybindings) ;; Shift+direction
+(global-set-key (kbd "C-x O") (lambda () (interactive) (other-window -1))) ;; back one
+(global-set-key (kbd "C-x C-o") (lambda () (interactive) (other-window 2))) ;; forward two
+
+
+;; RSS reader
 (global-set-key (kbd "C-x w") 'elfeed)
 
 ;; This is set by default
@@ -99,12 +105,24 @@
 (setq-default tab-width 4)
 
 ;;;; org-mode
+
+(require 'org)
+;; highlight native code block
+(setq org-src-fontify-natively t)
+
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-cc" 'org-capture)
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 
 ;;;; Misc
+
+;;;;;;;;;;;;;;;
+;; guide key ;;
+;;;;;;;;;;;;;;;
+(require 'guide-key)
+(setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "M-s"))
+(guide-key-mode 1)  ; Enable guide-key-mode
 
 ;; Hightlight current line globally
 (global-hl-line-mode)
@@ -184,7 +202,7 @@
 ;; With clang (not work yet, using company-gtags which is enabled by default)
 ;; (setq company-backends (delete 'company-semantic company-backends))
 
-(semantic-mode)
+(semantic-mode 1)
 (global-semantic-idle-summary-mode 1)
 
 ;;;;;;;;;;;;;;;
@@ -209,6 +227,25 @@
 
 ;; use smart-mode-line for now
 ;; (sml/setup)
+
+;; use powerline
+;; (require 'powerline)
+(powerline-default-theme)
+
+;; do not display some minor mode (use Diminish)
+(eval-after-load "helm"
+  '(diminish 'helm-mode))
+
+;; (eval-after-load "projectile"
+;;   '(diminish 'projectile-mode))
+
+(eval-after-load "company"
+  '(diminish 'company-mode))
+
+(eval-after-load "yasnippet"
+  '(diminish 'yas-minor-mode))
+
+
 
 ;; Compile
 (global-set-key (kbd "<f5>") (lambda ()
