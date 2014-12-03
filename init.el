@@ -115,6 +115,42 @@
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 
+;; org-mode with htmlize (code syntax highlight export html)
+;; http://yoo2080.wordpress.com/2013/08/26/how-to-make-rainbow-delimiters-mode-work-with-org-mode-export-or-htmlize/
+(load "~/.emacs.d/elpa/htmlize/htmlize.elc")
+(eval-after-load 'htmlize
+  '(progn
+     ;; make htmlize to handle face name strings as well
+     (defadvice htmlize-attrlist-to-fstruct (around my-make-it-accept-string activate)
+       (if (stringp (ad-get-arg 0))
+           (progn
+             (setq ad-return-value (htmlize-face-to-fstruct (intern (ad-get-arg 0)))))
+         ad-do-it))))
+
+(defvar my-htmlize-off-modes nil
+  "list of minor modes to disable when using htmlize")
+
+(defun my-htmlize-before-hook-default ()
+  (dolist (mode my-htmlize-off-modes)
+    (if (fboundp mode)
+        (funcall mode 0)))
+
+  (font-lock-fontify-buffer)
+  (jit-lock-fontify-now)
+
+  ;; copied from font-lock-default-function (make font-lock-face property act as alias for face property)
+  (set (make-local-variable 'char-property-alias-alist)
+       (copy-tree char-property-alias-alist))
+  (let ((elt (assq 'face char-property-alias-alist)))
+    (if elt
+        (unless (memq 'font-lock-face (cdr elt))
+          (setcdr elt (nconc (cdr elt) (list 'font-lock-face))))
+      (push (list 'face 'font-lock-face) char-property-alias-alist))))
+
+(add-hook 'htmlize-before-hook 'my-htmlize-before-hook-default)
+
+;; (add-to-list 'my-htmlize-off-modes 'rainbow-delimiters-mode)
+
 ;;;; Misc
 
 ;;;;;;;;;;;;;;;
