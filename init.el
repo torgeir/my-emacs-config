@@ -11,10 +11,10 @@
 ;; No startup (welcome) buffer
 (setq inhibit-startup-screen t)
 
-;; Font
-(when (member "DejaVu Sans Mono" (font-family-list))
-  (add-to-list 'initial-frame-alist '(font . "DejaVu Sans Mono-14"))
-  (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-14")))
+;; Setting English Font
+(if (member "Monaco" (font-family-list))
+    (set-face-attribute
+     'default nil :font "Monaco 13"))
 
 ;;;; package.el
 (require 'package)
@@ -63,6 +63,23 @@
 (global-set-key (kbd "C-x O") (lambda () (interactive) (other-window -1))) ;; back one
 (global-set-key (kbd "C-x C-o") (lambda () (interactive) (other-window 2))) ;; forward two
 
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key (kbd "M-<up>") 'move-line-up)
+(global-set-key (kbd "M-<down>") 'move-line-down)
 
 ;; RSS reader
 (global-set-key (kbd "C-x w") 'elfeed)
@@ -85,18 +102,26 @@
 (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 
 ;;;; C
-
-(defun my-c-mode-hook ()
-  (setq-default c-basic-offset 4
-                c-default-style "linux")
-  )
-(add-hook 'c-mode-hook 'my-c-mode-hook)
+(setq-default c-default-style "linux"
+              c-basic-offset 4)
 
 ;; activate whitespace-mode to view all whitespace characters
 (global-set-key (kbd "C-c w") 'whitespace-mode)
 
 ;; show unncessary whitespace that can mess up your diff
-;; (add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
+(add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
+
+(defun delete-trailing-spaces-on-saving ()
+  (interactive)
+  (let ((y-or-n (read-from-minibuffer "Delete trailing spaces? (y or n) ")))
+    (when (string= "y" y-or-n)
+      (delete-trailing-whitespace))))
+
+;; Ask if delete trailing whitespace when saving
+;; (add-hook 'prog-mode-hook
+;;           (lambda ()
+;;             (interactive)
+;;             (add-hook 'before-save-hook 'delete-trailing-spaces-on-saving)))
 
 ;; use space to indent by default
 (setq-default indent-tabs-mode nil)
@@ -109,6 +134,15 @@
 (require 'org)
 ;; highlight native code block
 (setq org-src-fontify-natively t)
+(setq org-src-tab-acts-natively t)
+
+(setq org-edit-src-content-indentation 0)
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (sh . t)
+   (scheme . t)))
 
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-cc" 'org-capture)
@@ -151,17 +185,29 @@
 
 ;; (add-to-list 'my-htmlize-off-modes 'rainbow-delimiters-mode)
 
+;;;; Scheme
+
+;;;;;;;;;;;;;;;;;
+;; smartparens ;;
+;;;;;;;;;;;;;;;;;
+(smartparens-global-mode t)
+
+;;;;;;;;;;;;
+;; geiser ;;
+;;;;;;;;;;;;
+(setq geiser-default-implementation 'racket)
+
 ;;;; Misc
 
 ;;;;;;;;;;;;;;;
 ;; guide key ;;
 ;;;;;;;;;;;;;;;
 (require 'guide-key)
-(setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "M-s"))
+(setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h"))
 (guide-key-mode 1)  ; Enable guide-key-mode
 
 ;; Hightlight current line globally
-(global-hl-line-mode)
+;; (global-hl-line-mode)
 
 ;; Multiple cursor
 (require 'multiple-cursors)
@@ -173,7 +219,7 @@
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
 ;; auto insert pairs
-(electric-pair-mode 1)
+;; (electric-pair-mode 1)
 
 ;; "yes or no" => 'y or n"
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -184,7 +230,7 @@
 (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
 
 (show-paren-mode 1)
-(idle-highlight-mode 1)
+;; (idle-highlight-mode 1)
 
 ;;;;;;;;;;
 ;; Helm ;;
@@ -238,8 +284,8 @@
 ;; With clang (not work yet, using company-gtags which is enabled by default)
 ;; (setq company-backends (delete 'company-semantic company-backends))
 
-(semantic-mode 1)
-(global-semantic-idle-summary-mode 1)
+;; (semantic-mode 1)
+;; (global-semantic-idle-summary-mode 1)
 
 ;;;;;;;;;;;;;;;
 ;; yasnippet ;;
@@ -255,7 +301,7 @@
 ;; (nyan-mode 1)
 
 ;; Show column number too
-(column-number-mode 1)
+;; (column-number-mode 1)
 
 ;; Mode line
 ;; see http://www.lunaryorn.com/2014/07/26/make-your-emacs-mode-line-more-useful.html
@@ -266,22 +312,11 @@
 
 ;; use powerline
 ;; (require 'powerline)
-(powerline-default-theme)
+;; (powerline-default-theme)
 
 ;; do not display some minor mode (use Diminish)
-(eval-after-load "helm"
-  '(diminish 'helm-mode))
-
-;; (eval-after-load "projectile"
-;;   '(diminish 'projectile-mode))
-
-(eval-after-load "company"
-  '(diminish 'company-mode))
-
-(eval-after-load "yasnippet"
-  '(diminish 'yas-minor-mode))
-
-
+;; (eval-after-load "helm"
+;;   '(diminish 'helm-mode))
 
 ;; Compile
 (global-set-key (kbd "<f5>") (lambda ()
@@ -299,5 +334,32 @@
 ;; Load custom.el first
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file)
+
+;;;; Blog with org-mode (org-page)
+;;;;;;;;;;;;;;
+;; org-page ;;
+;;;;;;;;;;;;;;
+(require 'org-page)
+(setq op/repository-directory "~/wip/blog/") ;; the repository location
+(setq op/site-domain "http://xuchunyang.me") ;; your domain
+;;; the configuration below you should choose one, not both
+(setq op/personal-disqus-shortname "xcysblog")    ;; your disqus commenting system
+(setq op/personal-google-analytics-id "UA-52627886-1")
+(setq op/personal-github-link "https://github.com/xuchunyang")
+(setq op/site-main-title "Chunyang Xu")
+(setq op/site-sub-title "")
+
+(setq user-mail-address "xuchunyang56@gmail.com")
+(setq user-full-name "Chunyang Xu")
+
+;;;; ERC -- Emacs irc client
+(load-file "~/.emacs.d/prelude-erc.el")
+(require 'prelude-erc)
+
+(defun my-erc ()
+  (interactive)
+  (setq erc-nick "chunyang")
+  (setq erc-password "xcy1993")
+  (erc :server "irc.freenode.net" :port 6667 :nick erc-nick :password erc-password))
 
 ;;; init.el ends here

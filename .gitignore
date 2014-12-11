@@ -49,3 +49,5 @@ agent/*
 
 projectile-bookmarks.eld
 semanticdb/
+bookmarks
+el-get/
