@@ -30,10 +30,7 @@
                       projectile
                       helm-projectile
                       ggtags
-                      helm-gtags
-                      company
-                      yasnippet
-                      ))
+                      helm-gtags))
 
 (dolist (p my-packages)
   (when (not (package-installed-p p))
@@ -47,8 +44,7 @@
      '(progn ,@body)))
 
 (after `python
-  (message "python has been loaded")
-  )
+  (message "python has been loaded"))
 
 ;; Fix PATH on Mac OSX
 (when (memq window-system '(mac ns))
@@ -136,7 +132,7 @@
 (setq org-src-fontify-natively t)
 (setq org-src-tab-acts-natively t)
 
-(setq org-edit-src-content-indentation 0)
+;; (setq org-edit-src-content-indentation 0)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -190,7 +186,7 @@
 ;;;;;;;;;;;;;;;;;
 ;; smartparens ;;
 ;;;;;;;;;;;;;;;;;
-(smartparens-global-mode t)
+;; (smartparens-global-mode t)
 
 ;;;;;;;;;;;;
 ;; geiser ;;
@@ -278,8 +274,8 @@
 ;;;;;;;;;;;;;
 ;; company ;;
 ;;;;;;;;;;;;;
-(require 'company)
-(add-hook 'after-init-hook 'global-company-mode)
+;; (require 'company)
+;; (add-hook 'after-init-hook 'global-company-mode)
 
 ;; With clang (not work yet, using company-gtags which is enabled by default)
 ;; (setq company-backends (delete 'company-semantic company-backends))
@@ -291,8 +287,8 @@
 ;; yasnippet ;;
 ;;;;;;;;;;;;;;;
 
-(require 'yasnippet)
-(yas-global-mode 1)
+;; (require 'yasnippet)
+;; (yas-global-mode 1)
 
 ;;;;;;;;;;;;;;
 ;; nyam Cat ;;
@@ -301,7 +297,7 @@
 ;; (nyan-mode 1)
 
 ;; Show column number too
-;; (column-number-mode 1)
+(column-number-mode 1)
 
 ;; Mode line
 ;; see http://www.lunaryorn.com/2014/07/26/make-your-emacs-mode-line-more-useful.html
@@ -329,7 +325,7 @@
 ;;;;;;;;;;;;;;
 
 ;; Enable globally
-(add-hook 'after-init-hook #'global-flycheck-mode)
+;; (add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;; Load custom.el first
 (setq custom-file "~/.emacs.d/custom.el")
@@ -349,9 +345,6 @@
 (setq op/site-main-title "Chunyang Xu")
 (setq op/site-sub-title "")
 
-(setq user-mail-address "xuchunyang56@gmail.com")
-(setq user-full-name "Chunyang Xu")
-
 ;;;; ERC -- Emacs irc client
 (load-file "~/.emacs.d/prelude-erc.el")
 (require 'prelude-erc)
@@ -361,5 +354,12 @@
   (setq erc-nick "chunyang")
   (setq erc-password "xcy1993")
   (erc :server "irc.freenode.net" :port 6667 :nick erc-nick :password erc-password))
+
+;; Turn off Bell
+(setq ring-bell-function 'ignore)
+
+;; Center text when only one window
+(when (require 'automargin nil t)
+  (automargin-mode 1))
 
 ;;; init.el ends here
