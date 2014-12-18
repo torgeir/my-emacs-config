@@ -347,16 +347,6 @@
 (setq op/site-main-title "Chunyang Xu")
 (setq op/site-sub-title "")
 
-;;;; ERC -- Emacs irc client
-(load-file "~/.emacs.d/prelude-erc.el")
-(require 'prelude-erc)
-
-(defun my-erc ()
-  (interactive)
-  (setq erc-nick "chunyang")
-  (setq erc-password "xcy1993")
-  (erc :server "irc.freenode.net" :port 6667 :nick erc-nick :password erc-password))
-
 (setq user-mail-address "xuchunyang56@gmail.com")
 (setq user-full-name "Chunyang Xu")
 
@@ -364,10 +354,6 @@
 
 ;; Turn off Bell
 (setq ring-bell-function 'ignore)
-
-;; Center text when only one window
-(when (require 'automargin nil t)
-  (automargin-mode 1))
 
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'sdcv)
@@ -404,6 +390,10 @@
 
 (show-paren-mode t)
 (setq show-paren-style 'expression)
+
+;; Center text when only one window
+(when (require 'automargin nil t)
+  (automargin-mode 1))
 
 ;;;; Navigation (between windows, buffers/files, projects(folds))
 ;;
