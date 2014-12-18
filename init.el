@@ -4,12 +4,15 @@
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 
-;; Turn off mouse interface early in startup to avoid momentary display
-(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(and (fboundp 'menu-bar-mode)
+     (not (eq system-type 'darwin))
+     (menu-bar-mode -1))
+(mapc (lambda (mode) (when (fboundp mode) (apply mode '(-1))))
+      '(tool-bar-mode
+        scroll-bar-mode))
 
-;; No startup (welcome) buffer
-(setq inhibit-startup-screen t)
+(setq ring-bell-function #'ignore
+      inhibit-startup-screen t)
 
 ;;;; package.el
 (require 'package)
@@ -352,8 +355,6 @@
 
 (add-hook 'text-mode-hook 'auto-fill-mode)
 
-;; Turn off Bell
-(setq ring-bell-function 'ignore)
 
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'sdcv)
