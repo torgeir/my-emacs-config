@@ -11,11 +11,6 @@
 ;; No startup (welcome) buffer
 (setq inhibit-startup-screen t)
 
-;; Setting English Font
-(if (member "Monaco" (font-family-list))
-    (set-face-attribute
-     'default nil :font "Monaco 13"))
-
 ;;;; package.el
 (require 'package)
 (setq package-archives
@@ -132,7 +127,10 @@
 (setq org-src-fontify-natively t)
 (setq org-src-tab-acts-natively t)
 
-;; (setq org-edit-src-content-indentation 0)
+(setq org-default-notes-file "~/todo.org")
+(define-key global-map "\C-cc" 'org-capture)
+
+(setq org-edit-src-content-indentation 0)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -186,7 +184,7 @@
 ;;;;;;;;;;;;;;;;;
 ;; smartparens ;;
 ;;;;;;;;;;;;;;;;;
-;; (smartparens-global-mode t)
+(smartparens-global-mode t)
 
 ;;;;;;;;;;;;
 ;; geiser ;;
@@ -195,11 +193,12 @@
 
 ;;;; Misc
 
+
 ;;;;;;;;;;;;;;;
 ;; guide key ;;
 ;;;;;;;;;;;;;;;
 (require 'guide-key)
-(setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h"))
+(setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h" "C-c"))
 (guide-key-mode 1)  ; Enable guide-key-mode
 
 ;; Hightlight current line globally
@@ -225,8 +224,6 @@
 (setq-default dired-omit-files-p t) ; Buffer-local variable
 (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
 
-(show-paren-mode 1)
-;; (idle-highlight-mode 1)
 
 ;;;;;;;;;;
 ;; Helm ;;
@@ -242,6 +239,7 @@
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x b") 'helm-mini)
+(global-set-key (kbd "M-l") 'helm-buffers-list)
 (global-set-key (kbd "C-x f") 'helm-recentf)
 (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 (global-set-key (kbd "C-c h o") 'helm-occur)
@@ -274,7 +272,6 @@
 ;;;;;;;;;;;;;
 ;; company ;;
 ;;;;;;;;;;;;;
-;; (require 'company)
 ;; (add-hook 'after-init-hook 'global-company-mode)
 
 ;; With clang (not work yet, using company-gtags which is enabled by default)
@@ -283,12 +280,17 @@
 ;; (semantic-mode 1)
 ;; (global-semantic-idle-summary-mode 1)
 
+
+;;;;;;;;;;;;;;;;;;;
+;; auto-complete ;;
+;;;;;;;;;;;;;;;;;;;
+(ac-config-default)
+
 ;;;;;;;;;;;;;;;
 ;; yasnippet ;;
 ;;;;;;;;;;;;;;;
 
-;; (require 'yasnippet)
-;; (yas-global-mode 1)
+(yas-global-mode 1)
 
 ;;;;;;;;;;;;;;
 ;; nyam Cat ;;
@@ -355,11 +357,118 @@
   (setq erc-password "xcy1993")
   (erc :server "irc.freenode.net" :port 6667 :nick erc-nick :password erc-password))
 
+(setq user-mail-address "xuchunyang56@gmail.com")
+(setq user-full-name "Chunyang Xu")
+
+(add-hook 'text-mode-hook 'auto-fill-mode)
+
 ;; Turn off Bell
 (setq ring-bell-function 'ignore)
 
 ;; Center text when only one window
 (when (require 'automargin nil t)
   (automargin-mode 1))
+
+(add-to-list 'load-path "~/.emacs.d/elisp")
+(require 'sdcv)
+(require 'ydcv)
+
+(load-file "~/wip/dictionary.el/dictionary.el")
+(require 'dictionary)
+;; Example key binding
+(global-set-key (kbd "C-c d") 'dictionary-search-pointer)
+
+;;;; UI
+;;
+;; 1. Fonts (Both English and Chinese)
+;; 2. Color theme
+;; 3. Mode line
+;; 4. scroll bar
+;; 5. Git change notify (idea from git-gutter)
+;; 6. brackets/pairs:
+;;    - hightlight (show-paren-mode)
+;;    - Colorful by different level (rainbow-delimiters-mode)
+;; 7. Improve look of `dired-mode'
+;;
+
+;; Enable moe-themem
+(require 'moe-theme)
+(moe-dark)
+;; Resize titles
+;; (setq moe-theme-resize-markdown-title '(2.0 1.7 1.5 1.3 1.0 1.0))
+;; (setq moe-theme-resize-org-title '(2.2 1.8 1.6 1.4 1.2 1.0 1.0 1.0 1.0))
+;; Mode line Color
+(moe-theme-set-color 'cyan)
+;; Powerline
+(powerline-moe-theme)
+
+(show-paren-mode t)
+(setq show-paren-style 'expression)
+
+;;;; Navigation (between windows, buffers/files, projects(folds))
+;;
+;; 1. open file (use helm)
+;;    - recent file
+;;    - file under current directory or in current project
+;;    - anyfile in my Computer
+;; 2. Switch between Windows
+;;    use <S-arror>
+;; 3. Switch between buffers
+;;    - use helm (helm-buffers-list, etc)
+
+;;;; Editing
+;;
+;; 1. edit parens (both lisp mode and other programming mode)
+;; 2. Search and Replace (both buffer/file level and project level)
+;; 3. Visual Editing, or editing more than one line at the same time
+;;    (via multiple-cursors or Can I fond better way for this?)
+;; 4. Completion
+
+;;;; Tools
+;;
+;; 1. dictionary tools
+;; 2. quickly compile & run, C/Elisp/shell/scheme, etc
+;; 3. use Git version within Emacs
+;; 4. on-the-fly Grammar check
+;;
+
+;;;; Programming Language specified
+;;
+;; 1. C
+;; 2. Emacs Lisp
+;; 3. Others
+;;
+
+;;;; org-mode (note taking, todo planing, and writing docs)
+;;
+;; 1. note
+;; 2. todo
+;; 3. Blogging
+;; 4. manage Emacs init files
+;;
+
+;; Setting English Font
+(if (member "Monaco" (font-family-list))
+    (set-face-attribute
+     'default nil :font "Monaco 13"))
+
+;;;;;;;;;;;;;;
+;; yascroll ;;
+;;;;;;;;;;;;;;
+(global-yascroll-bar-mode 1)
+
+;; Mode line
+;; (powerline-default-theme)
+;; (powerline-raw mode-line-mule-info nil 'l)
+
+;; Automatic resizing of Emacs windows to the golden ratio
+;; https://github.com/roman/golden-ratio.el
+;; (golden-ratio-mode 1)
+
+;; Colorful brackets
+(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+
+;; Show org-mode bullets as UTF-8 characters.
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 ;;; init.el ends here
