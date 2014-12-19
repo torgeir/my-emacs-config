@@ -386,6 +386,8 @@
 ;; 7. Improve look of `dired-mode'
 ;;
 
+(global-git-gutter-mode 1)
+
 ;; Enable moe-themem
 (require 'moe-theme)
 (moe-dark)
@@ -401,8 +403,8 @@
 (setq show-paren-style 'expression)
 
 ;; Center text when only one window
-(when (require 'automargin nil t)
-  (automargin-mode 1))
+;; (when (require 'automargin nil t)
+;;   (automargin-mode 1))
 
 ;;;; Navigation (between windows, buffers/files, projects(folds))
 ;;
@@ -422,6 +424,7 @@
 ;; 3. Visual Editing, or editing more than one line at the same time
 ;;    (via multiple-cursors or Can I fond better way for this?)
 ;; 4. Completion
+;; 5. Spell check on-the-fly (both programming or non-programming modes)
 
 ;;;; Tools
 ;;
