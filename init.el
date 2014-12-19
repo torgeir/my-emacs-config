@@ -95,6 +95,14 @@
 
 (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 
+(autoload 'enable-paredit-mode "paredit"
+  "Turn on pseudo-structural editing of Lisp code."
+  t)
+(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
+(add-hook 'lisp-mode-hook             'enable-paredit-mode)
+(add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
+(add-hook 'scheme-mode-hook           'enable-paredit-mode)
+
 ;;;; C
 (setq-default c-default-style "linux"
               c-basic-offset 4)
@@ -187,7 +195,7 @@
 ;;;;;;;;;;;;;;;;;
 ;; smartparens ;;
 ;;;;;;;;;;;;;;;;;
-(smartparens-global-mode t)
+;; (smartparens-global-mode t)
 
 ;;;;;;;;;;;;
 ;; geiser ;;
@@ -217,7 +225,7 @@
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
 ;; auto insert pairs
-;; (electric-pair-mode 1)
+(electric-pair-mode 1)
 
 ;; "yes or no" => 'y or n"
 (defalias 'yes-or-no-p 'y-or-n-p)
