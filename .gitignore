@@ -1,3 +1,10 @@
+# use org label for emacs configuration
+/*.el
+!/init.el
+
+# some elisp snippet
+/elisp
+
 ## misc
 loaddefs.el*
 auto-save-list
@@ -52,3 +59,5 @@ semanticdb/
 bookmarks
 el-get/
 newsticker
+
+ac-comphist.dat
