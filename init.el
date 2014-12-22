@@ -1,7 +1,4 @@
 ;;; init.el --- Where all the magic begins
-;;
-;; This file loads Org-mode and then loads the rest of our Emacs initialization from Emacs lisp
-;; embedded in literate Org-mode files.
 
 (and (fboundp 'menu-bar-mode)
      (not (eq system-type 'darwin))
@@ -9,6 +6,8 @@
 (mapc (lambda (mode) (when (fboundp mode) (apply mode '(-1))))
       '(tool-bar-mode
         scroll-bar-mode))
+
+(setq inhibit-startup-message t)
 
 ;;;; package.el
 (require 'package)

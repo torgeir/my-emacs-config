@@ -2,6 +2,11 @@
 /*.el
 !/init.el
 
+var/
+.sx/
+.places
+projectile.cache
+
 # some elisp snippet
 /elisp
 

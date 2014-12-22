@@ -4,17 +4,14 @@
 #+OPTIONS: toc:3 num:nil ^:nil
 
 # table of contents down to level 2
-# no section numbers
+# no sectione numbers
 # don't use TeX syntax for sub and superscripts.
 # See http://orgmode.org/manual/Export-options.html
 
 #+BEGIN_SRC emacs-lisp
-;; Load custom.el first
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file 'noerror)
-
 ;;;; global key bindings
 (global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key (kbd "C-x g") 'magit-status)
 
 ;; Window switch
 (windmove-default-keybindings) ;; Shift+direction
@@ -212,12 +209,17 @@
 ;;;;;;;;;;;;;;;;;;;
 ;; auto-complete ;;
 ;;;;;;;;;;;;;;;;;;;
-(ac-config-default)
+;; (ac-config-default)
+
+;;;;;;;;;;;;;
+;; company ;;
+;;;;;;;;;;;;;
+(add-hook 'after-init-hook 'global-company-mode)
 
 ;;;;;;;;;;;;;;;
 ;; yasnippet ;;
 ;;;;;;;;;;;;;;;
-;; (yas-global-mode 1)
+(yas-global-mode 1)
 
 ;;;;;;;;;;;;;;
 ;; nyam Cat ;;
@@ -240,8 +242,27 @@
 ;; (powerline-default-theme)
 
 ;; do not display some minor mode (use Diminish)
-;; (eval-after-load "helm"
-;;   '(diminish 'helm-mode))
+(eval-after-load "helm"
+  '(diminish 'helm-mode))
+
+(eval-after-load "guide-key"
+  '(diminish 'guide-key-mode))
+
+(eval-after-load "flyspell"
+  '(diminish 'flyspell-mode))
+
+(eval-after-load "undo-tree"
+  '(diminish 'undo-tree-mode))
+
+(diminish 'yas-minor-mode)
+
+(defmacro rename-modeline (package-name mode new-name)
+  `(eval-after-load ,package-name
+     '(defadvice ,mode (after rename-modeline activate)
+        (setq mode-name ,new-name))))
+
+;; (rename-modeline "js2-mode" js2-mode "JS2")
+;; (rename-modeline "clojure-mode" clojure-mode "Clj")
 
 ;; Compile
 (global-set-key (kbd "<f5>") (lambda ()
@@ -254,7 +275,7 @@
 ;;;;;;;;;;;;;;
 
 ;; Enable globally
-;; (add-hook 'after-init-hook #'global-flycheck-mode)
+(add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;;;; Blog with org-mode (org-page)
 ;;;;;;;;;;;;;;
@@ -347,6 +368,7 @@
 * Navigation
 
 ** TODO 'C-x 2/3' 更加智能
+* Project
 
 * Editing
 1. edit parens (both lisp mode and other programming mode)
@@ -359,8 +381,30 @@
 ** Spell checking
    =flyspell= provides minor modes to check spell on-the-fly.
    #+BEGIN_SRC emacs-lisp
-   ;; (add-hook 'text-mode-hook 'flyspell-mode)
-   ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+   ;; flyspell-mode does spell-checking on the fly as you type
+   (require 'flyspell)
+   (setq ispell-program-name "aspell" ; use aspell instead of ispell
+         ispell-extra-args '("--sug-mode=ultra"))
+
+   (add-hook 'text-mode-hook 'flyspell-mode)
+   (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+   #+END_SRC
+** Save last edit place
+   #+BEGIN_SRC emacs-lisp
+   ;; Save point position between sessions
+   (require 'saveplace)
+   (setq-default save-place t)
+   (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+   #+END_SRC
+** Undo
+   Undo tree
+   #+BEGIN_SRC emacs-lisp
+   (global-undo-tree-mode)
+   #+END_SRC
+** Expand Region
+   #+BEGIN_SRC emacs-lisp
+   (require 'expand-region)
+   (global-set-key (kbd "C-=") 'er/expand-region)
    #+END_SRC
 * UI
 
@@ -368,9 +412,9 @@
    Set English font
    #+BEGIN_SRC emacs-lisp
    ;; Setting English Font
-   (if (member "Source Code Pro" (font-family-list))
+   (if (member "Monaco" (font-family-list))
        (set-face-attribute
-        'default nil :font "Source Code Pro 13"))
+        'default nil :font "Monaco 13"))
    #+END_SRC
 
 ** Color theme & Mode line
@@ -387,7 +431,7 @@
    ;; (powerline-moe-theme)
 
    (show-paren-mode t)
-   (setq show-paren-style 'expression)
+   ;; (setq show-paren-style 'expression)
 
    #+END_SRC
 
@@ -397,6 +441,20 @@
    ;; (global-yascroll-bar-mode 1)
    #+END_SRC
 
+** Dired Mode
+   Add hightlights in dired
+   #+BEGIN_SRC emacs-lisp
+   (require 'dired-k)
+   (define-key dired-mode-map (kbd "K") 'dired-k)
+   #+END_SRC
+
+   Make dired less verbose
+   #+BEGIN_SRC emacs-lisp
+   (require 'dired-details)
+   (setq-default dired-details-hidden-string "--- ")
+   (dired-details-install)
+   #+END_SRC
+
 ** Other
    #+BEGIN_SRC emacs-lisp
    ;; Colorful brackets
@@ -404,8 +462,7 @@
    #+END_SRC
 * Misc
   #+BEGIN_SRC emacs-lisp
-  (setq ring-bell-function #'ignore
-        inhibit-startup-screen t)
+  (setq ring-bell-function #'ignore)
 
   ;; Set badckup directory to ~/.emacs.d/backups/
   (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
@@ -432,4 +489,10 @@
      (setq mac-option-modifier 'control)
      ;; Fix PATH
      (exec-path-from-shell-initialize))
+   #+END_SRC
+
+** Load custom.el
+   #+BEGIN_SRC emacs-lisp
+   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+   (load custom-file 'noerror)
    #+END_SRC
