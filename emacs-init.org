@@ -1,12 +1,5 @@
 #+Title: Emacs Configuration
-#+Author: Chunyang Xu
-#+Email: xuchunyang56@gmail.com
 #+OPTIONS: toc:3 num:nil ^:nil
-
-# table of contents down to level 2
-# no sectione numbers
-# don't use TeX syntax for sub and superscripts.
-# See http://orgmode.org/manual/Export-options.html
 
 #+BEGIN_SRC emacs-lisp
 ;;;; global key bindings
@@ -366,10 +359,11 @@
 #+END_SRC
 
 * Navigation
-
+#+BEGIN_SRC emacs-lisp
+(setq mouse-autoselect-window t)
+(global-auto-revert-mode 1)
+#+END_SRC
 ** TODO 'C-x 2/3' 更加智能
-* Project
-
 * Editing
 1. edit parens (both lisp mode and other programming mode)
 2. Search and Replace (both buffer/file level and project level)
@@ -380,67 +374,47 @@
 
 ** Spell checking
    =flyspell= provides minor modes to check spell on-the-fly.
-   #+BEGIN_SRC emacs-lisp
-   ;; flyspell-mode does spell-checking on the fly as you type
-   (require 'flyspell)
-   (setq ispell-program-name "aspell" ; use aspell instead of ispell
-         ispell-extra-args '("--sug-mode=ultra"))
+#+BEGIN_SRC emacs-lisp
+;; flyspell-mode does spell-checking on the fly as you type
+(require 'flyspell)
+(setq ispell-program-name "aspell" ; use aspell instead of ispell
+      ispell-extra-args '("--sug-mode=ultra"))
 
-   (add-hook 'text-mode-hook 'flyspell-mode)
-   (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-   #+END_SRC
+(add-hook 'text-mode-hook 'flyspell-mode)
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+#+END_SRC
 ** Save last edit place
-   #+BEGIN_SRC emacs-lisp
-   ;; Save point position between sessions
-   (require 'saveplace)
-   (setq-default save-place t)
-   (setq save-place-file (expand-file-name ".places" user-emacs-directory))
-   #+END_SRC
+#+BEGIN_SRC emacs-lisp
+;; Save point position between sessions
+(require 'saveplace)
+(setq-default save-place t)
+(setq save-place-file (expand-file-name ".places" user-emacs-directory))
+#+END_SRC
 ** Undo
    Undo tree
-   #+BEGIN_SRC emacs-lisp
-   (global-undo-tree-mode)
-   #+END_SRC
+#+BEGIN_SRC emacs-lisp
+(global-undo-tree-mode)
+#+END_SRC
 ** Expand Region
-   #+BEGIN_SRC emacs-lisp
-   (require 'expand-region)
-   (global-set-key (kbd "C-=") 'er/expand-region)
-   #+END_SRC
+#+BEGIN_SRC emacs-lisp
+(require 'expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
+#+END_SRC
 * UI
 
 ** Font
    Set English font
-   #+BEGIN_SRC emacs-lisp
-   ;; Setting English Font
-   (if (member "Source Code Pro" (font-family-list))
-       (set-face-attribute
-        'default nil :font "Source Code Pro 13"))
-   #+END_SRC
+#+BEGIN_SRC emacs-lisp
+;; Setting English Font
+(if (member "Source Code Pro" (font-family-list))
+    (set-face-attribute
+     'default nil :font "Source Code Pro 14"))
+#+END_SRC
 
 ** Color theme & Mode line
-   #+BEGIN_SRC emacs-lisp
-   ;; Enable moe-themem
-   ;; (require 'moe-theme)
-   ;; (moe-dark)
-   ;; Resize titles
-   ;; (setq moe-theme-resize-markdown-title '(2.0 1.7 1.5 1.3 1.0 1.0))
-   ;; (setq moe-theme-resize-org-title '(2.2 1.8 1.6 1.4 1.2 1.0 1.0 1.0 1.0))
-   ;; Mode line Color
-   ;; (moe-theme-set-color 'cyan)
-   ;; Powerline
-   ;; (powerline-moe-theme)
-
-   (show-paren-mode t)
-   ;; (setq show-paren-style 'expression)
-
-   #+END_SRC
-
-** Scroll bar
-   yascroll-bar
-   #+BEGIN_SRC emacs-lisp
-   ;; (global-yascroll-bar-mode 1)
-   #+END_SRC
-
+#+BEGIN_SRC emacs-lisp
+(show-paren-mode t)
+#+END_SRC
 ** Dired Mode
    Add hightlights in dired
    #+BEGIN_SRC emacs-lisp
@@ -461,7 +435,7 @@
    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
    #+END_SRC
 * Misc
-  #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
   (setq ring-bell-function #'ignore)
 
   ;; Set badckup directory to ~/.emacs.d/backups/
@@ -482,7 +456,7 @@
   #+END_SRC
 
 ** Mac OS X specified
-   #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
    (when (eq system-type 'darwin)
      ;; swap <command> and <alt>
      (setq mac-command-modifier 'meta)
@@ -492,9 +466,9 @@
    #+END_SRC
 
 ** Load custom.el
-   #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-   (load custom-file 'noerror)
+   (when (file-readable-p custom-file) (load custom-file 'noerror))
    #+END_SRC
 
 * Email (mu4e)
@@ -521,22 +495,21 @@
 ;; the 'All Mail' folder by pressing ``ma''.
 
 (setq mu4e-maildir-shortcuts
-    '( ("/INBOX"               . ?i)
-       ("/[Gmail].Sent Mail"   . ?s)
-       ("/[Gmail].Trash"       . ?t)
-       ("/[Gmail].All Mail"    . ?a)))
+      '( ("/INBOX"               . ?i)
+         ("/[Gmail].Sent Mail"   . ?s)
+         ("/[Gmail].Trash"       . ?t)
+         ("/[Gmail].All Mail"    . ?a)))
 
 ;; allow for updating mail using 'U' in the main view:
-(setq mu4e-get-mail-command "offlineimap")
+(setq mu4e-get-mail-command "offlineimap"
+      mu4e-update-interval (* 15 60)    ;; update every 15 minutes
+      )
 
 ;; something about ourselves
 (setq
-   user-mail-address "xuchunyang56@gmail.com"
-   user-full-name  "Chunyang Xu"
-   mu4e-compose-signature
-    (concat
-      "Chunyang Xu\n"
-      "http://xuchunyang.me\n"))
+ user-mail-address "xuchunyang56@gmail.com"
+ user-full-name  "Chunyang Xu"
+ mu4e-compose-signature "Chunyang Xu")
 
 ;; sending mail -- replace USERNAME with your gmail username
 ;; also, make sure the gnutls command line utils are installed
@@ -544,21 +517,103 @@
 
 (require 'smtpmail)
 (setq message-send-mail-function 'smtpmail-send-it
-   starttls-use-gnutls t
-   smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-   smtpmail-auth-credentials
-     '(("smtp.gmail.com" 587 "xuchunyang56@gmail.com" nil))
-   smtpmail-default-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-server "smtp.gmail.com"
-   smtpmail-smtp-service 587)
-
-;; alternatively, for emacs-24 you can use:
-;;(setq message-send-mail-function 'smtpmail-send-it
-;;     smtpmail-stream-type 'starttls
-;;     smtpmail-default-smtp-server "smtp.gmail.com"
-;;     smtpmail-smtp-server "smtp.gmail.com"
-;;     smtpmail-smtp-service 587)
+      starttls-use-gnutls t
+      smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+      smtpmail-auth-credentials
+      '(("smtp.gmail.com" 587 "xuchunyang56@gmail.com" nil))
+      smtpmail-default-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587)
 
 ;; don't keep message buffers around
 (setq message-kill-buffer-on-exit t)
+
+;; Confirmation before sending
+(add-hook 'message-send-hook
+          (lambda ()
+            (unless (yes-or-no-p "Sure you want to send this?")
+              (signal 'quit nil))))
+
+;; Skipping duplicates
+(setq mu4e-headers-skip-duplicates t)
+
+;; email link for org-mode
+(require 'org-mu4e)
+#+END_SRC
+* IRC (ERC)
+#+BEGIN_SRC emacs-lisp
+;; Load authentication info from an external source.  Put sensitive
+;; passwords and the like in here.
+(load "~/.emacs.d/.erc-auth")
+
+;; This is an example of how to make a new command.  Type "/uptime" to
+;; use it.
+(defun erc-cmd-UPTIME (&rest ignore)
+  "Display the uptime of the system, as well as some load-related
+     stuff, to the current ERC buffer."
+  (let ((uname-output
+         (replace-regexp-in-string
+          ", load average: " "] {Load average} ["
+          ;; Collapse spaces, remove
+          (replace-regexp-in-string
+           " +" " "
+           ;; Remove beginning and trailing whitespace
+           (replace-regexp-in-string
+            "^ +\\|[ \n]+$" ""
+            (shell-command-to-string "uptime"))))))
+    (erc-send-message
+     (concat "{Uptime} [" uname-output "]"))))
+
+;; Make C-c RET (or C-c C-RET) send messages instead of RET.  This has
+;; been commented out to avoid confusing new users.
+;; (define-key erc-mode-map (kbd "RET") nil)
+;; (define-key erc-mode-map (kbd "C-c RET") 'erc-send-current-line)
+;; (define-key erc-mode-map (kbd "C-c C-RET") 'erc-send-current-line)
+
+;;; Options
+
+;; Join the #emacs and #erc channels whenever connecting to Freenode.
+(setq erc-autojoin-channels-alist '(("freenode.net" "#emacs" "#archlinux")))
+
+;; Rename server buffers to reflect the current network name instead
+;; of IP:PORT. (e.g. "freenode" instead of "84.240.3.129:6667"). This
+;; is useful when using a bouncer like ZNC where you have multiple
+;; connections to the same server.
+(setq erc-rename-buffers t)
+
+;; Interpret mIRC-style color commands in IRC chats
+(setq erc-interpret-mirc-color t)
+
+;; The following are commented out by default, but users of other
+;; non-Emacs IRC clients might find them useful.
+;; Kill buffers for channels after /part
+;; (setq erc-kill-buffer-on-part t)
+;; Kill buffers for private queries after quitting the server
+;; (setq erc-kill-queries-on-quit t)
+;; Kill buffers for server messages after quitting the server
+;; (setq erc-kill-server-buffer-on-quit t)
+
+;; logging
+(require 'erc-log)
+(setq erc-log-channels-directory "~/.erc/logs/")
+
+(defun start-irc ()
+  "Connect to IRC."
+  (interactive)
+  (when (y-or-n-p "Do you want to start IRC? ")
+    (erc :server "irc.freenode.net" :port 6667 :nick erc-nick)))
+
+(defun filter-server-buffers ()
+  (delq nil
+        (mapcar
+         (lambda (x) (and (erc-server-buffer-p x) x))
+         (buffer-list))))
+
+(defun stop-irc ()
+  "Disconnects from all irc servers"
+  (interactive)
+  (dolist (buffer (filter-server-buffers))
+    (message "Server buffer: %s" (buffer-name buffer))
+    (with-current-buffer buffer
+      (erc-quit-server "Asta la vista"))))
 #+END_SRC
