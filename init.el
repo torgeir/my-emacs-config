@@ -1,23 +1,8 @@
-;;; init.el --- Where all the magic begins
-
-(and (fboundp 'menu-bar-mode)
-     (not (eq system-type 'darwin))
+(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(and (fboundp 'menu-bar-mode) (not (eq system-type 'darwin))
      (menu-bar-mode -1))
-(mapc (lambda (mode) (when (fboundp mode) (apply mode '(-1))))
-      '(tool-bar-mode
-        scroll-bar-mode))
 
-(setq inhibit-startup-message t)
-
-;;;; package.el
-(require 'package)
-(setq package-archives
-      '(("gnu"         . "http://elpa.gnu.org/packages/")
-        ("org"         . "http://orgmode.org/elpa/")
-        ("melpa"       . "http://melpa.org/packages/")))
-(package-initialize)
-
-;;; load up main init org file
-(org-babel-load-file (expand-file-name "emacs-init.org" user-emacs-directory))
-
-;;; init.el ends here
+(require 'org)
+(require 'ob-tangle)
+(org-babel-load-file (expand-file-name "~/.emacs.d/emacs-config.org"))

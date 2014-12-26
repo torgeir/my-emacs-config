@@ -2,6 +2,10 @@
 /*.el
 !/init.el
 
+.cask/
+
+.erc-auth
+
 var/
 .sx/
 .places
@@ -9,6 +13,7 @@ projectile.cache
 
 # some elisp snippet
 /elisp
+/lisp
 
 ## misc
 loaddefs.el*
