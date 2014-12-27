@@ -46,7 +46,7 @@
 (global-unset-key (kbd "C-x c"))
 
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
-(global-set-key (kbd "M-x") 'helm-M-x)
+;; (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "M-l") 'helm-buffers-list)
 (global-set-key (kbd "C-x f") 'helm-recentf)
@@ -356,7 +356,7 @@
 #+END_SRC
 * Navigation
 #+BEGIN_SRC emacs-lisp
-(setq mouse-autoselect-window t)
+;; (setq mouse-autoselect-window t)
 (global-auto-revert-mode 1)
 #+END_SRC
 * Editing
@@ -615,4 +615,10 @@
 * Prettyify Emacs
 #+BEGIN_SRC emacs-lisp
 (setq inhibit-startup-message t)
+#+END_SRC
+* TAGS
+Set up TAGS for Emacs sources
+#+BEGIN_SRC emacs-lisp
+(setq tags-table-list
+      '("~/repos/emacs/src" "~/repos/emacs/lisp"))
 #+END_SRC
