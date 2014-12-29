@@ -46,7 +46,7 @@
 (global-unset-key (kbd "C-x c"))
 
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
-;; (global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "M-l") 'helm-buffers-list)
 (global-set-key (kbd "C-x f") 'helm-recentf)
@@ -64,8 +64,6 @@
 
 ;; Window switch
 (windmove-default-keybindings) ;; Shift+direction
-(global-set-key (kbd "C-x O") (lambda () (interactive) (other-window -1))) ;; back one
-(global-set-key (kbd "C-x C-o") (lambda () (interactive) (other-window 2))) ;; forward two
 
 (defun move-line-up ()
   "Move up the current line."
@@ -167,10 +165,6 @@
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
-;;;;;;;;;;
-;; Helm ;;
-;;;;;;;;;;
-
 ;;;;;;;;;;;;;;;;
 ;; Projectile ;;
 ;;;;;;;;;;;;;;;;
@@ -183,7 +177,6 @@
 ;;;;;;;;;;;;
 ;; ggtags ;;
 ;;;;;;;;;;;;
-
 (add-hook 'c-mode-common-hook
           (lambda ()
             (when (derived-mode-p 'c-mode 'asm-mode)
@@ -195,11 +188,6 @@
 (add-hook 'eshell-mode-hook 'helm-gtags-mode)
 (add-hook 'c-mode-hook 'helm-gtags-mode)
 (add-hook 'asm-mode-hook 'helm-gtags-mode)
-
-;;;;;;;;;;;;;;;;;;;
-;; auto-complete ;;
-;;;;;;;;;;;;;;;;;;;
-;; (ac-config-default)
 
 ;;;;;;;;;;;;;
 ;; company ;;
@@ -220,16 +208,9 @@
 ;; Show column number too
 (column-number-mode 1)
 
-;; Mode line
-;; see http://www.lunaryorn.com/2014/07/26/make-your-emacs-mode-line-more-useful.html
-;; and http://amitp.blogspot.sg/2011/08/emacs-custom-mode-line.html
-
-;; use smart-mode-line for now
-;; (sml/setup)
-
 ;; use powerline
-;; (require 'powerline)
-;; (powerline-default-theme)
+(require 'powerline)
+(powerline-default-theme)
 
 ;; do not display some minor mode (use Diminish)
 (eval-after-load "helm"
