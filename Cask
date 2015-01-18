@@ -46,3 +46,5 @@
 (depends-on "org-page")
 
 (depends-on "git-gutter")
+
+(depends-on "elisp-slime-nav")
