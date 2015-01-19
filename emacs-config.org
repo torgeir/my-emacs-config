@@ -798,24 +798,3 @@ in the mode-line in various search modes.
   (load-file "~/wip/google-translate-chinese/google-translate-config.elc")
   (global-set-key (kbd "C-c g") 'google-translate-chinese-search-at-point-and-replace)
   #+END_SRC
-
-* 输入法
-  #+BEGIN_SRC emacs-lisp
-  (require 'company)
-  (require 'company-dabbrev)
-  ;; (require 'adaptive-wrap)
-  (setq company-idle-delay 0.1)
-  (setq company-minimum-prefix-length 2)
-  (setq company-selection-wrap-around t)
-  (setq company-dabbrev-downcase nil)
-  (setq company-dabbrev-ignore-case nil)
-  (setq company-require-match nil)
-
-  ;; chinese-pyim
-  (load "~/wip/chinese-pyim/chinese-pyim.el")
-  (require 'chinese-pyim)
-
-  (setq default-input-method "chinese-pyim")
-  (global-set-key (kbd "C-c C-k") 'toggle-input-method)
-
-  #+END_SRC
