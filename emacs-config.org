@@ -798,3 +798,15 @@ in the mode-line in various search modes.
   (load-file "~/wip/google-translate-chinese/google-translate-config.elc")
   (global-set-key (kbd "C-c g") 'google-translate-chinese-search-at-point-and-replace)
   #+END_SRC
+
+* Youdao Dictionary
+#+BEGIN_SRC emacs-lisp
+;; Key bindings
+(global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
+
+;; Integrate with popwin-el (https://github.com/m2ym/popwin-el)
+(push "*Youdao Dictionary*" popwin:special-display-config)
+
+;; Set file path for saving search history
+;; (setq youdao-dictionary-search-history-file "~/.emacs.d/.youdao")
+#+END_SRC
