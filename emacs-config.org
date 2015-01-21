@@ -800,13 +800,33 @@ in the mode-line in various search modes.
   #+END_SRC
 
 * Youdao Dictionary
-#+BEGIN_SRC emacs-lisp
-;; Key bindings
-(global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
+  #+BEGIN_SRC emacs-lisp
+  ;; Key bindings
+  (global-set-key (kbd "C-c y") 'youdao-dictionary-search-at-point)
 
-;; Integrate with popwin-el (https://github.com/m2ym/popwin-el)
-(push "*Youdao Dictionary*" popwin:special-display-config)
+  ;; Integrate with popwin-el (https://github.com/m2ym/popwin-el)
+  (push "*Youdao Dictionary*" popwin:special-display-config)
 
-;; Set file path for saving search history
-;; (setq youdao-dictionary-search-history-file "~/.emacs.d/.youdao")
-#+END_SRC
+  ;; Set file path for saving search history
+  ;; (setq youdao-dictionary-search-history-file "~/.emacs.d/.youdao")
+  #+END_SRC
+
+* 输入法
+  #+BEGIN_SRC emacs-lisp
+  (require 'company)
+  (require 'company-dabbrev)
+  ;; (require 'adaptive-wrap)
+  (setq company-idle-delay 0.1)
+  (setq company-minimum-prefix-length 2)
+  (setq company-selection-wrap-around t)
+  (setq company-dabbrev-downcase nil)
+  (setq company-dabbrev-ignore-case nil)
+  (setq company-require-match nil)
+
+  ;; chinese-pyim
+  (load "~/wip/chinese-pyim/chinese-pyim.el")
+  (require 'chinese-pyim)
+
+  (setq default-input-method "chinese-pyim")
+  (global-set-key (kbd "C-c C-k") 'toggle-input-method)
+  #+END_SRC
