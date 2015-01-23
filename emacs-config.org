@@ -1,32 +1,20 @@
-#+Title: Emacs Configuration
++Title: Emacs Configuration
 #+OPTIONS: toc:3 num:nil ^:nil
 
 * Packages
-** Cask
-   Cask is a dependency manager for Emacs. I have install Cask using brew, which
-   puts =cask.el= to =/usr/local/share/emacs/site-lisp/=, so it is already in
-   ~load-path~.
-
-   First, we require and interactive Cask.
-#+BEGIN_SRC emacs-lisp
-(require 'cask)
-(cask-initialize)
-#+END_SRC
-** Pallet
-   Pallet keeps the Cask file up-to-date when installing packages through `M-x
-   list-packages`.
-#+BEGIN_SRC emacs-lisp
-(require 'pallet)
-#+END_SRC
 ** Package.el
    Also, we need to set up the package repositories for Emacs's own package
    manager.
 #+BEGIN_SRC emacs-lisp
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
-        ;; ("marmalade" . "http://marmalade-repo.org/packages/")
         ("melpa" . "http://melpa.org/packages/")))
+(package-initialize)
 #+END_SRC
+
+#+RESULTS:
+: t
+
 * General Setup
   Don't load outdated compiled files
 #+BEGIN_SRC emacs-lisp
@@ -58,291 +46,277 @@
 
 * Misc 2
 #+BEGIN_SRC emacs-lisp
-;;;; global key bindings
-(global-set-key (kbd "C-x C-b") 'ibuffer)
-(global-set-key (kbd "C-x g") 'magit-status)
+  ;; Window switch
+  (windmove-default-keybindings) ;; Shift+direction
 
-;; Window switch
-(windmove-default-keybindings) ;; Shift+direction
+  (defun move-line-up ()
+    "Move up the current line."
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode))
 
-(defun move-line-up ()
-  "Move up the current line."
-  (interactive)
-  (transpose-lines 1)
-  (forward-line -2)
-  (indent-according-to-mode))
+  (defun move-line-down ()
+    "Move down the current line."
+    (interactive)
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode))
 
-(defun move-line-down ()
-  "Move down the current line."
-  (interactive)
-  (forward-line 1)
-  (transpose-lines 1)
-  (forward-line -1)
-  (indent-according-to-mode))
+  (global-set-key (kbd "M-<up>") 'move-line-up)
+  (global-set-key (kbd "M-<down>") 'move-line-down)
 
-(global-set-key (kbd "M-<up>") 'move-line-up)
-(global-set-key (kbd "M-<down>") 'move-line-down)
+  ;; This is set by default
+  ;; (global-set-key (kbd "M-<f10>") 'toggle-frame-maximized)
+  (global-set-key (kbd "M-<f11>") 'toggle-frame-fullscreen)
 
-;; This is set by default
-;; (global-set-key (kbd "M-<f10>") 'toggle-frame-maximized)
-(global-set-key (kbd "M-<f11>") 'toggle-frame-fullscreen)
+  (global-set-key (kbd "C-x 3") (lambda ()
+                                  "Split window with another buffer."
+                                  (interactive)
+                                  (split-window-right)
+                                  (other-window 1)
+                                  (switch-to-buffer (other-buffer))))
+  (defun swap-windows ()
+    "Put the buffer from the selected window in next window, and vice versa"
+    (interactive)
+    (let* ((this (selected-window))
+           (other (next-window))
+           (this-buffer (window-buffer this))
+           (other-buffer (window-buffer other)))
+      (set-window-buffer other this-buffer)
+      (set-window-buffer this other-buffer)))
 
-(global-set-key (kbd "C-x 3") (lambda ()
-                                "Split window with another buffer."
-                                (interactive)
-                                (split-window-right)
-                                (other-window 1)
-                                (switch-to-buffer (other-buffer))))
-(defun swap-windows ()
-  "Put the buffer from the selected window in next window, and vice versa"
-  (interactive)
-  (let* ((this (selected-window))
-         (other (next-window))
-         (this-buffer (window-buffer this))
-         (other-buffer (window-buffer other)))
-    (set-window-buffer other this-buffer)
-    (set-window-buffer this other-buffer)))
+  ;;;; emacs lisp
+  (defun imenu-elisp-sections ()
+    (setq imenu-prev-index-position-function nil)
+    (add-to-list 'imenu-generic-expression '("Sections" "^;;;; \\(.+\\)$" 1) t))
 
-;;;; emacs lisp
-(defun imenu-elisp-sections ()
-  (setq imenu-prev-index-position-function nil)
-  (add-to-list 'imenu-generic-expression '("Sections" "^;;;; \\(.+\\)$" 1) t))
+  (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 
-(add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
+  ;;(autoload 'enable-paredit-mode "paredit"
+    "Turn on pseudo-structural editing of Lisp code."
+  ;;  t)
+  ;; (add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
+  ;; (add-hook 'lisp-mode-hook             'enable-paredit-mode)
+  ;; (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
+  ;; (add-hook 'scheme-mode-hook           'enable-paredit-mode)
 
-(autoload 'enable-paredit-mode "paredit"
-  "Turn on pseudo-structural editing of Lisp code."
-  t)
-(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
-(add-hook 'lisp-mode-hook             'enable-paredit-mode)
-(add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
-(add-hook 'scheme-mode-hook           'enable-paredit-mode)
+  ;; key C-j
+  ; (add-hook 'paredit-mode-hook
+    ;;        (lambda ()
+      ;;        (define-key paredit-mode-map "\C-j" 'eval-print-last-sexp)
+              ;; Keep 'M-s .' (isearch-forward-symbol-at-point), use 'M-S' instead
+        ;;      (define-key paredit-mode-map "\M-s" nil)
+          ;;    (define-key paredit-mode-map "\M-S" 'paredit-splice-sexp)))
 
-;; key C-j
-(add-hook 'paredit-mode-hook
-          (lambda ()
-            (define-key paredit-mode-map "\C-j" 'eval-print-last-sexp)))
+  ;; activate whitespace-mode to view all whitespace characters
+  (global-set-key (kbd "C-c w") 'whitespace-mode)
 
-;;;; C
-(setq-default c-default-style "linux"
-              c-basic-offset 4)
+  ;; show unncessary whitespace that can mess up your diff
+  ;; (add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
 
-;; activate whitespace-mode to view all whitespace characters
-(global-set-key (kbd "C-c w") 'whitespace-mode)
+  ;; use space to indent by default
+  (setq-default indent-tabs-mode nil)
 
-;; show unncessary whitespace that can mess up your diff
-(add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
+  ;; set appearance of a tab that is represented by 4 spaces
+  (setq-default tab-width 4)
 
-;; use space to indent by default
-(setq-default indent-tabs-mode nil)
+  ;;;;;;;;;;;;
+  ;; geiser ;;
+  ;;;;;;;;;;;;
+  (setq geiser-default-implementation 'racket)
 
-;; set appearance of a tab that is represented by 4 spaces
-(setq-default tab-width 4)
+  ;;;; Misc
 
-;;;;;;;;;;;;
-;; geiser ;;
-;;;;;;;;;;;;
-(setq geiser-default-implementation 'racket)
+  ;;;;;;;;;;;;;;;
+  ;; guide key ;;
+  ;;;;;;;;;;;;;;;
+  ;; (require 'guide-key)
+  ;; (setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h" "C-c"))
+  ;; (guide-key-mode 1)  ; Enable guide-key-mode
 
-;;;; Misc
+  ;; Hightlight current line globally
+  ;; (global-hl-line-mode)
 
-;;;;;;;;;;;;;;;
-;; guide key ;;
-;;;;;;;;;;;;;;;
-(require 'guide-key)
-(setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h" "C-c"))
-(guide-key-mode 1)  ; Enable guide-key-mode
+  ;; Multiple cursor
+  (require 'multiple-cursors)
+  ;; base on an active region
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  ;; base on keywords
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
-;; Hightlight current line globally
-;; (global-hl-line-mode)
+  ;;;;;;;;;;;;;;;;
+  ;; Projectile ;;
+  ;;;;;;;;;;;;;;;;
 
-;; Multiple cursor
-(require 'multiple-cursors)
-;; base on an active region
-(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-;; base on keywords
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+  (projectile-global-mode)
+  (setq projectile-completion-system 'helm)
+  (require 'helm-projectile)
+  (helm-projectile-on)
 
-;;;;;;;;;;;;;;;;
-;; Projectile ;;
-;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;
+  ;; yasnippet ;;
+  ;;;;;;;;;;;;;;;
+  ;; (yas-global-mode 1)
+  ;; (add-hook 'prog-mode-hook
+  ;;           '(lambda ()
+  ;;              (yas-minor-mode)))
 
-(projectile-global-mode)
-(setq projectile-completion-system 'helm)
-(require 'helm-projectile)
-(helm-projectile-on)
+  ;;;;;;;;;;;;;
+  ;; company ;;
+  ;;;;;;;;;;;;;
+  (add-hook 'after-init-hook 'global-company-mode)
 
-;;;;;;;;;;;;
-;; ggtags ;;
-;;;;;;;;;;;;
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (when (derived-mode-p 'c-mode 'asm-mode)
-              (ggtags-mode 1))))
+  ;;;;;;;;;;;;;;
+  ;; nyam Cat ;;
+  ;;;;;;;;;;;;;;
+  (nyan-mode +1)
 
-(require 'helm-gtags)
-;; Enable helm-gtags-mode
-(add-hook 'dired-mode-hook 'helm-gtags-mode)
-(add-hook 'eshell-mode-hook 'helm-gtags-mode)
-(add-hook 'c-mode-hook 'helm-gtags-mode)
-(add-hook 'asm-mode-hook 'helm-gtags-mode)
+  ;; Show column number too
+  (column-number-mode 1)
 
-;;;;;;;;;;;;;
-;; company ;;
-;;;;;;;;;;;;;
-(add-hook 'after-init-hook 'global-company-mode)
+  ;; use powerline
+  ;; (require 'powerline)
+  ;; (powerline-default-theme)
 
-;;;;;;;;;;;;;;;
-;; yasnippet ;;
-;;;;;;;;;;;;;;;
-;; (yas-global-mode 1)
+  ;; do not display some minor mode (use Diminish)
+  (eval-after-load "helm"
+    '(diminish 'helm-mode))
 
-;;;;;;;;;;;;;;
-;; nyam Cat ;;
-;;;;;;;;;;;;;;
-;; disable it, I want to custom mode line
-;; (nyan-mode 1)
+  (eval-after-load "guide-key"
+    '(diminish 'guide-key-mode))
 
-;; Show column number too
-(column-number-mode 1)
+  (eval-after-load "flyspell"
+    '(diminish 'flyspell-mode))
 
-;; use powerline
-;; (require 'powerline)
-;; (powerline-default-theme)
+  (eval-after-load "undo-tree"
+    '(diminish 'undo-tree-mode))
 
-;; do not display some minor mode (use Diminish)
-(eval-after-load "helm"
-  '(diminish 'helm-mode))
+  (eval-after-load "company"
+    '(diminish 'company-mode))
 
-(eval-after-load "guide-key"
-  '(diminish 'guide-key-mode))
+  (eval-after-load "paredit"
+    '(diminish 'paredit-mode))
 
-(eval-after-load "flyspell"
-  '(diminish 'flyspell-mode))
+  (eval-after-load "git-gutter"
+    '(diminish 'git-gutter-mode))
 
-(eval-after-load "undo-tree"
-  '(diminish 'undo-tree-mode))
+  (eval-after-load "yasnippet"
+    '(diminish 'yas-minor-mode))
 
-(eval-after-load "company"
-  '(diminish 'company-mode))
+  (eval-after-load "google-this"
+    '(diminish 'google-this-mode))
 
-(eval-after-load "paredit"
-  '(diminish 'paredit-mode))
+  (defmacro rename-modeline (package-name mode new-name)
+    `(eval-after-load ,package-name
+       '(defadvice ,mode (after rename-modeline activate)
+          (setq mode-name ,new-name))))
 
-(eval-after-load "git-gutter"
-  '(diminish 'git-gutter-mode))
+  ;; (rename-modeline "js2-mode" js2-mode "JS2")
+  ;; (rename-modeline "clojure-mode" clojure-mode "Clj")
 
-;; (diminish 'yas-minor-mode)
+  ;; Compile
+  (global-set-key (kbd "<f5>") (lambda ()
+                                 (interactive)
+                                 (setq-local compilation-read-command nil)
+                                 (call-interactively 'compile)))
 
-(defmacro rename-modeline (package-name mode new-name)
-  `(eval-after-load ,package-name
-     '(defadvice ,mode (after rename-modeline activate)
-        (setq mode-name ,new-name))))
+  ;;;;;;;;;;;;;;
+  ;; Flycheck ;;
+  ;;;;;;;;;;;;;;
 
-;; (rename-modeline "js2-mode" js2-mode "JS2")
-;; (rename-modeline "clojure-mode" clojure-mode "Clj")
+  ;; Enable globally
+  (add-hook 'after-init-hook #'global-flycheck-mode)
 
-;; Compile
-(global-set-key (kbd "<f5>") (lambda ()
-                               (interactive)
-                               (setq-local compilation-read-command nil)
-                               (call-interactively 'compile)))
+  ;;;; Blog with org-mode (org-page)
+  ;;;;;;;;;;;;;;
+  ;; org-page ;;
+  ;;;;;;;;;;;;;;
+  ;; (require 'org-page)
+  ;; (setq op/repository-directory "~/wip/blog/") ;; the repository location
+  ;; (setq op/site-domain "http://xuchunyang.me") ;; your domain
+  ;; ;;; the configuration below you should choose one, not both
+  ;; (setq op/personal-disqus-shortname "xcysblog")    ;; your disqus commenting system
+  ;; (setq op/personal-google-analytics-id "UA-52627886-1")
+  ;; (setq op/personal-github-link "https://github.com/xuchunyang")
+  ;; (setq op/site-main-title "Chunyang Xu")
+  ;; (setq op/site-sub-title "")
 
-;;;;;;;;;;;;;;
-;; Flycheck ;;
-;;;;;;;;;;;;;;
+  (setq user-mail-address "xuchunyang56@gmail.com")
+  (setq user-full-name "Chunyang Xu")
 
-;; Enable globally
-(add-hook 'after-init-hook #'global-flycheck-mode)
+  (add-hook 'text-mode-hook 'auto-fill-mode)
 
-;;;; Blog with org-mode (org-page)
-;;;;;;;;;;;;;;
-;; org-page ;;
-;;;;;;;;;;;;;;
-(require 'org-page)
-(setq op/repository-directory "~/wip/blog/") ;; the repository location
-(setq op/site-domain "http://xuchunyang.me") ;; your domain
-;;; the configuration below you should choose one, not both
-(setq op/personal-disqus-shortname "xcysblog")    ;; your disqus commenting system
-(setq op/personal-google-analytics-id "UA-52627886-1")
-(setq op/personal-github-link "https://github.com/xuchunyang")
-(setq op/site-main-title "Chunyang Xu")
-(setq op/site-sub-title "")
+  ;; Example key binding
+  (setq osx-dictionary-use-chinese-text-segmentation t) ; Support Chinese word
+  (global-set-key (kbd "C-c d") 'osx-dictionary-search-pointer)
 
-(setq user-mail-address "xuchunyang56@gmail.com")
-(setq user-full-name "Chunyang Xu")
+  ;; Work with popwin-el (https://github.com/m2ym/popwin-el)
+  ;; (push "*osx-dictionary*" popwin:special-display-config)
 
-(add-hook 'text-mode-hook 'auto-fill-mode)
+  ;;;; UI
+  ;;
+  ;; 1. Fonts (Both English and Chinese)
+  ;; 2. Color theme
+  ;; 3. Mode line
+  ;; 4. scroll bar
+  ;; 5. Git change notify (idea from git-gutter)
+  ;; 6. brackets/pairs:
+  ;;    - hightlight (show-paren-mode)
+  ;;    - Colorful by different level (rainbow-delimiters-mode)
+  ;; 7. Improve look of `dired-mode'
+  ;;
 
-;; Example key binding
-(setq osx-dictionary-use-chinese-text-segmentation t) ; Support Chinese word
-(global-set-key (kbd "C-c d") 'osx-dictionary-search-pointer)
+  (global-git-gutter-mode 1)
 
-;; Work with popwin-el (https://github.com/m2ym/popwin-el)
-(push "*osx-dictionary*" popwin:special-display-config)
+  ;; Center text when only one window
+  ;; (when (require 'automargin nil t)
+  ;;   (automargin-mode 1))
 
-;;;; UI
-;;
-;; 1. Fonts (Both English and Chinese)
-;; 2. Color theme
-;; 3. Mode line
-;; 4. scroll bar
-;; 5. Git change notify (idea from git-gutter)
-;; 6. brackets/pairs:
-;;    - hightlight (show-paren-mode)
-;;    - Colorful by different level (rainbow-delimiters-mode)
-;; 7. Improve look of `dired-mode'
-;;
-
-(global-git-gutter-mode 1)
-
-;; Center text when only one window
-;; (when (require 'automargin nil t)
-;;   (automargin-mode 1))
-
-;;;; Navigation (between windows, buffers/files, projects(folds))
-;;
-;; 1. open file (use helm)
-;;    - recent file
-;;    - file under current directory or in current project
-;;    - anyfile in my Computer
-;; 2. Switch between Windows
-;;    use <S-arror>
-;; 3. Switch between buffers
-;;    - use helm (helm-buffers-list, etc)
+  ;;;; Navigation (between windows, buffers/files, projects(folds))
+  ;;
+  ;; 1. open file (use helm)
+  ;;    - recent file
+  ;;    - file under current directory or in current project
+  ;;    - anyfile in my Computer
+  ;; 2. Switch between Windows
+  ;;    use <S-arror>
+  ;; 3. Switch between buffers
+  ;;    - use helm (helm-buffers-list, etc)
 
 
-;;;; Tools
-;;
-;; 1. dictionary tools
-;; 2. quickly compile & run, C/Elisp/shell/scheme, etc
-;; 3. use Git version within Emacs
-;; 4. on-the-fly Grammar check
-;;
+  ;;;; Tools
+  ;;
+  ;; 1. dictionary tools
+  ;; 2. quickly compile & run, C/Elisp/shell/scheme, etc
+  ;; 3. use Git version within Emacs
+  ;; 4. on-the-fly Grammar check
+  ;;
 
-;;;; Programming Language specified
-;;
-;; 1. C
-;; 2. Emacs Lisp
-;; 3. Others
-;;
+  ;;;; Programming Language specified
+  ;;
+  ;; 1. C
+  ;; 2. Emacs Lisp
+  ;; 3. Others
+  ;;
 
-;;;; org-mode (note taking, todo planing, and writing docs)
-;;
-;; 1. note
-;; 2. todo
-;; 3. Blogging
-;; 4. manage Emacs init files
-;;
+  ;;;; org-mode (note taking, todo planing, and writing docs)
+  ;;
+  ;; 1. note
+  ;; 2. todo
+  ;; 3. Blogging
+  ;; 4. manage Emacs init files
+  ;;
 
-;; Automatic resizing of Emacs windows to the golden ratio
-;; https://github.com/roman/golden-ratio.el
-;; (golden-ratio-mode 1)
+  ;; Automatic resizing of Emacs windows to the golden ratio
+  ;; https://github.com/roman/golden-ratio.el
+  ;; (golden-ratio-mode 1)
 
-;; Show org-mode bullets as UTF-8 characters.
-;; (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
+  ;; Show org-mode bullets as UTF-8 characters.
+  ;; (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 #+END_SRC
 * Navigation
 #+BEGIN_SRC emacs-lisp
@@ -404,15 +378,15 @@
 ** Dired Mode
    Add hightlights in dired
    #+BEGIN_SRC emacs-lisp
-   (require 'dired-k)
-   (define-key dired-mode-map (kbd "K") 'dired-k)
+   ;; (require 'dired-k)
+   ;; (define-key dired-mode-map (kbd "K") 'dired-k)
    #+END_SRC
 
    Make dired less verbose
    #+BEGIN_SRC emacs-lisp
-   (require 'dired-details)
-   (setq-default dired-details-hidden-string "--- ")
-   (dired-details-install)
+   ;; (require 'dired-details)
+   ;; (setq-default dired-details-hidden-string "--- ")
+   ;; (dired-details-install)
    #+END_SRC
 
 ** Other
@@ -443,12 +417,12 @@
 
 ** Mac OS X specified
 #+BEGIN_SRC emacs-lisp
-   (when (eq system-type 'darwin)
-     ;; swap <command> and <alt>
-     (setq mac-command-modifier 'meta)
-     (setq mac-option-modifier 'control)
-     ;; Fix PATH
-     (exec-path-from-shell-initialize))
+(when (eq system-type 'darwin)
+  ;; swap <command> and <alt>
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'control)
+  ;; Fix PATH
+  (exec-path-from-shell-initialize))
    #+END_SRC
 
 ** Load custom.el
@@ -458,74 +432,74 @@
    #+END_SRC
 * Email (mu4e)
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-  (require 'mu4e)
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+(require 'mu4e)
 
-  ;; default
-  ;; (setq mu4e-maildir "~/Maildir")
+;; default
+;; (setq mu4e-maildir "~/Maildir")
 
-  (setq mu4e-drafts-folder "/[Gmail].Drafts")
-  (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
-  (setq mu4e-trash-folder  "/[Gmail].Trash")
+(setq mu4e-drafts-folder "/[Gmail].Drafts")
+(setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+(setq mu4e-trash-folder  "/[Gmail].Trash")
 
-  ;; don't save message to Sent Messages, Gmail/IMAP takes care of this
-  (setq mu4e-sent-messages-behavior 'delete)
+;; don't save message to Sent Messages, Gmail/IMAP takes care of this
+(setq mu4e-sent-messages-behavior 'delete)
 
-  ;; (See the documentation for `mu4e-sent-messages-behavior' if you have
-  ;; additional non-Gmail addresses and want assign them different
-  ;; behavior.)
+;; (See the documentation for `mu4e-sent-messages-behavior' if you have
+;; additional non-Gmail addresses and want assign them different
+;; behavior.)
 
-  ;; setup some handy shortcuts
-  ;; you can quickly switch to your Inbox -- press ``ji''
-  ;; then, when you want archive some messages, move them to
-  ;; the 'All Mail' folder by pressing ``ma''.
+;; setup some handy shortcuts
+;; you can quickly switch to your Inbox -- press ``ji''
+;; then, when you want archive some messages, move them to
+;; the 'All Mail' folder by pressing ``ma''.
 
-  (setq mu4e-maildir-shortcuts
-        '( ("/INBOX"               . ?i)
-           ("/[Gmail].Sent Mail"   . ?s)
-           ("/[Gmail].Starred"     . ?r)
-           ("/[Gmail].Trash"       . ?t)
-           ("/[Gmail].All Mail"    . ?a)))
+(setq mu4e-maildir-shortcuts
+      '( ("/INBOX"               . ?i)
+         ("/[Gmail].Sent Mail"   . ?s)
+         ("/[Gmail].Starred"     . ?r)
+         ("/[Gmail].Trash"       . ?t)
+         ("/[Gmail].All Mail"    . ?a)))
 
-  ;; allow for updating mail using 'U' in the main view:
-  (setq mu4e-get-mail-command "proxychains4 offlineimap"
-        mu4e-update-interval (* 30 60)    ;; update every 30 minutes
-        )
+;; allow for updating mail using 'U' in the main view:
+(setq mu4e-get-mail-command "proxychains4 offlineimap"
+      mu4e-update-interval (* 30 60)    ;; update every 30 minutes
+      )
 
-  ;; something about ourselves
-  (setq
-   user-mail-address "xuchunyang56@gmail.com"
-   user-full-name  "Chunyang Xu"
-   mu4e-compose-signature "Chunyang Xu")
+;; something about ourselves
+(setq
+ user-mail-address "xuchunyang56@gmail.com"
+ user-full-name  "Chunyang Xu"
+ mu4e-compose-signature "Chunyang Xu")
 
-  ;; sending mail -- replace USERNAME with your gmail username
-  ;; also, make sure the gnutls command line utils are installed
-  ;; package 'gnutls-bin' in Debian/Ubuntu
+;; sending mail -- replace USERNAME with your gmail username
+;; also, make sure the gnutls command line utils are installed
+;; package 'gnutls-bin' in Debian/Ubuntu
 
-  (require 'smtpmail)
-  (setq message-send-mail-function 'smtpmail-send-it
-        starttls-use-gnutls t
-        smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-        smtpmail-auth-credentials
-        '(("smtp.gmail.com" 587 "xuchunyang56@gmail.com" nil))
-        smtpmail-default-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-service 587)
+(require 'smtpmail)
+(setq message-send-mail-function 'smtpmail-send-it
+      starttls-use-gnutls t
+      smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+      smtpmail-auth-credentials
+      '(("smtp.gmail.com" 587 "xuchunyang56@gmail.com" nil))
+      smtpmail-default-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587)
 
-  ;; don't keep message buffers around
-  (setq message-kill-buffer-on-exit t)
+;; don't keep message buffers around
+(setq message-kill-buffer-on-exit t)
 
-  ;; Confirmation before sending
-  (add-hook 'message-send-hook
-            (lambda ()
-              (unless (yes-or-no-p "Sure you want to send this?")
-                (signal 'quit nil))))
+;; Confirmation before sending
+(add-hook 'message-send-hook
+          (lambda ()
+            (unless (yes-or-no-p "Sure you want to send this?")
+              (signal 'quit nil))))
 
-  ;; Skipping duplicates
-  (setq mu4e-headers-skip-duplicates t)
+;; Skipping duplicates
+(setq mu4e-headers-skip-duplicates t)
 
-  ;; email link for org-mode
-  (require 'org-mu4e)
+;; email link for org-mode
+(require 'org-mu4e)
 #+END_SRC
 * IRC (ERC)
 #+BEGIN_SRC emacs-lisp
@@ -612,7 +586,9 @@
 Set up TAGS for Emacs sources
 #+BEGIN_SRC emacs-lisp
 (setq tags-table-list
-      '("~/repos/emacs/src" "~/repos/emacs/lisp"))
+      '("~/repos/emacs/src"
+        ;; "~/repos/emacs/lisp"
+        ))
 #+END_SRC
 * Quickly Find Emacs Lisp Sources
   #+BEGIN_SRC emacs-lisp
@@ -724,9 +700,8 @@ Set up TAGS for Emacs sources
   #+END_SRC
 * org-mode
   #+BEGIN_SRC emacs-lisp
-  (require 'org)
   ;; highlight native code block
-  (setq org-src-fontify-natively t)
+  ;; (setq org-src-fontify-natively nil)
   (setq org-edit-src-content-indentation 0)
 
   (setq org-default-notes-file "~/org/task.org")
@@ -741,6 +716,8 @@ Set up TAGS for Emacs sources
                                '((emacs-lisp . t)
                                  (sh . t)
                                  (scheme . t)))
+
+  (setq org-confirm-babel-evaluate nil)
 
   (global-set-key "\C-cl" 'org-store-link)
   (global-set-key "\C-cc" 'org-capture)
@@ -760,12 +737,6 @@ Set up TAGS for Emacs sources
   (require 'google-this)
   (google-this-mode 1)
   ;; (global-set-key (kbd "C-c s") 'google-this-mode-submap)
-  #+END_SRC
-* Chinese
-  #+BEGIN_SRC emacs-lisp
-  ;; (require 'chinese-pyim)
-  ;; (setq pyim-dicts
-  ;;       '((:name "bigdict" :file "~/wip/chinese-pyim/pyim-bigdict.txt" :coding utf-8-unix)))
   #+END_SRC
 * anzu
 provides a minor mode which displays current match and total matches information
@@ -796,7 +767,7 @@ in the mode-line in various search modes.
   #+BEGIN_SRC emacs-lisp
   (setq url-automatic-caching t)
   (load-file "~/wip/google-translate-chinese/google-translate-config.elc")
-  (global-set-key (kbd "C-c g") 'google-translate-chinese-search-at-point-and-replace)
+  ;; (global-set-key (kbd "C-c g") 'google-translate-chinese-search-at-point-and-replace)
   #+END_SRC
 
 * Youdao Dictionary
@@ -809,24 +780,194 @@ in the mode-line in various search modes.
 
   ;; Set file path for saving search history
   ;; (setq youdao-dictionary-search-history-file "~/.emacs.d/.youdao")
+
+  ;; Enable Chinese word segmentation support (支持中文分词)
+  (setq youdao-dictionary-use-chinese-word-segmentation t)
   #+END_SRC
 
 * 输入法
   #+BEGIN_SRC emacs-lisp
-  (require 'company)
-  (require 'company-dabbrev)
-  ;; (require 'adaptive-wrap)
-  (setq company-idle-delay 0.1)
-  (setq company-minimum-prefix-length 2)
-  (setq company-selection-wrap-around t)
-  (setq company-dabbrev-downcase nil)
-  (setq company-dabbrev-ignore-case nil)
-  (setq company-require-match nil)
-
-  ;; chinese-pyim
-  (load "~/wip/chinese-pyim/chinese-pyim.el")
+  ;; (add-to-list 'load-path "~/wip/chinese-pyim/")
   (require 'chinese-pyim)
 
+  ;; (require 'chinese-pyim-company)
+  ;; (setq company-idle-delay 0.1)
+  ;; (setq company-minimum-prefix-length 2)
+  ;; (setq company-selection-wrap-around t)
+  ;; (setq company-dabbrev-downcase nil)
+  ;; (setq company-dabbrev-ignore-case nil)
+  ;; (setq company-require-match nil)
+
   (setq default-input-method "chinese-pyim")
-  (global-set-key (kbd "C-c C-k") 'toggle-input-method)
+
+  ;; load Dev tools
+  ;; (require 'chinese-pyim-devtools)
   #+END_SRC
+
+* yasnippet
+#+BEGIN_SRC emacs-lisp
+(require 'yasnippet)
+(yas-global-mode 1)
+#+END_SRC
+
+* Auto-Complete
+#+BEGIN_SRC emacs-lisp
+;; (add-to-list 'load-path "~/repos/auto-complete/build")
+;; (require 'auto-complete-config)
+;; (ac-config-default)
+#+END_SRC
+
+* helm-swoop
+#+BEGIN_SRC emacs-lisp
+;; helm from https://github.com/emacs-helm/helm
+(require 'helm)
+(require 'helm-swoop)
+
+;; Change the keybinds to whatever you like :)
+(global-set-key (kbd "M-i") 'helm-swoop)
+(global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+
+;; When doing isearch, hand the word over to helm-swoop
+(define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+;; From helm-swoop to helm-multi-swoop-all
+(define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+;; When doing evil-search, hand the word over to helm-swoop
+;; (define-key evil-motion-state-map (kbd "M-i") 'helm-swoop-from-evil-search)
+
+;; Save buffer when helm-multi-swoop-edit complete
+(setq helm-multi-swoop-edit-save t)
+
+;; If this value is t, split window inside the current window
+(setq helm-swoop-split-with-multiple-windows nil)
+
+;; Split direcion. 'split-window-vertically or 'split-window-horizontally
+(setq helm-swoop-split-direction 'split-window-vertically)
+
+;; If nil, you can slightly boost invoke speed in exchange for text color
+(setq helm-swoop-speed-or-color nil)
+
+;; ;; Go to the opposite side of line from the end or beginning of line
+(setq helm-swoop-move-to-line-cycle t)
+
+;; Optional face for line numbers
+;; Face name is `helm-swoop-line-number-face`
+(setq helm-swoop-use-line-number-face t)
+#+END_SRC
+
+* Global Misc key bindings
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+
+(global-set-key (kbd "C-c G") 'google-this)
+#+END_SRC
+
+* Code snippets
+#+BEGIN_SRC emacs-lisp
+(defun occur-at-point ()
+  "Call `occur' with a symbol found near point."
+  (interactive)
+  (push (if (region-active-p)
+            (buffer-substring-no-properties
+             (region-beginning)
+             (region-end))
+          (thing-at-point 'symbol))
+        regexp-history)
+  (call-interactively 'occur))
+
+(global-set-key (kbd "M-s O") 'occur-at-point)
+
+#+END_SRC
+
+* Hydra package
+Homepage: https://github.com/abo-abo/hydra
+
+#+BEGIN_SRC emacs-lisp
+(hydra-create "M-g"
+  '(("h" first-error "first")
+    ("j" next-error "next")
+    ("k" previous-error "prev")))
+#+END_SRC
+
+* C
+  #+BEGIN_SRC emacs-lisp
+  ;; (setq-default c-default-style "linux"
+  ;;               c-basic-offset 4)
+
+  ;; (require 'cc-mode)
+  ;; (require 'semantic)
+
+  ;; (defun alexott/cedet-hook ()
+  ;;   (local-set-key "\C-c\C-j" 'semantic-ia-fast-jump)
+  ;;   (local-set-key "\C-c\C-s" 'semantic-ia-show-summary))
+
+  ;; (add-hook 'c-mode-common-hook 'alexott/cedet-hook)
+  ;; (add-hook 'c-mode-hook 'alexott/cedet-hook)
+
+  ;; (require 'ggtags)
+  ;; (add-hook 'c-mode-common-hook
+  ;;           (lambda ()
+  ;;             (when (derived-mode-p 'c-mode 'asm-mode)
+  ;;               (ggtags-mode 1)
+  ;;               (global-semanticdb-minor-mode 1)
+  ;;               (global-semantic-idle-scheduler-mode 1)
+  ;;               ;; (global-semantic-stickyfunc-mode 1)
+  ;;               (global-semantic-idle-summary-mode 1)
+  ;;               (semantic-mode 1))))
+
+  ;; (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
+
+  ;; (require 'helm-gtags)
+  ;; (setq
+  ;;  helm-gtags-ignore-case t
+  ;;  helm-gtags-auto-update t
+  ;;  helm-gtags-use-input-at-cursor t
+  ;;  helm-gtags-pulse-at-cursor t
+  ;;  helm-gtags-prefix-key "\C-cg"
+  ;;  helm-gtags-suggested-key-mapping t
+  ;;  )
+
+  ;; ;; Enable helm-gtags-mode
+  ;; (add-hook 'dired-mode-hook 'helm-gtags-mode)
+  ;; (add-hook 'eshell-mode-hook 'helm-gtags-mode)
+  ;; (add-hook 'c-mode-hook 'helm-gtags-mode)
+  ;; (add-hook 'asm-mode-hook 'helm-gtags-mode)
+
+  ;; (define-key helm-gtags-mode-map (kbd "C-c g a") 'helm-gtags-tags-in-this-function)
+  ;; (define-key helm-gtags-mode-map (kbd "C-j") 'helm-gtags-select)
+  ;; (define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
+  ;; (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
+  ;; (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
+  ;; (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
+
+  ;; (require 'company-c-headers)
+  ;; (add-to-list 'company-backends 'company-c-headers)
+
+  ;; ;; https://github.com/abo-abo/function-args
+  ;; (require 'function-args)
+  ;; (fa-config-default)
+  ;; ;; (define-key c-mode-map [(contrl tab)] 'moo-complete)
+  ;; (define-key c-mode-map (kbd "M-o") 'fa-show)
+
+  ;; ;; Code folding
+  ;; (add-hook 'c-mode-common-hook 'hs-minor-mode)
+
+  ;; ;; Package: clean-aindent-mode
+  ;; (require 'clean-aindent-mode)
+  ;; (add-hook 'prog-mode-hook 'clean-aindent-mode)
+
+  #+END_SRC
+
+* Temp
+#+BEGIN_SRC emacs-lisp
+(defun xcy-open-init ()
+  "Open my main init file, here is ~/.emacs.d/emacs-config.org."
+  (find-file "~/.emacs.d/emacs-config.org"))
+#+END_SRC
+
+* expand-region -- increase selected region by semantic units.
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-=") 'er/expand-region)
+#+END_SRC
