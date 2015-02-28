@@ -229,6 +229,7 @@
   ;;;;;;;;;;;;;;
 
   ;; Enable globally
+  (require 'flycheck)
   (add-hook 'after-init-hook #'global-flycheck-mode)
 
   ;;;; Blog with org-mode (org-page)
@@ -505,7 +506,7 @@
 #+BEGIN_SRC emacs-lisp
 ;; Load authentication info from an external source.  Put sensitive
 ;; passwords and the like in here.
-(load "~/.emacs.d/.erc-auth")
+;; (load "~/.emacs.d/.erc-auth")
 
 ;; This is an example of how to make a new command.  Type "/uptime" to
 ;; use it.
@@ -606,8 +607,8 @@ Set up TAGS for Emacs sources
    #+END_SRC
 * SX -- Stack Exchange for Emacs
   #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/repos/sx.el/")
-  (require 'sx-load)
+    ;; (add-to-list 'load-path "~/repos/sx.el/")
+    ;; (require 'sx-load)
   #+END_SRC
 * eshell
   #+BEGIN_SRC emacs-lisp
@@ -760,6 +761,7 @@ in the mode-line in various search modes.
 
 * Popwin -- easy quit some buffer like HELP
 #+BEGIN_SRC emacs-lisp
+(require 'popwin)
 (popwin-mode 1)
 #+END_SRC
 
@@ -788,7 +790,7 @@ in the mode-line in various search modes.
 * 输入法
   #+BEGIN_SRC emacs-lisp
   ;; (add-to-list 'load-path "~/wip/chinese-pyim/")
-  (require 'chinese-pyim)
+  ;; (require 'chinese-pyim)
 
   ;; (require 'chinese-pyim-company)
   ;; (setq company-idle-delay 0.1)
@@ -798,7 +800,7 @@ in the mode-line in various search modes.
   ;; (setq company-dabbrev-ignore-case nil)
   ;; (setq company-require-match nil)
 
-  (setq default-input-method "chinese-pyim")
+  ;; (setq default-input-method "chinese-pyim")
 
   ;; load Dev tools
   ;; (require 'chinese-pyim-devtools)
@@ -806,8 +808,8 @@ in the mode-line in various search modes.
 
 * yasnippet
 #+BEGIN_SRC emacs-lisp
-(require 'yasnippet)
-(yas-global-mode 1)
+;; (require 'yasnippet)
+;; (yas-global-mode 1)
 #+END_SRC
 
 * Auto-Complete
@@ -885,10 +887,10 @@ in the mode-line in various search modes.
 Homepage: https://github.com/abo-abo/hydra
 
 #+BEGIN_SRC emacs-lisp
-(hydra-create "M-g"
-  '(("h" first-error "first")
-    ("j" next-error "next")
-    ("k" previous-error "prev")))
+;; (hydra-create "M-g"
+;;   '(("h" first-error "first")
+;;     ("j" next-error "next")
+;;     ("k" previous-error "prev")))
 #+END_SRC
 
 * C
