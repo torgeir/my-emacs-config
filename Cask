@@ -1,0 +1,50 @@
+(source gnu)
+(source melpa)
+
+(depends-on "pallet")
+(depends-on "undo-tree")
+(depends-on "dired-k")
+(depends-on "dired-details")
+(depends-on "rainbow-delimiters")
+(depends-on "zenburn-theme")
+(depends-on "bind-key")
+(depends-on "cask")
+(depends-on "dash")
+(depends-on "drag-stuff")
+(depends-on "exec-path-from-shell")
+(depends-on "expand-region")
+(depends-on "f")
+(depends-on "flycheck")
+(depends-on "flycheck-cask")
+(depends-on "htmlize")
+(depends-on "idle-highlight-mode")
+(depends-on "magit")
+(depends-on "multiple-cursors")
+(depends-on "nyan-mode")
+(depends-on "pallet")
+(depends-on "popwin")
+(depends-on "prodigy")
+(depends-on "projectile")
+(depends-on "s")
+(depends-on "use-package")
+(depends-on "web-mode")
+(depends-on "yasnippet")
+
+(depends-on "helm")
+(depends-on "helm-projectile")
+(depends-on "helm-gtags")
+(depends-on "helm-ack")
+
+(depends-on "company")
+
+(depends-on "geiser")
+
+(depends-on "paredit")
+
+(depends-on "guide-key")
+
+(depends-on "org-page")
+
+(depends-on "git-gutter")
+
+(depends-on "elisp-slime-nav")
