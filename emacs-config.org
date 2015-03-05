@@ -1,4 +1,4 @@
-+Title: Emacs Configuration
+#+Title: Emacs Configuration
 #+OPTIONS: toc:3 num:nil ^:nil
 
 * Packages
@@ -28,296 +28,296 @@
 #+END_SRC
 * Helm
 #+BEGIN_SRC emacs-lisp
-(require 'helm-config)
-;; helm prefix: "C-x c" => 'C-c h
-(global-set-key (kbd "C-c h") 'helm-command-prefix)
-(global-unset-key (kbd "C-x c"))
+  (require 'helm-config)
+  ;; helm prefix: "C-x c" => 'C-c h
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
 
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
-(global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "C-x b") 'helm-mini)
-(global-set-key (kbd "M-l") 'helm-buffers-list)
-(global-set-key (kbd "C-x f") 'helm-recentf)
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-(global-set-key (kbd "C-c h o") 'helm-occur)
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-x b") 'helm-mini)
+  (global-set-key (kbd "M-l") 'helm-buffers-list)
+  (global-set-key (kbd "C-x f") 'helm-recentf)
+  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+  (global-set-key (kbd "C-c h o") 'helm-occur)
 
-(helm-mode 1)
+  (helm-mode 1)
 #+END_SRC
 
 * Misc 2
 #+BEGIN_SRC emacs-lisp
-  ;; Window switch
-  (windmove-default-keybindings) ;; Shift+direction
+;; Window switch
+(windmove-default-keybindings) ;; Shift+direction
 
-  (defun move-line-up ()
-    "Move up the current line."
-    (interactive)
-    (transpose-lines 1)
-    (forward-line -2)
-    (indent-according-to-mode))
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
 
-  (defun move-line-down ()
-    "Move down the current line."
-    (interactive)
-    (forward-line 1)
-    (transpose-lines 1)
-    (forward-line -1)
-    (indent-according-to-mode))
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
 
-  (global-set-key (kbd "M-<up>") 'move-line-up)
-  (global-set-key (kbd "M-<down>") 'move-line-down)
+(global-set-key (kbd "M-<up>") 'move-line-up)
+(global-set-key (kbd "M-<down>") 'move-line-down)
 
-  ;; This is set by default
-  ;; (global-set-key (kbd "M-<f10>") 'toggle-frame-maximized)
-  (global-set-key (kbd "M-<f11>") 'toggle-frame-fullscreen)
+;; This is set by default
+;; (global-set-key (kbd "M-<f10>") 'toggle-frame-maximized)
+(global-set-key (kbd "M-<f11>") 'toggle-frame-fullscreen)
 
-  (global-set-key (kbd "C-x 3") (lambda ()
-                                  "Split window with another buffer."
-                                  (interactive)
-                                  (split-window-right)
-                                  (other-window 1)
-                                  (switch-to-buffer (other-buffer))))
-  (defun swap-windows ()
-    "Put the buffer from the selected window in next window, and vice versa"
-    (interactive)
-    (let* ((this (selected-window))
-           (other (next-window))
-           (this-buffer (window-buffer this))
-           (other-buffer (window-buffer other)))
-      (set-window-buffer other this-buffer)
-      (set-window-buffer this other-buffer)))
+(global-set-key (kbd "C-x 3") (lambda ()
+                                "Split window with another buffer."
+                                (interactive)
+                                (split-window-right)
+                                (other-window 1)
+                                (switch-to-buffer (other-buffer))))
+(defun swap-windows ()
+  "Put the buffer from the selected window in next window, and vice versa"
+  (interactive)
+  (let* ((this (selected-window))
+         (other (next-window))
+         (this-buffer (window-buffer this))
+         (other-buffer (window-buffer other)))
+    (set-window-buffer other this-buffer)
+    (set-window-buffer this other-buffer)))
 
-  ;;;; emacs lisp
-  (defun imenu-elisp-sections ()
-    (setq imenu-prev-index-position-function nil)
-    (add-to-list 'imenu-generic-expression '("Sections" "^;;;; \\(.+\\)$" 1) t))
+;;;; emacs lisp
+(defun imenu-elisp-sections ()
+  (setq imenu-prev-index-position-function nil)
+  (add-to-list 'imenu-generic-expression '("Sections" "^;;;; \\(.+\\)$" 1) t))
 
-  (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
+(add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 
-  ;;(autoload 'enable-paredit-mode "paredit"
-    "Turn on pseudo-structural editing of Lisp code."
-  ;;  t)
-  ;; (add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
-  ;; (add-hook 'lisp-mode-hook             'enable-paredit-mode)
-  ;; (add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
-  ;; (add-hook 'scheme-mode-hook           'enable-paredit-mode)
+(autoload 'enable-paredit-mode "paredit"
+  "Turn on pseudo-structural editing of Lisp code."
+  t)
+(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
+(add-hook 'lisp-mode-hook             'enable-paredit-mode)
+(add-hook 'lisp-interaction-mode-hook 'enable-paredit-mode)
+(add-hook 'scheme-mode-hook           'enable-paredit-mode)
 
-  ;; key C-j
-  ; (add-hook 'paredit-mode-hook
-    ;;        (lambda ()
-      ;;        (define-key paredit-mode-map "\C-j" 'eval-print-last-sexp)
-              ;; Keep 'M-s .' (isearch-forward-symbol-at-point), use 'M-S' instead
-        ;;      (define-key paredit-mode-map "\M-s" nil)
-          ;;    (define-key paredit-mode-map "\M-S" 'paredit-splice-sexp)))
+;; key C-j
+; (add-hook 'paredit-mode-hook
+  ;;        (lambda ()
+    ;;        (define-key paredit-mode-map "\C-j" 'eval-print-last-sexp)
+            ;; Keep 'M-s .' (isearch-forward-symbol-at-point), use 'M-S' instead
+      ;;      (define-key paredit-mode-map "\M-s" nil)
+        ;;    (define-key paredit-mode-map "\M-S" 'paredit-splice-sexp)))
 
-  ;; activate whitespace-mode to view all whitespace characters
-  (global-set-key (kbd "C-c w") 'whitespace-mode)
+;; activate whitespace-mode to view all whitespace characters
+(global-set-key (kbd "C-c w") 'whitespace-mode)
 
-  ;; show unncessary whitespace that can mess up your diff
-  ;; (add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
+;; show unncessary whitespace that can mess up your diff
+;; (add-hook 'prog-mode-hook (lambda () (interactive) (setq show-trailing-whitespace 1)))
 
-  ;; use space to indent by default
-  (setq-default indent-tabs-mode nil)
+;; use space to indent by default
+(setq-default indent-tabs-mode nil)
 
-  ;; set appearance of a tab that is represented by 4 spaces
-  (setq-default tab-width 4)
+;; set appearance of a tab that is represented by 4 spaces
+(setq-default tab-width 4)
 
-  ;;;;;;;;;;;;
-  ;; geiser ;;
-  ;;;;;;;;;;;;
-  (setq geiser-default-implementation 'racket)
+;;;;;;;;;;;;
+;; geiser ;;
+;;;;;;;;;;;;
+(setq geiser-default-implementation 'racket)
 
-  ;;;; Misc
+;;;; Misc
 
-  ;;;;;;;;;;;;;;;
-  ;; guide key ;;
-  ;;;;;;;;;;;;;;;
-  ;; (require 'guide-key)
-  ;; (setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h" "C-c"))
-  ;; (guide-key-mode 1)  ; Enable guide-key-mode
+;;;;;;;;;;;;;;;
+;; guide key ;;
+;;;;;;;;;;;;;;;
+;; (require 'guide-key)
+;; (setq guide-key/guide-key-sequence '("C-x" "C-x r" "C-x 4" "M-s" "C-c h" "C-c"))
+;; (guide-key-mode 1)  ; Enable guide-key-mode
 
-  ;; Hightlight current line globally
-  ;; (global-hl-line-mode)
+;; Hightlight current line globally
+;; (global-hl-line-mode)
 
-  ;; Multiple cursor
-  (require 'multiple-cursors)
-  ;; base on an active region
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  ;; base on keywords
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+;; Multiple cursor
+(require 'multiple-cursors)
+;; base on an active region
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+;; base on keywords
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
-  ;;;;;;;;;;;;;;;;
-  ;; Projectile ;;
-  ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;
+;; Projectile ;;
+;;;;;;;;;;;;;;;;
 
-  (projectile-global-mode)
-  (setq projectile-completion-system 'helm)
-  (require 'helm-projectile)
-  (helm-projectile-on)
+(projectile-global-mode)
+(setq projectile-completion-system 'helm)
+(require 'helm-projectile)
+(helm-projectile-on)
 
-  ;;;;;;;;;;;;;;;
-  ;; yasnippet ;;
-  ;;;;;;;;;;;;;;;
-  ;; (yas-global-mode 1)
-  ;; (add-hook 'prog-mode-hook
-  ;;           '(lambda ()
-  ;;              (yas-minor-mode)))
+;;;;;;;;;;;;;;;
+;; yasnippet ;;
+;;;;;;;;;;;;;;;
+;; (yas-global-mode 1)
+;; (add-hook 'prog-mode-hook
+;;           '(lambda ()
+;;              (yas-minor-mode)))
 
-  ;;;;;;;;;;;;;
-  ;; company ;;
-  ;;;;;;;;;;;;;
-  (add-hook 'after-init-hook 'global-company-mode)
+;;;;;;;;;;;;;
+;; company ;;
+;;;;;;;;;;;;;
+(add-hook 'after-init-hook 'global-company-mode)
 
-  ;;;;;;;;;;;;;;
-  ;; nyam Cat ;;
-  ;;;;;;;;;;;;;;
-  (nyan-mode +1)
+;;;;;;;;;;;;;;
+;; nyam Cat ;;
+;;;;;;;;;;;;;;
+(nyan-mode +1)
 
-  ;; Show column number too
-  (column-number-mode 1)
+;; Show column number too
+(column-number-mode 1)
 
-  ;; use powerline
-  ;; (require 'powerline)
-  ;; (powerline-default-theme)
+;; use powerline
+;; (require 'powerline)
+;; (powerline-default-theme)
 
-  ;; do not display some minor mode (use Diminish)
-  (eval-after-load "helm"
-    '(diminish 'helm-mode))
+;; do not display some minor mode (use Diminish)
+(eval-after-load "helm"
+  '(diminish 'helm-mode))
 
-  (eval-after-load "guide-key"
-    '(diminish 'guide-key-mode))
+(eval-after-load "guide-key"
+  '(diminish 'guide-key-mode))
 
-  (eval-after-load "flyspell"
-    '(diminish 'flyspell-mode))
+(eval-after-load "flyspell"
+  '(diminish 'flyspell-mode))
 
-  (eval-after-load "undo-tree"
-    '(diminish 'undo-tree-mode))
+(eval-after-load "undo-tree"
+  '(diminish 'undo-tree-mode))
 
-  (eval-after-load "company"
-    '(diminish 'company-mode))
+(eval-after-load "company"
+  '(diminish 'company-mode))
 
-  (eval-after-load "paredit"
-    '(diminish 'paredit-mode))
+(eval-after-load "paredit"
+  '(diminish 'paredit-mode))
 
-  (eval-after-load "git-gutter"
-    '(diminish 'git-gutter-mode))
+(eval-after-load "git-gutter"
+  '(diminish 'git-gutter-mode))
 
-  (eval-after-load "yasnippet"
-    '(diminish 'yas-minor-mode))
+(eval-after-load "yasnippet"
+  '(diminish 'yas-minor-mode))
 
-  (eval-after-load "google-this"
-    '(diminish 'google-this-mode))
+(eval-after-load "google-this"
+  '(diminish 'google-this-mode))
 
-  (defmacro rename-modeline (package-name mode new-name)
-    `(eval-after-load ,package-name
-       '(defadvice ,mode (after rename-modeline activate)
-          (setq mode-name ,new-name))))
+(defmacro rename-modeline (package-name mode new-name)
+  `(eval-after-load ,package-name
+     '(defadvice ,mode (after rename-modeline activate)
+        (setq mode-name ,new-name))))
 
-  ;; (rename-modeline "js2-mode" js2-mode "JS2")
-  ;; (rename-modeline "clojure-mode" clojure-mode "Clj")
+;; (rename-modeline "js2-mode" js2-mode "JS2")
+;; (rename-modeline "clojure-mode" clojure-mode "Clj")
 
-  ;; Compile
-  (global-set-key (kbd "<f5>") (lambda ()
-                                 (interactive)
-                                 (setq-local compilation-read-command nil)
-                                 (call-interactively 'compile)))
+;; Compile
+(global-set-key (kbd "<f5>") (lambda ()
+                               (interactive)
+                               (setq-local compilation-read-command nil)
+                               (call-interactively 'compile)))
 
-  ;;;;;;;;;;;;;;
-  ;; Flycheck ;;
-  ;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;
+;; Flycheck ;;
+;;;;;;;;;;;;;;
 
-  ;; Enable globally
-  (require 'flycheck)
-  (add-hook 'after-init-hook #'global-flycheck-mode)
+;; Enable globally
+(require 'flycheck)
+(add-hook 'after-init-hook #'global-flycheck-mode)
 
-  ;;;; Blog with org-mode (org-page)
-  ;;;;;;;;;;;;;;
-  ;; org-page ;;
-  ;;;;;;;;;;;;;;
-  ;; (require 'org-page)
-  ;; (setq op/repository-directory "~/wip/blog/") ;; the repository location
-  ;; (setq op/site-domain "http://xuchunyang.me") ;; your domain
-  ;; ;;; the configuration below you should choose one, not both
-  ;; (setq op/personal-disqus-shortname "xcysblog")    ;; your disqus commenting system
-  ;; (setq op/personal-google-analytics-id "UA-52627886-1")
-  ;; (setq op/personal-github-link "https://github.com/xuchunyang")
-  ;; (setq op/site-main-title "Chunyang Xu")
-  ;; (setq op/site-sub-title "")
+;;;; Blog with org-mode (org-page)
+;;;;;;;;;;;;;;
+;; org-page ;;
+;;;;;;;;;;;;;;
+;; (require 'org-page)
+;; (setq op/repository-directory "~/wip/blog/") ;; the repository location
+;; (setq op/site-domain "http://xuchunyang.me") ;; your domain
+;; ;;; the configuration below you should choose one, not both
+;; (setq op/personal-disqus-shortname "xcysblog")    ;; your disqus commenting system
+;; (setq op/personal-google-analytics-id "UA-52627886-1")
+;; (setq op/personal-github-link "https://github.com/xuchunyang")
+;; (setq op/site-main-title "Chunyang Xu")
+;; (setq op/site-sub-title "")
 
-  (setq user-mail-address "xuchunyang56@gmail.com")
-  (setq user-full-name "Chunyang Xu")
+(setq user-mail-address "xuchunyang56@gmail.com")
+(setq user-full-name "Chunyang Xu")
 
-  (add-hook 'text-mode-hook 'auto-fill-mode)
+(add-hook 'text-mode-hook 'auto-fill-mode)
 
-  ;; Example key binding
-  (setq osx-dictionary-use-chinese-text-segmentation t) ; Support Chinese word
-  (global-set-key (kbd "C-c d") 'osx-dictionary-search-pointer)
+;; Example key binding
+(setq osx-dictionary-use-chinese-text-segmentation t) ; Support Chinese word
+(global-set-key (kbd "C-c d") 'osx-dictionary-search-pointer)
 
-  ;; Work with popwin-el (https://github.com/m2ym/popwin-el)
-  ;; (push "*osx-dictionary*" popwin:special-display-config)
+;; Work with popwin-el (https://github.com/m2ym/popwin-el)
+;; (push "*osx-dictionary*" popwin:special-display-config)
 
-  ;;;; UI
-  ;;
-  ;; 1. Fonts (Both English and Chinese)
-  ;; 2. Color theme
-  ;; 3. Mode line
-  ;; 4. scroll bar
-  ;; 5. Git change notify (idea from git-gutter)
-  ;; 6. brackets/pairs:
-  ;;    - hightlight (show-paren-mode)
-  ;;    - Colorful by different level (rainbow-delimiters-mode)
-  ;; 7. Improve look of `dired-mode'
-  ;;
+;;;; UI
+;;
+;; 1. Fonts (Both English and Chinese)
+;; 2. Color theme
+;; 3. Mode line
+;; 4. scroll bar
+;; 5. Git change notify (idea from git-gutter)
+;; 6. brackets/pairs:
+;;    - hightlight (show-paren-mode)
+;;    - Colorful by different level (rainbow-delimiters-mode)
+;; 7. Improve look of `dired-mode'
+;;
 
-  (global-git-gutter-mode 1)
+(global-git-gutter-mode 1)
 
-  ;; Center text when only one window
-  ;; (when (require 'automargin nil t)
-  ;;   (automargin-mode 1))
+;; Center text when only one window
+;; (when (require 'automargin nil t)
+;;   (automargin-mode 1))
 
-  ;;;; Navigation (between windows, buffers/files, projects(folds))
-  ;;
-  ;; 1. open file (use helm)
-  ;;    - recent file
-  ;;    - file under current directory or in current project
-  ;;    - anyfile in my Computer
-  ;; 2. Switch between Windows
-  ;;    use <S-arror>
-  ;; 3. Switch between buffers
-  ;;    - use helm (helm-buffers-list, etc)
+;;;; Navigation (between windows, buffers/files, projects(folds))
+;;
+;; 1. open file (use helm)
+;;    - recent file
+;;    - file under current directory or in current project
+;;    - anyfile in my Computer
+;; 2. Switch between Windows
+;;    use <S-arror>
+;; 3. Switch between buffers
+;;    - use helm (helm-buffers-list, etc)
 
 
-  ;;;; Tools
-  ;;
-  ;; 1. dictionary tools
-  ;; 2. quickly compile & run, C/Elisp/shell/scheme, etc
-  ;; 3. use Git version within Emacs
-  ;; 4. on-the-fly Grammar check
-  ;;
+;;;; Tools
+;;
+;; 1. dictionary tools
+;; 2. quickly compile & run, C/Elisp/shell/scheme, etc
+;; 3. use Git version within Emacs
+;; 4. on-the-fly Grammar check
+;;
 
-  ;;;; Programming Language specified
-  ;;
-  ;; 1. C
-  ;; 2. Emacs Lisp
-  ;; 3. Others
-  ;;
+;;;; Programming Language specified
+;;
+;; 1. C
+;; 2. Emacs Lisp
+;; 3. Others
+;;
 
-  ;;;; org-mode (note taking, todo planing, and writing docs)
-  ;;
-  ;; 1. note
-  ;; 2. todo
-  ;; 3. Blogging
-  ;; 4. manage Emacs init files
-  ;;
+;;;; org-mode (note taking, todo planing, and writing docs)
+;;
+;; 1. note
+;; 2. todo
+;; 3. Blogging
+;; 4. manage Emacs init files
+;;
 
-  ;; Automatic resizing of Emacs windows to the golden ratio
-  ;; https://github.com/roman/golden-ratio.el
-  ;; (golden-ratio-mode 1)
+;; Automatic resizing of Emacs windows to the golden ratio
+;; https://github.com/roman/golden-ratio.el
+;; (golden-ratio-mode 1)
 
-  ;; Show org-mode bullets as UTF-8 characters.
-  ;; (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
+;; Show org-mode bullets as UTF-8 characters.
+;; (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 #+END_SRC
 * Navigation
 #+BEGIN_SRC emacs-lisp
@@ -765,6 +765,13 @@ in the mode-line in various search modes.
 (popwin-mode 1)
 #+END_SRC
 
+* Direx
+#+BEGIN_SRC emacs-lisp
+(push '(direx:direx-mode :position left :width 25 :dedicated t)
+      popwin:special-display-config)
+(global-set-key (kbd "C-x C-j") 'direx:jump-to-directory-other-window)
+#+END_SRC
+
 * Google Transpose
   #+BEGIN_SRC emacs-lisp
   (setq url-automatic-caching t)
@@ -828,7 +835,7 @@ in the mode-line in various search modes.
 ;; Change the keybinds to whatever you like :)
 (global-set-key (kbd "M-i") 'helm-swoop)
 (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+;; (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
 (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
 
 ;; When doing isearch, hand the word over to helm-swoop
@@ -887,12 +894,18 @@ in the mode-line in various search modes.
 Homepage: https://github.com/abo-abo/hydra
 
 #+BEGIN_SRC emacs-lisp
-;; (hydra-create "M-g"
-;;   '(("h" first-error "first")
-;;     ("j" next-error "next")
-;;     ("k" previous-error "prev")))
+(require 'hydra)
+
+(defhydra hydra-zoom (global-map "<f2>")
+  "zoom"
+  ("g" text-scale-increase "in")
+  ("l" text-scale-decrease "out"))
 #+END_SRC
 
+* Ace window
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "M-p") 'ace-window)
+#+END_SRC
 * C
   #+BEGIN_SRC emacs-lisp
   ;; (setq-default c-default-style "linux"
@@ -972,4 +985,47 @@ Homepage: https://github.com/abo-abo/hydra
 * expand-region -- increase selected region by semantic units.
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-=") 'er/expand-region)
+#+END_SRC
+
+* 拷贝 Mail 到系统自带的邮件客户端发送
+From emacsbug.el:
+
+#+BEGIN_SRC emacs-lisp
+(defun report-emacs-bug-can-use-osx-open ()
+  "Return non-nil if the OS X \"open\" command is available for mailing."
+  (and (featurep 'ns)
+       (equal (executable-find "open") "/usr/bin/open")
+       (memq system-type '(darwin))))
+
+(defun report-emacs-bug-insert-to-mailer ()
+  "Send the message to your preferred mail client.
+This requires either the OS X \"open\" command, or the freedesktop
+\"xdg-email\" command to be available."
+  (interactive)
+  (save-excursion
+    ;; FIXME? use mail-fetch-field?
+    (let* ((to (progn
+		 (goto-char (point-min))
+		 (forward-line)
+		 (and (looking-at "^To: \\(.*\\)")
+		      (match-string-no-properties 1))))
+	   (subject (progn
+		      (forward-line)
+		      (and (looking-at "^Subject: \\(.*\\)")
+			   (match-string-no-properties 1))))
+	   (body (progn
+		   (forward-line 2)
+		   (if (> (point-max) (point))
+		       (buffer-substring-no-properties (point) (point-max))))))
+      (if (and to subject body)
+	  (if (report-emacs-bug-can-use-osx-open)
+	      (start-process "/usr/bin/open" nil "open"
+			     (concat "mailto:" to
+				     "?subject=" (url-hexify-string subject)
+				     "&body=" (url-hexify-string body)))
+	    (start-process "xdg-email" nil "xdg-email"
+			   "--subject" subject
+			   "--body" body
+			   (concat "mailto:" to)))
+	(error "Subject, To or body not found")))))
 #+END_SRC
