@@ -635,6 +635,13 @@
   :init (projectile-global-mode)
   :diminish projectile-mode)
 
+(use-package helm-projectile
+  :ensure t
+  :defer t
+  :init (helm-projectile-on)
+  :config
+  (setq projectile-completion-system 'helm))
+
 (use-package paradox                    ; Better package menu
   :ensure t)
 
