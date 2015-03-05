@@ -200,35 +200,46 @@
 
 (use-package anzu                       ; Position/matches count for isearch
   :ensure t
-  :init (global-anzu-mode)
-  :config (setq anzu-cons-mode-line-p nil)
-  :diminish anzu-mode)
+  :init (global-anzu-mode +1)
+  :config
+  (progn
+    (set-face-attribute 'anzu-mode-line nil
+                        :foreground "yellow" :weight 'bold)
+    (custom-set-variables
+     '(anzu-mode-lighter "")
+     '(anzu-deactivate-region t)
+     '(anzu-search-threshold 1000)
+     '(anzu-replace-to-string-separator " => "))
+    (global-set-key (kbd "M-%") 'anzu-query-replace)
+    (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp)))
 
 
 ;;; The minibuffer
 (setq history-length 1000)              ; Store more history
 
 (use-package helm
-  :ensure t
+  ;; :ensure t
+  :load-path "~/wip/emacs-helm"         ; Use Git version
   :init
   (progn
     (require 'helm-config)
-    ;; helm prefix: "C-x c" => 'C-c h
-    (global-set-key (kbd "C-c h") 'helm-command-prefix)
-    (global-unset-key (kbd "C-x c"))
-
-    (global-set-key (kbd "C-x C-f") 'helm-find-files)
-    (global-set-key (kbd "M-x") 'helm-M-x)
-    (global-set-key (kbd "C-x b") 'helm-mini)
-    (global-set-key (kbd "M-l") 'helm-buffers-list)
-    (global-set-key (kbd "C-x f") 'helm-recentf)
-    (global-set-key (kbd "M-y") 'helm-show-kill-ring)
-    (global-set-key (kbd "C-c h o") 'helm-occur)
-
-    (helm-mode 1)))
+    (bind-key "C-c h" 'helm-command-prefix)
+    (unbind-key "C-x c")
+    (helm-mode))
+  :bind (("C-x b" . helm-mini)
+         ("M-l" . helm-buffers-list)
+         ("M-y" . helm-show-kill-ring)
+         ("M-x" . helm-M-x)
+         ("C-c h o" . helm-occur)
+         ("C-c h s" . helm-swoop)
+         ("C-h a" . helm-apropos))
+  :diminish helm-mode)
 
 
 ;;; Buffer, Windows and Frames
+(use-package popwin
+  :ensure t
+  :init (popwin-mode 1))
 
 (setq frame-resize-pixelwise t          ; Resize by pixels
       frame-title-format
@@ -246,13 +257,6 @@
 
 (use-package uniquify                   ; Make buffer names unique
   :config (setq uniquify-buffer-name-style 'forward))
-
-
-(use-package windmove                   ; Move between windows with Shift+Arrow
-  :bind (((kbd "S-<left>")  . windmove-left)
-         ((kbd "S-<right>") . windmove-right)
-         ((kbd "S-<up>")    . windmove-up)
-         ((kbd "S-<down>")  . windmove-down)))
 
 (use-package ace-window
   :ensure t
@@ -297,6 +301,13 @@
       ;; OS X bsdtar is mostly compatible with GNU Tar
       (setq dired-guess-shell-gnutar "tar")))
   :diminish ((dired-omit-mode . " ●")))
+
+(use-package direx
+  :ensure t
+  :bind ("C-x C-j" . direx:jump-to-directory-other-window)
+  :config
+  (push '(direx:direx-mode :position left :width 25 :dedicated t)
+        popwin:special-display-config))
 
 (use-package ignoramus                  ; Ignore uninteresting files everywhere
   :ensure t
@@ -435,7 +446,8 @@
 
 ;;; Skeletons, completion and expansion
 (use-package company                    ; Graphical (auto-)completion
-  :ensure t
+  ;; :ensure t
+  :load-path "~/wip/company-mode"
   :defer t
   :idle (global-company-mode)
   :config
@@ -449,29 +461,32 @@
   :diminish company-mode)
 
 (use-package company-quickhelp          ; Documentation popups for Company
+  :disabled t
   :ensure t
   :defer t
   :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode))
 
 
 ;;; Spelling and syntax checking
-;; (use-package ispell                     ; Spell checking
-;;   :defer t
-;;   :config
-;;   (progn
-;;     (setq ispell-program-name (if (eq system-type 'darwin)
-;;                                   (executable-find "aspell")
-;;                                 (executable-find "hunspell"))
-;;           ispell-dictionary "en_GB"     ; Default dictionnary
-;;           ispell-silently-savep t       ; Don't ask when saving the private dict
-;;           ;; Increase the height of the choices window to take our header line
-;;           ;; into account.
-;;           ispell-choices-win-default-height 5)
+(use-package ispell                     ; Spell checking
+  :disabled t
+  :defer t
+  :config
+  (progn
+    (setq ispell-program-name (if (eq system-type 'darwin)
+                                  (executable-find "aspell")
+                                (executable-find "hunspell"))
+          ispell-dictionary "en_GB"     ; Default dictionnary
+          ispell-silently-savep t       ; Don't ask when saving the private dict
+          ;; Increase the height of the choices window to take our header line
+          ;; into account.
+          ispell-choices-win-default-height 5)
 
-;;     (unless ispell-program-name
-;;       (warn "No spell checker available.  Install Hunspell or ASpell for OS X."))))
+    (unless ispell-program-name
+      (warn "No spell checker available.  Install Hunspell or ASpell for OS X."))))
 
 (use-package flyspell                   ; On-the-fly spell checking
+  :disabled t
   :bind (("C-c T s" . flyspell-mode))
   :init
   (progn
@@ -497,6 +512,7 @@
   :diminish flycheck-mode)
 
 (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
+  :disabled t
   :ensure t
   :defer t
   :init
@@ -552,11 +568,11 @@
                     inferior-emacs-lisp-mode-hook
                     clojure-mode-hook))
       (add-hook hook #'paredit-mode)))
-  :config
-  (progn
-    ;; Free M-s.  There are some useful bindings in that prefix map.
-    (define-key paredit-mode-map (kbd "M-s") nil)
-    (define-key paredit-mode-map (kbd "M-S-<up>") #'paredit-splice-sexp))
+  ;; :config
+  ;; (progn
+  ;;   ;; Free M-s.  There are some useful bindings in that prefix map.
+  ;;   (define-key paredit-mode-map (kbd "M-s") nil)
+  ;;   (define-key paredit-mode-map (kbd "M-S-<up>") #'paredit-splice-sexp))
   :diminish paredit-mode)
 
 
@@ -595,9 +611,7 @@
 
 (use-package magit                      ; The one and only Git frontend
   :ensure t
-  :bind (("C-x g"   . magit-status)
-         ("C-x v g" . magit-status)
-         ("C-x v v" . magit-status))
+  :bind ("C-x g"   . magit-status)
   :config
   (progn
     ;; Shut up, Magit!
@@ -625,9 +639,10 @@
   :ensure t)
 
 
-;;; Net & Web
+;;; Net & Web & Email
 (use-package weibo
-  :ensure t
+  ;; :ensure t
+  :load-path "~/repos/weibo.emacs"
   :config
   (setq weibo-consumer-key "3426280940"
         weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4"))
@@ -638,42 +653,63 @@
          ("C-c w S" . sx-tab-newest)
          ("C-c w a" . sx-ask)))
 
+(use-package mu4e
+  :load-path "/usr/local/share/emacs/site-lisp/mu4e"
+  :config
+  (progn
+    (setq mu4e-maildir "~/Maildir")
+    (setq mu4e-drafts-folder "/[Gmail].Drafts")
+    (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+    (setq mu4e-trash-folder  "/[Gmail].Trash")
+    (setq mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
+                                   ("/[Gmail].Sent Mail"   . ?s)
+                                   ("/[Gmail].Starred"     . ?r)
+                                   ("/[Gmail].Trash"       . ?t)
+                                   ("/[Gmail].All Mail"    . ?a)))
+    ;; allow for updating mail using 'U' in the main view:
+    (setq mu4e-get-mail-command "proxychains4 offlineimap"
+          mu4e-update-interval (* 18 60) ;; update every 30 minutes
+          )
+    ;; something about ourselves
+    (setq user-mail-address "xuchunyang56@gmail.com"
+          user-full-name  "Chunyang Xu"
+          mu4e-compose-signature "Chunyang Xu")
+    (setq mu4e-headers-skip-duplicates t)
+    (require 'org-mu4e)))
+
 
 ;;; Dictionary
 (use-package youdao-dictionary
   :ensure t
-  :bind (("C-c y" . youdao-dictionary-search-at-point)))
+  :bind (("C-c y" . youdao-dictionary-search-at-point))
+  :config
+  (push "*Youdao Dictionary*" popwin:special-display-config))
 
 (use-package osx-dictionary
   :ensure t
-  :bind (("C-c d" . osx-dictionary-search-pointer)))
+  :bind (("C-c d" . osx-dictionary-search-pointer))
+  :config
+  (push "*osx-dictionary*" popwin:special-display-config))
 
 
 ;;; Org-mode
-(use-package org-mode
-  :defer t
+(use-package org
+  :bind (("C-c a" . org-agenda)
+         ("C-c c" . org-capture)
+         ("C-c L" . org-store-link))
   :config
   (progn
-    (setq org-edit-src-content-indentation 0)
-
-    (setq org-default-notes-file "~/org/task.org")
-    (setq org-agenda-files `(,org-default-notes-file))
-    (setq org-capture-templates
-          '(("t" "Todo" entry (file+headline "~/org/task.org" "Tasks")
+    (setq org-default-notes-file "~/org/task.org"
+          org-agenda-files '("~/org/task.org")
+          org-capture-templates
+          `(("t" "Todo" entry (file+headline "~/org/task.org" "Tasks")
              "* TODO %?\n  %i\n%a")
             ("i" "Inbox" entry (file+headline "~/org/task.org" "Inbox")
              "* %?\n  %i\n%a")))
-
     (org-babel-do-load-languages 'org-babel-load-languages
                                  '((emacs-lisp . t)
                                    (sh . t)
-                                   (scheme . t)))
-
-    (setq org-confirm-babel-evaluate nil)
-
-    (global-set-key "\C-cl" 'org-store-link)
-    (global-set-key "\C-cc" 'org-capture)
-    (global-set-key "\C-ca" 'org-agenda)))
+                                   (scheme . t)))))
 
 ;; Local Variables:
 ;; coding: utf-8
