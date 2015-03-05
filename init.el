@@ -231,7 +231,6 @@
          ("M-y" . helm-show-kill-ring)
          ("M-x" . helm-M-x)
          ("C-c h o" . helm-occur)
-         ("C-c h s" . helm-swoop)
          ("C-h a" . helm-apropos))
   :diminish helm-mode)
 
@@ -413,6 +412,27 @@
 ;;; Search
 (use-package isearch                    ; Search buffers
   :bind (("C-c s s" . isearch-forward-symbol-at-point)))
+
+(use-package helm-swoop
+  :ensure t
+  :bind (("M-i" . helm-swoop)
+         ("M-I" . helm-swoop-back-to-last-point)
+         ("C-c M-i" . helm-multi-swoop)
+         ("C-c M-I" . helm-multi-swoop-all))
+  :config
+  (progn
+    ;; When doing isearch, hand the word over to helm-swoop
+    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+    ;; From helm-swoop to helm-multi-swoop-all
+    (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+    ;; Move up and down like isearch
+    (define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
+    (define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
+    (define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
+    (define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line)))
+
+(use-package pinyin-search
+  :ensure t)
 
 
 ;;; Highlights
