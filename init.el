@@ -804,6 +804,14 @@ mouse-3: go to end"))))
   (setq weibo-consumer-key "3426280940"
         weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4"))
 
+(use-package google-this
+  :ensure t
+  :diminish google-this-mode
+  :config
+  (progn
+    (global-set-key (kbd "C-c g") #'google-this-mode-submap)
+    (global-unset-key (kbd "C-c /"))))
+
 (use-package sx                         ; StackExchange client for Emacs
   :ensure t
   :bind (("C-c w s" . sx-tab-frontpage)
