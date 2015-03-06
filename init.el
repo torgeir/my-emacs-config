@@ -270,7 +270,6 @@ Homebrew: brew install trash")))
 (line-number-mode)
 (column-number-mode)
 
-
 (use-package anzu                       ; Position/matches count for isearch
   :ensure t
   :init (global-anzu-mode)
@@ -304,16 +303,17 @@ mouse-3: go to end"))))
 (setq history-length 1000)              ; Store more history
 
 (use-package helm
-  ;; :ensure t
-  :load-path "lisp/emacs-helm/"          ; Use Git version
-  :init
+  :ensure t
+  :defer t
+  :idle (helm-mode)
+  :config
   (progn
-    (require 'helm-config)
+    (use-package helm-config)
     (bind-key "C-c h" 'helm-command-prefix)
-    (unbind-key "C-x c")
-    (helm-mode))
+    (unbind-key "C-x c"))
   :bind (("C-x b" . helm-mini)
          ("C-x f" . helm-recentf)
+         ("C-x C-f" . helm-find-files)
          ("M-l" . helm-buffers-list)
          ("M-y" . helm-show-kill-ring)
          ("M-x" . helm-M-x)
@@ -323,7 +323,6 @@ mouse-3: go to end"))))
 
 
 ;;; Buffer, Windows and Frames
-
 
 (setq frame-resize-pixelwise t          ; Resize by pixels
       frame-title-format
@@ -369,7 +368,6 @@ mouse-3: go to end"))))
 
 
 ;;; File handling
-
 
 ;; Keep backup and auto save files out of the way
 (setq backup-directory-alist `((".*" . ,(locate-user-emacs-file ".backup")))
@@ -453,6 +451,10 @@ mouse-3: go to end"))))
 ;; automatic filling
 (setq-default fill-column 80)
 (add-hook 'text-mode-hook #'auto-fill-mode)
+
+(use-package chunyang-simple
+  :load-path "personal"
+  :bind (([remap split-window-right] . chunyang-split-window-right)))
 
 (use-package whitespace-cleanup-mode    ; Cleanup whitespace in buffers
   :ensure t
@@ -545,6 +547,7 @@ mouse-3: go to end"))))
   :diminish whitespace-mode)
 
 (use-package hl-line                    ; Highlight the current line
+  :disabled t
   :init (global-hl-line-mode 1))
 
 (use-package paren                      ; Highlight paired delimiters
@@ -560,17 +563,34 @@ mouse-3: go to end"))))
 
 
 ;;; Skeletons, completion and expansion
+
+;; In `completion-at-point', do not pop up silly completion buffers for less
+;; than five candidates.  Cycle instead.
+(setq completion-cycle-threshold 5)
+
+(use-package hippie-exp                 ; Powerful expansion and completion
+  :bind (([remap dabbrev-expand] . hippie-expand))
+  :config
+  (setq hippie-expand-try-functions-list
+        '(try-expand-dabbrev
+          try-expand-dabbrev-all-buffers
+          try-expand-dabbrev-from-kill
+          try-complete-file-name-partially
+          try-complete-file-name
+          try-expand-all-abbrevs
+          try-expand-list
+          try-complete-lisp-symbol-partially
+          try-complete-lisp-symbol)))
+
 (use-package company                    ; Graphical (auto-)completion
-  :load-path "lisp/company-mode/"
+  :ensure t
+  :defer t
   :diminish company-mode
-  :init (add-hook 'after-init-hook 'global-company-mode)
-  :bind (("M-/" . company-complete)
-         ("C-c n m" . global-company-mode))
+  :idle (global-company-mode)
   :config
   (progn
     ;; Use Company for completion
     (bind-key [remap completion-at-point] #'company-complete company-mode-map)
-
     (setq company-tooltip-align-annotations t
           ;; Easy navigation to candidates with M-<n>
           company-show-numbers t)))
@@ -590,7 +610,7 @@ mouse-3: go to end"))))
   :config (flyspell-mode 1))
 
 (use-package flycheck
-  :load-path "lisp/flycheck/"
+  :ensure t
   :diminish flycheck-mode
   :bind (("C-c n f" . global-flycheck-mode)
          ("C-c l e" . list-flycheck-errors))
@@ -677,7 +697,6 @@ mouse-3: go to end"))))
   :bind (("C-c T r" . rainbow-mode))
   :config (add-hook 'css-mode-hook #'rainbow-mode))
 
-
 
 ;;; Generic Lisp
 (use-package paredit                    ; Balanced sexp editing
@@ -733,7 +752,8 @@ mouse-3: go to end"))))
 
 (use-package magit                      ; The one and only Git frontend
   :ensure t
-  :bind ("C-x g"   . magit-status)
+  :defer t
+  :bind ("C-x g" . magit-status)
   :config
   (progn
     ;; Shut up, Magit!
@@ -776,7 +796,7 @@ mouse-3: go to end"))))
 (use-package helm-projectile
   :ensure t
   :defer t
-  :init (helm-projectile-on)
+  :idle (helm-projectile-on)
   :config
   (progn
     (setq projectile-completion-system 'helm)
@@ -793,13 +813,34 @@ mouse-3: go to end"))))
          ("C-c o p" . helm-open-github-from-pull-requests)))
 
 (use-package paradox                    ; Better package menu
-  :ensure t)
+  :ensure t
+  :bind (("C-c l p" . paradox-list-packages)
+         ("C-c l P" . package-list-packages-no-fetch))
+  :config
+  (setq paradox-github-token t
+        paradox-execute-asynchronously nil))
 
 
 ;;; Net & Web & Email
+(use-package eww                        ; Emacs' built-in web browser
+  :bind (("C-c w b" . eww-list-bookmarks)
+         ("C-c w w" . eww)))
+
+(use-package circe
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (load-file  "~/.private.el")
+    (setq circe-network-options
+          `(("Freenode"
+             :nick "chunyang"
+             :channels ("#emacs")
+             :nickserv-password ,freenode-password)))))
+
 (use-package weibo
-  ;; :ensure t
-  :load-path "lisp/weibo.emacs/"
+  :ensure t
+  :defer t
   :config
   (setq weibo-consumer-key "3426280940"
         weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4"))
@@ -820,40 +861,41 @@ mouse-3: go to end"))))
 
 (use-package mu4e
   :load-path "lisp/mu4e/"
+  :defer t
+  :idle (require 'org-mu4e)
   :config
   (progn
-    (setq mu4e-maildir "~/Maildir")
-    (setq mu4e-drafts-folder "/[Gmail].Drafts")
-    (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
-    (setq mu4e-trash-folder  "/[Gmail].Trash")
-    (setq mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
+    (setq mu4e-maildir "~/Maildir"
+          mu4e-drafts-folder "/[Gmail].Drafts"
+          mu4e-sent-folder   "/[Gmail].Sent Mail"
+          mu4e-trash-folder  "/[Gmail].Trash"
+          mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
                                    ("/[Gmail].Sent Mail"   . ?s)
                                    ("/[Gmail].Starred"     . ?r)
                                    ("/[Gmail].Trash"       . ?t)
-                                   ("/[Gmail].All Mail"    . ?a)))
-    ;; allow for updating mail using 'U' in the main view:
-    (setq mu4e-get-mail-command "proxychains4 offlineimap"
-          mu4e-update-interval (* 18 60) ;; update every 30 minutes
-          )
-    ;; something about ourselves
-    (setq user-mail-address "xuchunyang56@gmail.com"
+                                   ("/[Gmail].All Mail"    . ?a))
+          ;; allow for updating mail using 'U' in the main view:
+          mu4e-get-mail-command "proxychains4 offlineimap"
+          ;; update every 30 minutes
+          mu4e-update-interval (* 18 60)
+          ;; something about ourselves
+          user-mail-address "xuchunyang56@gmail.com"
           user-full-name  "Chunyang Xu"
-          mu4e-compose-signature "Chunyang Xu")
-    (setq mu4e-headers-skip-duplicates t)
-    ;; (require 'org-mu4e)
-    ))
-
+          mu4e-compose-signature "Chunyang Xu"
+          mu4e-headers-skip-duplicates t)))
 
 
 ;;; Dictionary
 (use-package youdao-dictionary
   :ensure t
+  :defer t
   :bind (("C-c y" . youdao-dictionary-search-at-point))
   :config
   (push "*Youdao Dictionary*" popwin:special-display-config))
 
 (use-package osx-dictionary
   :ensure t
+  :defer t
   :bind (("C-c d" . osx-dictionary-search-pointer))
   :config
   (push "*osx-dictionary*" popwin:special-display-config))
@@ -861,7 +903,7 @@ mouse-3: go to end"))))
 
 ;;; Org-mode
 (use-package org
-  :load-path "lisp/org-mode/lisp/"
+  :defer t
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          ("C-c L" . org-store-link))
@@ -889,7 +931,7 @@ mouse-3: go to end"))))
   (set-face-attribute 'Info-quoted nil :family 'unspecified
                       :inherit font-lock-type-face))
 
-(bind-key "C-c h b" #'describe-personal-keybindings)
+(bind-key "C-c h h" #'describe-personal-keybindings)
 
 ;; Local Variables:
 ;; coding: utf-8
