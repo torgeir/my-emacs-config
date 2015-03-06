@@ -3,7 +3,7 @@
 ;;; Copyright (C) 2015 Chunyang Xu <xuchunyang56@gmail.com>
 ;;
 ;; Author: Chunyang Xu <xuchunyang56@gmail.com>
-;; URL: https://gihub.com/xuchunyang/
+;; URL: https://gihub.com/xuchunyang/my-emacs-config
 ;; keywords: conventions
 
 ;; This file is not part of GNU Emacs.
@@ -55,7 +55,6 @@
 ;;; Requires
 
 (require 'subr-x)
-(require 'rx)
 (require 'time-date)
 
 
@@ -128,6 +127,17 @@
         mac-command-modifier 'meta
         mac-option-modifier 'control))
 
+(use-package lunaryorn-osx              ; Personal OS X tools
+  :if (eq system-type 'darwin)
+  :load-path "personal/"
+  :defines (lunaryorn-darwin-trash-tool)
+  :init
+  (if (executable-find lunaryorn-darwin-trash-tool)
+      (defalias 'system-move-file-to-trash 'lunaryorn-darwin-move-file-to-trash)
+    (warn "Trash support not available!
+Install Trash from https://github.com/ali-rantakari/trash!
+Homebrew: brew install trash")))
+
 
 ;;; User interface
 
@@ -148,6 +158,13 @@
 ;; Opt out from the startup message in the echo area by simply disabling this
 ;; ridiculously bizarre thing entirely.
 (fset 'display-startup-echo-area-message #'ignore)
+
+(use-package lunaryorn-scratch          ; My logo in the scratch buffer
+  :disabled t
+  :commands (lunaryorn-insert-logo
+             lunaryorn-insert-logo-into-scratch)
+  :init
+  (add-hook 'after-init-hook #'lunaryorn-insert-logo-into-scratch))
 
 (use-package dynamic-fonts              ; Select best available font
   :ensure t
@@ -191,27 +208,96 @@
 
     (dynamic-fonts-setup)))
 
+(use-package unicode-fonts              ; Map Unicode blocks to fonts
+  :ensure t
+  :init (unicode-fonts-setup))
+
+(use-package zenburn-theme
+  :ensure t
+  :defer t
+  :init (load-theme 'zenburn t))
+
 
 ;;; The mode line
+
+(setq-default header-line-format
+              '(which-func-mode ("" which-func-format " "))
+              mode-line-format
+              '("%e" mode-line-front-space
+                ;; Standard info about the current buffer
+                mode-line-mule-info
+                mode-line-client
+                mode-line-modified
+                mode-line-remote
+                mode-line-frame-identification
+                mode-line-buffer-identification " " mode-line-position
+                ;; Some specific information about the current buffer:
+                ;; - Paredit
+                ;; - Dired Omit Mode
+                ;; (paredit-mode (:propertize " ()" face bold))
+                ;; A little complicated, pending
+                ;; https://github.com/rolandwalker/ignoramus/pull/3
+                (dired-omit-mode (:eval (when (derived-mode-p 'dired-mode)
+                                          " ●")))
+                ;; Warn if whitespace isn't highlighted or cleaned in this
+                ;; buffer.
+                (:eval (unless buffer-read-only
+                         (cond
+                          ((not (bound-and-true-p whitespace-mode))
+                           (propertize " SPACE" 'face '(bold error)))
+                          ((not (bound-and-true-p whitespace-cleanup-mode))
+                           (propertize " WSC" 'face 'warning)))))
+                (projectile-mode projectile-mode-line)
+                (vc-mode vc-mode)
+                (flycheck-mode flycheck-mode-line) ; Flycheck status
+                (anzu-mode (:eval                  ; isearch pos/matches
+                            (when (> anzu--total-matched 0)
+                              (concat " " (anzu--update-mode-line)))))
+                (multiple-cursors-mode mc/mode-line) ; Number of cursors
+                ;; And the modes, which we don't really care for anyway
+                " " mode-line-misc-info mode-line-modes mode-line-end-spaces)
+              mode-line-remote
+              '(:eval
+                (when-let (host (file-remote-p default-directory 'host))
+                  (propertize (concat "@" host) 'face
+                              '(italic warning))))
+              ;; Remove which func from the mode line, since we have it in the
+              ;; header line
+              mode-line-misc-info
+              (assq-delete-all 'which-func-mode mode-line-misc-info))
 
 ;; Standard stuff
 (line-number-mode)
 (column-number-mode)
 
+
 (use-package anzu                       ; Position/matches count for isearch
   :ensure t
-  :init (global-anzu-mode +1)
+  :init (global-anzu-mode)
+  :config (setq anzu-cons-mode-line-p nil)
+  :diminish anzu-mode)
+
+(use-package which-func                 ; Current function name in header line
+  :defer t
+  :idle (which-function-mode)
+  :idle-priority 1
   :config
-  (progn
-    (set-face-attribute 'anzu-mode-line nil
-                        :foreground "yellow" :weight 'bold)
-    (custom-set-variables
-     '(anzu-mode-lighter "")
-     '(anzu-deactivate-region t)
-     '(anzu-search-threshold 1000)
-     '(anzu-replace-to-string-separator " => "))
-    (global-set-key (kbd "M-%") 'anzu-query-replace)
-    (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp)))
+  (setq which-func-unknown "⊥" ; The default is really boring…
+        which-func-format
+        `((:propertize (" ➤ " which-func-current)
+                       local-map ,which-func-keymap
+                       face which-func
+                       mouse-face mode-line-highlight
+                       help-echo "mouse-1: go to beginning\n\
+mouse-2: toggle rest visibility\n\
+mouse-3: go to end"))))
+
+(use-package fancy-battery              ; Fancy battery info for mode line
+  :disabled t
+  :ensure t
+  :defer t
+  :idle (fancy-battery-mode)
+  :idle-priority 10)
 
 
 ;;; The minibuffer
@@ -219,7 +305,7 @@
 
 (use-package helm
   ;; :ensure t
-  :load-path "~/wip/emacs-helm"         ; Use Git version
+  :load-path "lisp/emacs-helm/"          ; Use Git version
   :init
   (progn
     (require 'helm-config)
@@ -227,6 +313,7 @@
     (unbind-key "C-x c")
     (helm-mode))
   :bind (("C-x b" . helm-mini)
+         ("C-x f" . helm-recentf)
          ("M-l" . helm-buffers-list)
          ("M-y" . helm-show-kill-ring)
          ("M-x" . helm-M-x)
@@ -236,14 +323,16 @@
 
 
 ;;; Buffer, Windows and Frames
-(use-package popwin
-  :ensure t
-  :init (popwin-mode 1))
+
 
 (setq frame-resize-pixelwise t          ; Resize by pixels
       frame-title-format
       '(:eval (if (buffer-file-name)
                   (abbreviate-file-name (buffer-file-name)) "%b")))
+
+(use-package popwin
+  :ensure t
+  :init (popwin-mode 1))
 
 (use-package frame
   :bind (("C-c T F" . toggle-frame-fullscreen))
@@ -257,9 +346,12 @@
 (use-package uniquify                   ; Make buffer names unique
   :config (setq uniquify-buffer-name-style 'forward))
 
+(use-package ibuffer                    ; Better buffer list
+  :bind (([remap list-buffers] . ibuffer)))
+
 (use-package ace-window
   :ensure t
-  :bind (("M-p" . ace-window)))
+  :bind (("M-o" . ace-window)))
 
 (use-package desktop                    ; Save buffers, windows and frames
   :init (desktop-save-mode)
@@ -381,7 +473,10 @@
 
 (use-package nlinum                     ; Line numbers in display margin
   :ensure t
-  :bind (("C-c T l" . nlinum-mode)))
+  :bind (("C-c n l" . nlinum-mode)))
+
+(use-package writeroom-mode
+  :ensure t)
 
 
 ;;; Navigation and scrolling
@@ -466,10 +561,11 @@
 
 ;;; Skeletons, completion and expansion
 (use-package company                    ; Graphical (auto-)completion
-  ;; :ensure t
-  :load-path "~/wip/company-mode"
-  :defer t
-  :idle (global-company-mode)
+  :load-path "lisp/company-mode/"
+  :diminish company-mode
+  :init (add-hook 'after-init-hook 'global-company-mode)
+  :bind (("M-/" . company-complete)
+         ("C-c n m" . global-company-mode))
   :config
   (progn
     ;; Use Company for completion
@@ -477,8 +573,7 @@
 
     (setq company-tooltip-align-annotations t
           ;; Easy navigation to candidates with M-<n>
-          company-show-numbers t))
-  :diminish company-mode)
+          company-show-numbers t)))
 
 (use-package company-quickhelp          ; Documentation popups for Company
   :disabled t
@@ -488,51 +583,25 @@
 
 
 ;;; Spelling and syntax checking
-(use-package ispell                     ; Spell checking
-  :disabled t
-  :defer t
+(use-package flyspell
+  :diminish flyspell-mode
+  :bind (("C-c n s" . flyspell-mode)
+         ("C-c n c" . flyspell-prog-mode))
+  :config (flyspell-mode 1))
+
+(use-package flycheck
+  :load-path "lisp/flycheck/"
+  :diminish flycheck-mode
+  :bind (("C-c n f" . global-flycheck-mode)
+         ("C-c l e" . list-flycheck-errors))
+  :init (global-flycheck-mode 1)
   :config
   (progn
-    (setq ispell-program-name (if (eq system-type 'darwin)
-                                  (executable-find "aspell")
-                                (executable-find "hunspell"))
-          ispell-dictionary "en_GB"     ; Default dictionnary
-          ispell-silently-savep t       ; Don't ask when saving the private dict
-          ;; Increase the height of the choices window to take our header line
-          ;; into account.
-          ispell-choices-win-default-height 5)
-
-    (unless ispell-program-name
-      (warn "No spell checker available.  Install Hunspell or ASpell for OS X."))))
-
-(use-package flyspell                   ; On-the-fly spell checking
-  :disabled t
-  :bind (("C-c T s" . flyspell-mode))
-  :init
-  (progn
-    (dolist (hook '(text-mode-hook message-mode-hook))
-      (add-hook hook 'turn-on-flyspell))
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
-  :config
-  (progn
-    (setq flyspell-use-meta-tab nil
-          ;; Make Flyspell less chatty
-          flyspell-issue-welcome-flag nil
-          flyspell-issue-message-flag nil)
-
-    ;; Free C-M-i for completion
-    (define-key flyspell-mode-map "\M-\t" nil))
-  :diminish flyspell-mode)
-
-(use-package flycheck                   ; On-the-fly syntax checking
-  :ensure t
-  :bind (("C-c l e" . list-flycheck-errors)
-         ("C-c T f" . flycheck-mode))
-  ;; :init (global-flycheck-mode)
-  :diminish flycheck-mode)
+    (setq flycheck-command-map 'ido)
+    ;; Use italic face for checker name
+    (set-face-attribute 'flycheck-error-list-checker-name nil :inherit 'italic)))
 
 (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
-  :disabled t
   :ensure t
   :defer t
   :init
@@ -540,13 +609,14 @@
 
 
 ;;; Text editing
-;; (use-package typo
-;;   :ensure t
-;;   :bind (("C-c T t" . typo-mode))
-;;   :idle (typo-global-mode -1)
-;;   :init (dolist (hook '(markdown-mode-hook
-;;                         rst-mode-hook))
-;;           (add-hook hook 'typo-mode)))
+(use-package typo
+  :disabled t
+  :ensure t
+  :bind (("C-c T t" . typo-mode))
+  :idle (typo-global-mode -1)
+  :init (dolist (hook '(markdown-mode-hook
+                        rst-mode-hook))
+          (add-hook hook 'typo-mode)))
 
 
 ;;; Other markup languages
@@ -576,10 +646,43 @@
                                         ; error
           )))
 
+(use-package highlight-numbers          ; Fontify number literals
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'prog-mode-hook #'highlight-numbers-mode))
+
+(use-package highlight-symbol           ; Highlighting and commands for symbols
+  :ensure t
+  :defer t
+  :bind
+  (("C-c s %" . highlight-symbol-query-replace)
+   ("C-c s n" . highlight-symbol-next-in-defun)
+   ("C-c s o" . highlight-symbol-occur)
+   ("C-c s p" . highlight-symbol-prev-in-defun))
+  :init
+  (progn
+    ;; Navigate occurrences of the symbol under point with M-n and M-p
+    (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
+    ;; Highlight symbol occurrences
+    (add-hook 'prog-mode-hook #'highlight-symbol-mode))
+  :config
+  (setq highlight-symbol-idle-delay 0.4     ; Highlight almost immediately
+        highlight-symbol-on-navigation-p t) ; Highlight immediately after
+                                        ; navigation
+  :diminish highlight-symbol-mode)
+
+(use-package rainbow-mode               ; Fontify color values in code
+  :ensure t
+  :bind (("C-c T r" . rainbow-mode))
+  :config (add-hook 'css-mode-hook #'rainbow-mode))
+
+
 
 ;;; Generic Lisp
 (use-package paredit                    ; Balanced sexp editing
   :ensure t
+  :diminish paredit-mode
   :defer t
   :init
   (progn
@@ -588,12 +691,11 @@
                     inferior-emacs-lisp-mode-hook
                     clojure-mode-hook))
       (add-hook hook #'paredit-mode)))
-  ;; :config
-  ;; (progn
-  ;;   ;; Free M-s.  There are some useful bindings in that prefix map.
-  ;;   (define-key paredit-mode-map (kbd "M-s") nil)
-  ;;   (define-key paredit-mode-map (kbd "M-S-<up>") #'paredit-splice-sexp))
-  :diminish paredit-mode)
+  :config
+  (progn
+    ;; Free M-s.  There are some useful bindings in that prefix map.
+    (define-key paredit-mode-map (kbd "M-s") nil)
+    (define-key paredit-mode-map (kbd "M-s M-s") #'paredit-splice-sexp)))
 
 
 ;;; Emacs Lisp
@@ -647,6 +749,22 @@
     (magit-auto-revert-mode))
   :diminish magit-auto-revert-mode)
 
+(use-package git-commit-mode            ; Git commit message mode
+  :ensure t
+  :defer t)
+
+(use-package gitconfig-mode             ; Git configuration mode
+  :ensure t
+  :defer t)
+
+(use-package gitignore-mode             ; .gitignore mode
+  :ensure t
+  :defer t)
+
+(use-package git-timemachine            ; Go back in Git time
+  :ensure t
+  :bind (("C-c v t" . git-timemachine)))
+
 
 ;;; Tools and utilities
 (use-package projectile                 ; Project management
@@ -660,7 +778,19 @@
   :defer t
   :init (helm-projectile-on)
   :config
-  (setq projectile-completion-system 'helm))
+  (progn
+    (setq projectile-completion-system 'helm)
+    (use-package helm-ag
+      :ensure t)
+    (use-package helm-ack
+      :ensure t)))
+
+(use-package helm-open-github
+  :ensure t
+  :bind (("C-c o i" . helm-open-github-from-issues)
+         ("C-c o f" . helm-open-github-from-file)
+         ("C-c o c" . helm-open-github-from-commit)
+         ("C-c o p" . helm-open-github-from-pull-requests)))
 
 (use-package paradox                    ; Better package menu
   :ensure t)
@@ -669,7 +799,7 @@
 ;;; Net & Web & Email
 (use-package weibo
   ;; :ensure t
-  :load-path "~/repos/weibo.emacs"
+  :load-path "lisp/weibo.emacs/"
   :config
   (setq weibo-consumer-key "3426280940"
         weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4"))
@@ -681,7 +811,7 @@
          ("C-c w a" . sx-ask)))
 
 (use-package mu4e
-  :load-path "/usr/local/share/emacs/site-lisp/mu4e"
+  :load-path "lisp/mu4e/"
   :config
   (progn
     (setq mu4e-maildir "~/Maildir")
@@ -702,7 +832,9 @@
           user-full-name  "Chunyang Xu"
           mu4e-compose-signature "Chunyang Xu")
     (setq mu4e-headers-skip-duplicates t)
-    (require 'org-mu4e)))
+    ;; (require 'org-mu4e)
+    ))
+
 
 
 ;;; Dictionary
@@ -721,6 +853,7 @@
 
 ;;; Org-mode
 (use-package org
+  :load-path "lisp/org-mode/lisp/"
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          ("C-c L" . org-store-link))
@@ -737,6 +870,18 @@
                                  '((emacs-lisp . t)
                                    (sh . t)
                                    (scheme . t)))))
+
+
+;;; Online help
+(use-package info                       ; Info manual viewer
+  :defer t
+  :config
+  ;; Fix the stupid `Info-quoted' face.  Courier is an abysmal face, so go back
+  ;; to the default face.
+  (set-face-attribute 'Info-quoted nil :family 'unspecified
+                      :inherit font-lock-type-face))
+
+(bind-key "C-c h b" #'describe-personal-keybindings)
 
 ;; Local Variables:
 ;; coding: utf-8
