@@ -820,6 +820,13 @@ mouse-3: go to end"))))
   (setq paradox-github-token t
         paradox-execute-asynchronously nil))
 
+(use-package guide-key
+  :ensure t
+  :defer t
+  :idle (guide-key-mode 1)
+  :config
+  (setq guide-key/guide-key-sequence '("C-x r" "C-x 4")))
+
 
 ;;; Net & Web & Email
 (use-package eww                        ; Emacs' built-in web browser
