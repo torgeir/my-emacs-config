@@ -12,13 +12,22 @@
 (require 'helm)
 (require 'osx-dictionary)
 
-(defvar helm-dict--words-list-file
-  "~/wip/google-10000-english/google-10000-english.txt")
+(defconst helm-dict--words-list-file (locate-user-emacs-file
+                                      "var/google-10000-english.txt")
+  "The path to Englsih word list.")
 
-(defun helm-dict--read-lines (file)
+(defconst helm-dict--words-list-url
+  "https://github.com/first20hours/google-10000-english/raw/master/google-10000-english.txt"
+  "Most 10000 Common English Word list URL.
+from URL `https://github.com/first20hours/google-10000-english/'.")
+
+(defun helm-dict--read-word-list ()
   "Return a list of lines of a file at FILE."
   (with-temp-buffer
-    (insert-file-contents file)
+    (unless (file-exists-p helm-dict--words-list-file)
+      (url-copy-file helm-dict--words-list-url helm-dict--words-list-file
+                     nil 'keep-time))
+    (insert-file-contents helm-dict--words-list-file)
     (split-string (buffer-string) "\n" t)))
 
 ;;;###autoload
@@ -26,8 +35,7 @@
   "Helm interface for dictionary."
   (interactive)
   (helm :sources `((name . "English word")
-                   (candidates . ,(helm-dict--read-lines
-                                   helm-dict--words-list-file))
+                   (candidates . ,(helm-dict--read-word-list))
                    (action . (("Lookup with OS X Dictionary.app" .
                                (lambda (word)
                                  (osx-dictionary--view-result word)))
