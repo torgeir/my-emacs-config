@@ -220,8 +220,8 @@ Homebrew: brew install trash")))
 
 ;;; The mode line
 
-(setq-default header-line-format
-              '(which-func-mode ("" which-func-format " "))
+(setq-default ;; header-line-format
+              ;; '(which-func-mode ("" which-func-format " "))
               mode-line-format
               '("%e" mode-line-front-space
                 ;; Standard info about the current buffer
@@ -277,6 +277,7 @@ Homebrew: brew install trash")))
   :diminish anzu-mode)
 
 (use-package which-func                 ; Current function name in header line
+  :disabled t
   :defer t
   :idle (which-function-mode)
   :idle-priority 1
@@ -304,22 +305,20 @@ mouse-3: go to end"))))
 
 (use-package helm
   :ensure t
-  :defer t
-  :idle (helm-mode)
-  :config
+  :diminish helm-mode
+  :init
   (progn
     (use-package helm-config)
-    (bind-key "C-c h" 'helm-command-prefix)
-    (unbind-key "C-x c"))
-  :bind (("C-x b" . helm-mini)
-         ("C-x f" . helm-recentf)
-         ("C-x C-f" . helm-find-files)
-         ("M-l" . helm-buffers-list)
-         ("M-y" . helm-show-kill-ring)
-         ("M-x" . helm-M-x)
-         ("C-c h o" . helm-occur)
-         ("C-h a" . helm-apropos))
-  :diminish helm-mode)
+    (unbind-key "C-x c")
+    (bind-keys ("C-c h"   . helm-command-prefix)
+               ("C-x b"   . helm-mini)
+               ("C-x f"   . helm-recentf)
+               ("C-x C-f" . helm-find-files)
+               ("M-l"     . helm-buffers-list)
+               ("M-y"     . helm-show-kill-ring)
+               ("M-x"     . helm-M-x)
+               ("C-c h o" . helm-occur))
+    (helm-mode)))
 
 
 ;;; Buffer, Windows and Frames
@@ -380,6 +379,30 @@ mouse-3: go to end"))))
   (when-let (gnu-ls (and (eq system-type 'darwin) (executable-find "gls")))
     (setq insert-directory-program gnu-ls)))
 
+(use-package dired                      ; Edit directories
+  :defer t
+  :config
+  (progn
+    (require 'dired-x)
+
+    (setq dired-auto-revert-buffer t    ; Revert on re-visiting
+          ;; Better dired flags: `-l' is mandatory, `-a' shows all files, `-h'
+          ;; uses human-readable sizes, and `-F' appends file-type classifiers
+          ;; to file names (for better highlighting)
+          dired-listing-switches "-alhF"
+          dired-ls-F-marks-symlinks t   ; -F marks links with @
+          ;; Inhibit prompts for simple recursive operations
+          dired-recursive-copies 'always)
+
+    (when (or (memq system-type '(gnu gnu/linux))
+              (string= (file-name-nondirectory insert-directory-program) "gls"))
+      ;; If we are on a GNU system or have GNU ls, add some more `ls' switches:
+      ;; `--group-directories-first' lists directories before files, and `-v'
+      ;; sorts numbers in file names naturally, i.e. "image1" goes before
+      ;; "image02"
+      (setq dired-listing-switches
+            (concat dired-listing-switches " --group-directories-first -v")))))
+
 (use-package dired-x                    ; Additional tools for Dired
   :defer t
   :config
@@ -403,6 +426,11 @@ mouse-3: go to end"))))
   :defer t
   :idle (ignoramus-setup))
 
+(use-package bookmark                   ; Bookmarks for Emacs buffers
+  :bind (("C-c l b" . list-bookmarks))
+  ;; Save bookmarks immediately after a bookmark was added
+  :config (setq bookmark-save-flag 1))
+
 (use-package recentf                    ; Save recently visited files
   :defer t
   :idle (recentf-mode)
@@ -424,6 +452,25 @@ mouse-3: go to end"))))
 
 (use-package autorevert                 ; Auto-revert buffers of changed files
   :init (global-auto-revert-mode))
+
+(use-package launch                     ; Open files in external programs
+  :ensure t
+  :defer t
+  :idle (global-launch-mode))
+
+(use-package lunaryorn-files            ; Personal file tools
+  :load-path "personal/"
+  :bind (("C-c f D" . lunaryorn-delete-file-and-buffer)
+         ("C-c f i" . lunaryorn-find-user-init-file-other-window)
+         ("C-c f o" . lunaryorn-launch-dwim)
+         ("C-c f r" . lunaryorn-ido-find-recentf)
+         ("C-c f R" . lunaryorn-rename-file-and-buffer)
+         ("C-c f w" . lunaryorn-copy-filename-as-kill)))
+
+;;; Additional bindings for built-ins
+(bind-key "C-c f v d" #'add-dir-local-variable)
+(bind-key "C-c f v l" #'add-file-local-variable)
+(bind-key "C-c f v p" #'add-file-local-variable-prop-line)
 
 
 ;;; Basic editing
@@ -476,9 +523,6 @@ mouse-3: go to end"))))
 (use-package nlinum                     ; Line numbers in display margin
   :ensure t
   :bind (("C-c n l" . nlinum-mode)))
-
-(use-package writeroom-mode
-  :ensure t)
 
 
 ;;; Navigation and scrolling
@@ -825,7 +869,8 @@ mouse-3: go to end"))))
   :defer t
   :idle (guide-key-mode 1)
   :config
-  (setq guide-key/guide-key-sequence '("C-x r" "C-x 4")))
+  (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c h"))
+  :diminish guide-key-mode)
 
 
 ;;; Net & Web & Email
@@ -849,8 +894,10 @@ mouse-3: go to end"))))
   :ensure t
   :defer t
   :config
-  (setq weibo-consumer-key "3426280940"
-        weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4"))
+  (progn
+    (require 'weibo)
+    (setq weibo-consumer-key "3426280940"
+          weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4")))
 
 (use-package google-this
   :ensure t
