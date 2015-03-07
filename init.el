@@ -216,6 +216,7 @@ Homebrew: brew install trash")))
   :init (unicode-fonts-setup))
 
 (use-package zenburn-theme
+  :disabled t
   :ensure t
   :defer t
   :init (load-theme 'zenburn t))
@@ -512,15 +513,70 @@ mouse-3: go to end"))))
           (add-hook hook #'whitespace-cleanup-mode))
   :diminish whitespace-cleanup-mode)
 
+(use-package subword                    ; Subword/superword editing
+  :defer t
+  :diminish subword-mode)
+
+(use-package adaptive-wrap              ; Choose wrap prefix automatically
+  :ensure t
+  :defer t
+  :init (add-hook 'visual-line-mode-hook #'adaptive-wrap-prefix-mode))
+
+(use-package visual-fill-column
+  :ensure t
+  :defer t
+  :init (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
+  ;; Keep the fringe
+  :config (setq visual-fill-column-disable-fringe nil))
+
+(use-package visual-regexp              ; Regexp replace with in-buffer display
+  :disabled t
+  :ensure t
+  :bind (("C-c r" . vr/query-replace)
+         ("C-c R" . vr/replace)))
+
+(use-package zop-to-char
+  :disabled t
+  :ensure t
+  :bind (("M-z" . zop-to-char)
+         ("M-Z" . zop-up-to-char)))
+
+(use-package easy-kill                  ; Easy killing and marking on C-w
+  :disabled t
+  :ensure t
+  :bind (([remap kill-ring-save] . easy-kill)
+         ([remap mark-sexp]      . easy-mark)))
 
 (use-package align                      ; Align text in buffers
   :bind (("C-c A a" . align)
          ("C-c A c" . align-current)
          ("C-c A r" . align-regexp)))
 
+(use-package multiple-cursors           ; Edit text with multiple cursors
+  :ensure t
+  :bind (("C-c m e"   . mc/mark-more-like-this-extended)
+         ("C-c m h"   . mc/mark-all-like-this-dwim)
+         ("C-c m l"   . mc/edit-lines)
+         ("C-c m n"   . mc/mark-next-like-this)
+         ("C-c m p"   . mc/mark-previous-like-this)
+         ("C-c m r"   . vr/mc-mark)
+         ("C-c m C-a" . mc/edit-beginnings-of-lines)
+         ("C-c m C-e" . mc/edit-ends-of-lines)
+         ("C-c m C-s" . mc/mark-all-in-region))
+  :config
+  (setq mc/mode-line
+        ;; Simplify the MC mode line indicator
+        '(:propertize (:eval (concat " " (number-to-string (mc/num-cursors))))
+                      face font-lock-warning-face)))
+
 (use-package expand-region              ; Expand region by semantic units
   :ensure t
   :bind (("C-=" . er/expand-region)))
+
+(use-package undo-tree                  ; Branching undo
+  :ensure t
+  :init (global-undo-tree-mode)
+  :diminish undo-tree-mode)
 
 (use-package nlinum                     ; Line numbers in display margin
   :ensure t
@@ -555,6 +611,17 @@ mouse-3: go to end"))))
   :ensure t
   :init (global-page-break-lines-mode)
   :diminish page-break-lines-mode)
+
+(use-package outline                    ; Navigate outlines in buffers
+  :defer t
+  :init (dolist (hook '(text-mode-hook prog-mode-hook))
+          (add-hook hook #'outline-minor-mode))
+  :diminish outline-minor-mode)
+
+(use-package imenu-anywhere             ; IDO-based imenu across open buffers
+  :disabled t
+  :ensure t
+  :bind (("C-c i" . imenu-anywhere)))
 
 
 ;;; Search
@@ -1032,7 +1099,7 @@ Frames: _f_rame new  _df_ delete
 (use-package helm-dict
   :load-path "personal/"
   ;; TODO: how to add new key to a existing prefix keymap?
-  :bind ("C-c h d" . helm-dict))
+  :bind ("M-4" . helm-dict))
 
 
 ;;; Org-mode
