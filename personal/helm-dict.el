@@ -11,6 +11,7 @@
 
 (require 'helm)
 (require 'osx-dictionary)
+(require 'youdao-dictionary)
 
 (defconst helm-dict--words-list-file (locate-user-emacs-file
                                       "var/google-10000-english.txt")
@@ -31,9 +32,10 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
     (split-string (buffer-string) "\n" t)))
 
 ;;;###autoload
-(defun helm-dict ()
-  "Helm interface for dictionary."
-  (interactive)
+(defun helm-dict (&optional arg)
+  "Helm interface for dictionary.
+If ARG is non-nil, don't any input."
+  (interactive "P")
   (helm :sources `((name . "English word")
                    (candidates . ,(helm-dict--read-word-list))
                    (action . (("Lookup with OS X Dictionary.app" .
@@ -42,7 +44,9 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
                               ("Lookup with Youdao Dictionary" .
                                (lambda (word)
                                  (youdao-dictionary--search-and-show-in-buffer
-                                  word))))))))
+                                  word))))))
+        :input (when (null arg)
+                 (youdao-dictionary--region-or-word))))
 
 (provide 'helm-dict)
 ;;; helm-dict.el ends here

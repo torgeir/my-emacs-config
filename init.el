@@ -1027,6 +1027,11 @@ Frames: _f_rame new  _df_ delete
   :config
   (push "*osx-dictionary*" popwin:special-display-config))
 
+(use-package helm-dict
+  :load-path "personal/"
+  ;; TODO: how to add new key to a existing prefix keymap?
+  :bind ("C-c h d" . helm-dict))
+
 
 ;;; Org-mode
 (use-package org
