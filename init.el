@@ -27,6 +27,9 @@
 
 ;; Emacs configuration inspired by https://gihub.com/lunaryorn/.emacs.d
 
+;; TODO:
+;; - [ ] send email (proxy problem, use external tool to handle this)
+
 ;;; Code:
 
 ;;; Debugging
@@ -463,7 +466,6 @@ mouse-3: go to end"))))
   :bind (("C-c f D" . lunaryorn-delete-file-and-buffer)
          ("C-c f i" . lunaryorn-find-user-init-file-other-window)
          ("C-c f o" . lunaryorn-launch-dwim)
-         ("C-c f r" . lunaryorn-ido-find-recentf)
          ("C-c f R" . lunaryorn-rename-file-and-buffer)
          ("C-c f w" . lunaryorn-copy-filename-as-kill)))
 

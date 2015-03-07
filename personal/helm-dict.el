@@ -7,6 +7,14 @@
 
 ;;; Commentary:
 
+;; TODO:
+;; - [ ] Support Chinese to English (try to use input method?
+;; - [ ] Save word (use one helm action)
+;; - [ ] Show word details (fetch from Youdao?)
+;; - [ ] Support more dictionary for a better default result (e.g., command line
+;;       tool fanyi - 金山词霸的例句)
+;; - [ ] (?) Use Server to let apps outside Emacs to use this dictionary too
+
 ;;; Code:
 
 (require 'helm)
