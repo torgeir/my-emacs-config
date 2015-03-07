@@ -810,9 +810,7 @@ mouse-3: go to end"))))
           magit-stage-all-confirm nil
           magit-unstage-all-confirm nil
           ;; Except when you ask something useful…
-          magit-set-upstream-on-push t
-          ;; Use IDO for completion
-          magit-completing-read-function #'magit-ido-completing-read)
+          magit-set-upstream-on-push t)
 
     ;; Auto-revert files after Magit operations
     (magit-auto-revert-mode))
@@ -1018,7 +1016,9 @@ Frames: _f_rame new  _df_ delete
   :defer t
   :bind (("C-c y" . youdao-dictionary-search-at-point))
   :config
-  (push "*Youdao Dictionary*" popwin:special-display-config))
+  (progn
+    (setq url-automatic-caching t)
+    (push "*Youdao Dictionary*" popwin:special-display-config)))
 
 (use-package osx-dictionary
   :ensure t
