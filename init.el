@@ -524,6 +524,11 @@ mouse-3: go to end"))))
   :ensure t
   :bind (("C-c n l" . nlinum-mode)))
 
+;; Give us narrowing back!
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-defun 'disabled nil)
+
 
 ;;; Navigation and scrolling
 (setq scroll-margin 0                   ; Drag the point along while scrolling
@@ -872,11 +877,79 @@ mouse-3: go to end"))))
   (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c h"))
   :diminish guide-key-mode)
 
+(use-package hydra
+  :ensure t
+  :config
+  (progn
+    ;; Page navigation
+    (defhydra hydra-page (ctl-x-map "" :pre (widen))
+      "page"
+      ("]" forward-page "next")
+      ("[" backward-page "prev")
+      ("n" narrow-to-page "narrow" :bind nil :exit t))
+    ;; Goto Line
+    (defhydra hydra-goto-line (goto-map ""
+                                        :pre (linum-mode 1)
+                                        :post (linum-mode -1))
+      "goto-line"
+      ("g" goto-line "go")
+      ("m" set-mark-command "mark" :bind nil)
+      ("q" nil "quit"))
+    ;; Moving Text
+    (use-package move-text
+      :ensure t
+      :config (move-text-default-bindings)) ; M-<up> M-<down> to move line up/down
+    (defhydra hydra-move-text ()
+      "Move text"
+      ("u" move-text-up "up")
+      ("d" move-text-down "down"))
+    (defhydra hydra-window (:color pink)
+      "
+ Split: _v_ert _x_:horz
+Delete: _o_nly  _da_ce  _dw_indow  _db_uffer  _df_rame
+  Move: _s_wap
+Frames: _f_rame new  _df_ delete
+  Misc: _m_ark _a_ce  _u_ndo  _r_edo"
+      ("h" windmove-left nil)
+      ("j" windmove-down nil)
+      ("k" windmove-up nil)
+      ("l" windmove-right nil)
+      ("H" hydra-move-splitter-left nil)
+      ("J" hydra-move-splitter-down nil)
+      ("K" hydra-move-splitter-up nil)
+      ("L" hydra-move-splitter-right nil)
+      ("|" (lambda ()
+             (interactive)
+             (split-window-right)
+             (windmove-right)) nil)
+      ("_" (lambda ()
+             (interactive)
+             (split-window-below)
+             (windmove-down)) nil)
+      ("v" split-window-right nil)
+      ("x" split-window-below nil)
+                                        ;("t" transpose-frame "'")
+      ("u" winner-undo nil)
+      ("r" winner-redo nil) ;;Fixme, not working?
+      ("o" delete-other-windows nil :exit t)
+      ("a" ace-window nil :exit t)
+      ("f" new-frame nil :exit t)
+      ("s" ace-swap-window nil)
+      ("da" ace-delete-window nil)
+      ("dw" delete-window nil)
+      ("db" kill-this-buffer nil)
+      ("df" delete-frame nil :exit t)
+      ("q" nil nil)
+                                        ;("i" ace-maximize-window "ace-one" :color blue)
+                                        ;("b" ido-switch-buffer "buf")
+      ("m" headlong-bookmark-jump nil))
+    (bind-key "C-c w w" #'hydra-window/body)))
+
 
 ;;; Net & Web & Email
 (use-package eww                        ; Emacs' built-in web browser
   :bind (("C-c w b" . eww-list-bookmarks)
-         ("C-c w w" . eww)))
+         ("C-c w W" . eww)))
 
 (use-package circe
   :ensure t
