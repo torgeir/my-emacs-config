@@ -14,7 +14,7 @@
 ;; - [ ] Support more dictionary for a better default result (e.g., command line
 ;;       tool fanyi - 金山词霸的例句)
 ;; - [ ] (?) Use Server to let apps outside Emacs to use this dictionary too
-;; - [ ] ignore case (Server v.s. server) when filtering English word
+;; - [x] ignore case (Server v.s. server) when filtering English word
 ;; - [ ] Get input anyway even if there is no candidates (also try to expand
 ;;       candidates)
 
@@ -42,8 +42,10 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
     (insert-file-contents helm-dict--words-list-file)
     (split-string (buffer-string) "\n" t)))
 
+(defvar helm-dict--lookup-history nil)
+
 ;;;###autoload
-(defun helm-dict (&optional arg)
+(defun helm-dict (arg)
   "Helm interface for dictionary.
 If ARG is non-nil, don't any input."
   (interactive "P")
@@ -56,8 +58,11 @@ If ARG is non-nil, don't any input."
                                (lambda (word)
                                  (youdao-dictionary--search-and-show-in-buffer
                                   word))))))
-        :input (when (null arg)
-                 (youdao-dictionary--region-or-word))))
+        :input (unless arg (youdao-dictionary--region-or-word))
+        :history 'helm-dict--lookup-history
+        :case-fold-search t
+        :prompt "Lookup: "
+        :buffer "*Helm Lookup words*"))
 
 (provide 'helm-dict)
 ;;; helm-dict.el ends here

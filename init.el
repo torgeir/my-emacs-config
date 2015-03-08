@@ -831,7 +831,8 @@ mouse-3: go to end"))))
   (progn
     ;; Free M-s.  There are some useful bindings in that prefix map.
     (define-key paredit-mode-map (kbd "M-s") nil)
-    (define-key paredit-mode-map (kbd "M-s M-s") #'paredit-splice-sexp)))
+    (define-key paredit-mode-map (kbd "M-s M-s") #'paredit-splice-sexp)
+    (unbind-key "C-j" paredit-mode-map)))
 
 
 ;;; Emacs Lisp
