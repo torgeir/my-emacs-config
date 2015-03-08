@@ -216,7 +216,6 @@ Homebrew: brew install trash")))
   :init (unicode-fonts-setup))
 
 (use-package zenburn-theme
-  :disabled t
   :ensure t
   :defer t
   :init (load-theme 'zenburn t))
@@ -542,7 +541,6 @@ mouse-3: go to end"))))
          ("M-Z" . zop-up-to-char)))
 
 (use-package easy-kill                  ; Easy killing and marking on C-w
-  :disabled t
   :ensure t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp]      . easy-mark)))
@@ -553,6 +551,7 @@ mouse-3: go to end"))))
          ("C-c A r" . align-regexp)))
 
 (use-package multiple-cursors           ; Edit text with multiple cursors
+  :disabled t
   :ensure t
   :bind (("C-c m e"   . mc/mark-more-like-this-extended)
          ("C-c m h"   . mc/mark-all-like-this-dwim)
@@ -570,6 +569,7 @@ mouse-3: go to end"))))
                       face font-lock-warning-face)))
 
 (use-package expand-region              ; Expand region by semantic units
+  :disabled t
   :ensure t
   :bind (("C-=" . er/expand-region)))
 
@@ -618,10 +618,9 @@ mouse-3: go to end"))))
           (add-hook hook #'outline-minor-mode))
   :diminish outline-minor-mode)
 
-(use-package imenu-anywhere             ; IDO-based imenu across open buffers
-  :disabled t
+(use-package imenu-anywhere             ; Helm-based imenu across open buffers
   :ensure t
-  :bind (("C-c i" . imenu-anywhere)))
+  :bind (("C-c i" . helm-imenu-anywhere)))
 
 
 ;;; Search
