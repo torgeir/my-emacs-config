@@ -14,6 +14,9 @@
 ;; - [ ] Support more dictionary for a better default result (e.g., command line
 ;;       tool fanyi - 金山词霸的例句)
 ;; - [ ] (?) Use Server to let apps outside Emacs to use this dictionary too
+;; - [ ] ignore case (Server v.s. server) when filtering English word
+;; - [ ] Get input anyway even if there is no candidates (also try to expand
+;;       candidates)
 
 ;;; Code:
 
