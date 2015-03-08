@@ -307,7 +307,7 @@ mouse-3: go to end"))))
 (setq history-length 1000)              ; Store more history
 
 (use-package helm
-  :ensure t
+  :load-path "~/wip/emacs-helm"
   :diminish helm-mode
   :init
   (progn
