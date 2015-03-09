@@ -15,7 +15,7 @@
 ;;       tool fanyi - 金山词霸的例句)
 ;; - [ ] (?) Use Server to let apps outside Emacs to use this dictionary too
 ;; - [x] ignore case (Server v.s. server) when filtering English word
-;; - [ ] Get input anyway even if there is no candidates (also try to expand
+;; - [x] Get input anyway even if there is no candidates (also try to expand
 ;;       candidates)
 
 ;;; Code:
@@ -42,6 +42,29 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
     (insert-file-contents helm-dict--words-list-file)
     (split-string (buffer-string) "\n" t)))
 
+
+;;; Helm related
+(defvar helm-dict--word-list
+  (helm-dict--read-word-list))
+
+(defvar helm-dict--word-source
+  `((name . "English word")
+    (candidates . ,helm-dict--word-list)
+    (action . (("Lookup with OS X Dictionary.app" .
+                (lambda (word) (osx-dictionary--view-result word)))
+               ("Lookup with Youdao Dictionary" .
+                (lambda (word) (youdao-dictionary--search-and-show-in-buffer
+                                word)))))))
+
+(defvar helm-dict--not-found-source
+  '((name . "fallback")
+    (dummy)
+    (action . (("Lookup with OS X Dictionary.app" .
+                (lambda (word) (osx-dictionary--view-result word)))
+               ("Lookup with Youdao Dictionary" .
+                (lambda (word) (youdao-dictionary--search-and-show-in-buffer
+                                word)))))))
+
 (defvar helm-dict--lookup-history nil)
 
 ;;;###autoload
@@ -49,15 +72,7 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
   "Helm interface for dictionary.
 If ARG is non-nil, don't any input."
   (interactive "P")
-  (helm :sources `((name . "English word")
-                   (candidates . ,(helm-dict--read-word-list))
-                   (action . (("Lookup with OS X Dictionary.app" .
-                               (lambda (word)
-                                 (osx-dictionary--view-result word)))
-                              ("Lookup with Youdao Dictionary" .
-                               (lambda (word)
-                                 (youdao-dictionary--search-and-show-in-buffer
-                                  word))))))
+  (helm :sources '(helm-dict--word-source helm-dict--not-found-source)
         :input (unless arg (youdao-dictionary--region-or-word))
         :history 'helm-dict--lookup-history
         :case-fold-search t
