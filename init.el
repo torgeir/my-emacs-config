@@ -569,7 +569,6 @@ mouse-3: go to end"))))
                       face font-lock-warning-face)))
 
 (use-package expand-region              ; Expand region by semantic units
-  :disabled t
   :ensure t
   :bind (("C-=" . er/expand-region)))
 
@@ -635,6 +634,7 @@ mouse-3: go to end"))))
          ("C-c M-I" . helm-multi-swoop-all))
   :config
   (progn
+    (setq helm-swoop-speed-or-color t)
     ;; When doing isearch, hand the word over to helm-swoop
     (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
     ;; From helm-swoop to helm-multi-swoop-all
@@ -1027,7 +1027,7 @@ Frames: _f_rame new  _df_ delete
     (setq circe-network-options
           `(("Freenode"
              :nick "chunyang"
-             :channels ("#emacs")
+             :channels ("#emacs", "#MacPorts")
              :nickserv-password ,freenode-password)))))
 
 (use-package weibo
