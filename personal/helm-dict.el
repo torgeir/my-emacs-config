@@ -9,7 +9,7 @@
 
 ;; TODO:
 ;; - [ ] Support Chinese to English (try to use input method?
-;; - [ ] Save word (use one helm action)
+;; - [ ] Save word (use one helm action), 单词本、搜索记录、词汇本等等
 ;; - [ ] Show word details (fetch from Youdao?)
 ;; - [ ] Support more dictionary for a better default result (e.g., command line
 ;;       tool fanyi - 金山词霸的例句)
