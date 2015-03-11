@@ -17,6 +17,7 @@
 ;; - [x] ignore case (Server v.s. server) when filtering English word
 ;; - [x] Get input anyway even if there is no candidates (also try to expand
 ;;       candidates)
+;; - [ ] highlighting matched pattern in helm buffer
 
 ;;; Code:
 

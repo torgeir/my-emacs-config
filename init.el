@@ -82,27 +82,7 @@
   :ensure t
   :if (and (eq system-type 'darwin) (display-graphic-p))
   :init
-  (progn
-    (when (string-match-p "/zsh$" (getenv "SHELL"))
-      ;; Use a non-interactive shell.  We use a login shell, even though we have
-      ;; our paths setup in .zshenv.  However, OS X adds global settings to the
-      ;; login profile.  Notably, this affects /usr/texbin from MacTeX
-      (setq exec-path-from-shell-arguments '("-l")))
-
-    (dolist (var '("EMAIL" "PYTHONPATH" "INFOPATH"))
-      (add-to-list 'exec-path-from-shell-variables var))
-
-    (exec-path-from-shell-initialize)
-
-    (setq user-mail-address (getenv "EMAIL"))
-
-    ;; Re-initialize the `Info-directory-list' from $INFOPATH.  Since package.el
-    ;; already initializes info, we need to explicitly add the $INFOPATH
-    ;; directories to `Info-directory-list'.
-    (with-eval-after-load 'info
-      (dolist (dir (parse-colon-path (getenv "INFOPATH")))
-        (when dir
-          (add-to-list 'Info-directory-list dir))))))
+  (exec-path-from-shell-initialize))
 
 
 ;;; Customization interface
@@ -131,6 +111,7 @@
         mac-option-modifier 'control))
 
 (use-package lunaryorn-osx              ; Personal OS X tools
+  :disabled t
   :if (eq system-type 'darwin)
   :load-path "personal/"
   :defines (lunaryorn-darwin-trash-tool)
@@ -307,7 +288,8 @@ mouse-3: go to end"))))
 (setq history-length 1000)              ; Store more history
 
 (use-package helm
-  :load-path "~/wip/emacs-helm"
+  ;; :load-path "~/wip/emacs-helm"
+  :ensure t
   :diminish helm-mode
   :init
   (progn
@@ -928,6 +910,10 @@ mouse-3: go to end"))))
          ("C-c o c" . helm-open-github-from-commit)
          ("C-c o p" . helm-open-github-from-pull-requests)))
 
+(use-package helm-github-stars
+  :load-path "~/wip/helm-github-stars"
+  :config (setq helm-github-stars-username "xuchunyang"))
+
 (use-package paradox                    ; Better package menu
   :ensure t
   :bind (("C-c l p" . paradox-list-packages)
@@ -1012,6 +998,17 @@ Frames: _f_rame new  _df_ delete
       ("m" headlong-bookmark-jump nil))
     (bind-key "C-c w w" #'hydra-window/body)))
 
+(use-package chinese-pyim
+  :disabled t
+  :load-path "~/wip/chinese-pyim"
+  :init
+  (progn
+    (require 'chinese-pyim)
+    (setq default-input-method "chinese-pyim")
+    (setq
+     pyim-dicts
+     '((:name "dict1" :file "~/wip/chinese-pyim/pyim-bigdict.txt" :coding utf-8-unix)))))
+
 
 ;;; Net & Web & Email
 (use-package eww                        ; Emacs' built-in web browser
@@ -1036,8 +1033,7 @@ Frames: _f_rame new  _df_ delete
   :config
   (progn
     (require 'weibo)
-    (setq weibo-consumer-key "3426280940"
-          weibo-consumer-secret "9de89c9ef2caf54fc32246885a33bcb4")))
+    (load-file "~/.private.el")))
 
 (use-package google-this
   :ensure t
