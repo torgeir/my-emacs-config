@@ -48,23 +48,22 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
 (defvar helm-dict--word-list
   (helm-dict--read-word-list))
 
+(defvar helm-dict-actions
+  '(("Lookup with OS X Dictionary.app" . (lambda (candidates)
+                                           (osx-dictionary--view-result candidates)))
+    ("Lookup with Youdao Dictionary" . (lambda (candidates)
+                                         (youdao-dictionary--search-and-show-in-buffer
+                                          candidates)))))
 (defvar helm-dict--word-source
   (helm-build-in-buffer-source "English word"
     :init (lambda ()
             (with-current-buffer (helm-candidate-buffer 'local)
               (insert-file-contents helm-dict--words-list-file)))
-    :action '(("Lookup with OS X Dictionary.app" . (lambda (candidates)
-                                                     (osx-dictionary--view-result candidates)))
-              ("Lookup with Youdao Dictionary" . (lambda (candidates)
-                                                   (youdao-dictionary--search-and-show-in-buffer
-                                                    candidates))))))
+    :action helm-dict-actions))
+
 (defvar helm-dict--not-found-source
   (helm-build-dummy-source "Fallback"
-    :action '(("Lookup with OS X Dictionary.app" . (lambda (candidates)
-                                                     (osx-dictionary--view-result candidates)))
-              ("Lookup with Youdao Dictionary" . (lambda (candidates)
-                                                   (youdao-dictionary--search-and-show-in-buffer
-                                                    candidates))))))
+    :action helm-dict-actions))
 
 (defvar helm-dict--lookup-history nil)
 
