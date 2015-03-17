@@ -13,6 +13,7 @@
 ;;       (using Unicode number, or even Github icon?
 ;; - [ ] Set up at timer (must to be a minor mode? there are must some other way
 ;;       to do this)
+;; - [ ] Parse JSON with pure ELisp
 
 ;;; Code:
 

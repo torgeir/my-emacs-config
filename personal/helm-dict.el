@@ -49,22 +49,22 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
   (helm-dict--read-word-list))
 
 (defvar helm-dict--word-source
-  `((name . "English word")
-    (candidates . ,helm-dict--word-list)
-    (action . (("Lookup with OS X Dictionary.app" .
-                (lambda (word) (osx-dictionary--view-result word)))
-               ("Lookup with Youdao Dictionary" .
-                (lambda (word) (youdao-dictionary--search-and-show-in-buffer
-                                word)))))))
-
+  (helm-build-in-buffer-source "English word"
+    :init (lambda ()
+            (with-current-buffer (helm-candidate-buffer 'local)
+              (insert-file-contents helm-dict--words-list-file)))
+    :action '(("Lookup with OS X Dictionary.app" . (lambda (candidates)
+                                                     (osx-dictionary--view-result candidates)))
+              ("Lookup with Youdao Dictionary" . (lambda (candidates)
+                                                   (youdao-dictionary--search-and-show-in-buffer
+                                                    candidates))))))
 (defvar helm-dict--not-found-source
-  '((name . "fallback")
-    (dummy)
-    (action . (("Lookup with OS X Dictionary.app" .
-                (lambda (word) (osx-dictionary--view-result word)))
-               ("Lookup with Youdao Dictionary" .
-                (lambda (word) (youdao-dictionary--search-and-show-in-buffer
-                                word)))))))
+  (helm-build-dummy-source "Fallback"
+    :action '(("Lookup with OS X Dictionary.app" . (lambda (candidates)
+                                                     (osx-dictionary--view-result candidates)))
+              ("Lookup with Youdao Dictionary" . (lambda (candidates)
+                                                   (youdao-dictionary--search-and-show-in-buffer
+                                                    candidates))))))
 
 (defvar helm-dict--lookup-history nil)
 

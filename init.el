@@ -47,12 +47,9 @@
 
 (package-initialize)
 
-;; Bootstrap `use-package'
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
+(add-to-list 'load-path "~/repos/use-package/")
 (require 'use-package)
+(require 'bind-key)
 
 
 ;;; Requires
@@ -82,7 +79,9 @@
   :ensure t
   :if (and (eq system-type 'darwin) (display-graphic-p))
   :init
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "LANG")
+  (exec-path-from-shell-copy-env "INFOPATH"))
 
 
 ;;; Customization interface
@@ -197,6 +196,7 @@ Homebrew: brew install trash")))
   :init (unicode-fonts-setup))
 
 (use-package zenburn-theme
+  :disabled nil
   :ensure t
   :defer t
   :init (load-theme 'zenburn t))
@@ -204,8 +204,8 @@ Homebrew: brew install trash")))
 
 ;;; The mode line
 
-(setq-default ;; header-line-format
-              ;; '(which-func-mode ("" which-func-format " "))
+(setq-default header-line-format
+              '(which-func-mode ("" which-func-format " "))
               mode-line-format
               '("%e" mode-line-front-space
                 ;; Standard info about the current buffer
@@ -261,7 +261,7 @@ Homebrew: brew install trash")))
   :diminish anzu-mode)
 
 (use-package which-func                 ; Current function name in header line
-  :disabled t
+  :disabled nil
   :defer t
   :idle (which-function-mode)
   :idle-priority 1
@@ -718,7 +718,9 @@ mouse-3: go to end"))))
   (progn
     (setq flycheck-command-map 'ido)
     ;; Use italic face for checker name
-    (set-face-attribute 'flycheck-error-list-checker-name nil :inherit 'italic)))
+    (set-face-attribute 'flycheck-error-list-checker-name nil :inherit 'italic)
+    (eval-after-load 'flycheck
+      '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))))
 
 (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
   :ensure t
@@ -912,7 +914,8 @@ mouse-3: go to end"))))
 
 (use-package helm-github-stars
   :load-path "~/wip/helm-github-stars"
-  :config (setq helm-github-stars-username "xuchunyang"))
+  :config (setq helm-github-stars-username "xuchunyang"
+                helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"))
 
 (use-package paradox                    ; Better package menu
   :ensure t
@@ -1097,10 +1100,17 @@ Frames: _f_rame new  _df_ delete
   ;; TODO: how to add new key to a existing prefix keymap?
   :bind ("M-4" . helm-dict))
 
+(use-package langtool
+  :ensure t
+  :config
+  (progn
+    (setq langtool-language-tool-jar
+          "~/Downloads/LanguageTool-2.8/languagetool-commandline.jar")
+    (setq langtool-mother-tongue "en")))
+
 
 ;;; Org-mode
 (use-package org
-  :defer t
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          ("C-c L" . org-store-link))

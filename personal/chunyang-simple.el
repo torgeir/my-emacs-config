@@ -8,8 +8,7 @@
 (defun chunyang-split-window-right ()
   "Split window with another buffer."
   (interactive)
-  (split-window-right)
-  (other-window 1)
+  (select-window (split-window-right))
   (switch-to-buffer (other-buffer)))
 
 (provide 'chunyang-simple)
