@@ -387,6 +387,10 @@ mouse-3: go to end"))))
   (push '(direx:direx-mode :position left :width 25 :dedicated t)
         popwin:special-display-config))
 
+(use-package neotree
+  :ensure t
+  :bind (("C-x C-j" . neotree-toggle)))
+
 (use-package bookmark                   ; Bookmarks for Emacs buffers
   :bind (("C-c l b" . list-bookmarks))
   ;; Save bookmarks immediately after a bookmark was added
