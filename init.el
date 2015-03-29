@@ -35,6 +35,13 @@
 ;;; Debugging
 (setq message-log-max 10000)
 
+;; (setq debug-on-error t)
+
+(defconst emacs-start-time (current-time))
+
+(unless noninteractive
+  (message "Loading %s..." load-file-name))
+
 
 ;;; Package management
 
@@ -47,9 +54,10 @@
 
 (package-initialize)
 
-(add-to-list 'load-path "~/repos/use-package/")
-(require 'use-package)
-(require 'bind-key)
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
 
 
 ;;; Requires
@@ -67,7 +75,7 @@
 
 ;; Warn if the current build is more than a week old
 (run-with-idle-timer
- 2 nil
+ 9 nil
  (lambda ()
    (let ((time-since-build (time-subtract (current-time) emacs-build-time)))
      (when (> (time-to-number-of-days time-since-build) 7)
@@ -77,8 +85,8 @@
 ;;; Environment fixup
 (use-package exec-path-from-shell
   :ensure t
-  :if (and (eq system-type 'darwin) (display-graphic-p))
-  :init
+  :if (eq system-type 'darwin)
+  :config
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "LANG")
   (exec-path-from-shell-copy-env "INFOPATH"))
@@ -89,7 +97,6 @@
   "File used to store settings from Customization UI.")
 
 (use-package cus-edit
-  :defer t
   :config
   (setq custom-file chunyang-custom-file
         custom-buffer-done-kill nil               ; Kill when existing
@@ -102,7 +109,6 @@
 
 ;;; OS X support
 (use-package ns-win                     ; OS X window support
-  :defer t
   :if (eq system-type 'darwin)
   :config
   (setq ns-pop-up-frames nil            ; Don't pop up new frames from the workspace
@@ -114,7 +120,7 @@
   :if (eq system-type 'darwin)
   :load-path "personal/"
   :defines (lunaryorn-darwin-trash-tool)
-  :init
+  :config
   (if (executable-find lunaryorn-darwin-trash-tool)
       (defalias 'system-move-file-to-trash 'lunaryorn-darwin-move-file-to-trash)
     (warn "Trash support not available!
@@ -146,59 +152,57 @@ Homebrew: brew install trash")))
   :disabled t
   :commands (lunaryorn-insert-logo
              lunaryorn-insert-logo-into-scratch)
-  :init
+  :config
   (add-hook 'after-init-hook #'lunaryorn-insert-logo-into-scratch))
 
 (use-package dynamic-fonts              ; Select best available font
   :ensure t
-  :init
-  (progn
-    (setq dynamic-fonts-preferred-monospace-fonts
-          '(
-            ;; Best fonts
-            "Source Code Pro"   ; https://github.com/adobe-fonts/source-code-pro
-            "Anonymous Pro" ; http://www.marksimonson.com/fonts/view/anonymous-pro
-            ;; Consolas and its free alternative.  Ok, but not my preference
-            "Inconsolata"
-            "Consolas"
-            ;; Also still kind of ok
-            "Fira Mono"
-            ;; System fonts, as last resort
-            "Menlo"
-            "DejaVu Sans Mono"
-            "Bitstream Vera Mono"
-            "Courier New")
-          dynamic-fonts-preferred-monospace-point-size (pcase system-type
-                                                         (`darwin 13)
-                                                         (_ 10))
-          dynamic-fonts-preferred-proportional-fonts
-          '(
-            ;; Best, from
-            ;; https://www.mozilla.org/en-US/styleguide/products/firefox-os/typeface/
-            "Fira Sans"
-            ;; System fonts, as last resort
-            "Helvetica"
-            "Segoe UI"
-            "DejaVu Sans"
-            "Bitstream Vera"
-            "Tahoma"
-            "Verdana"
-            "Arial Unicode MS"
-            "Arial")
-          dynamic-fonts-preferred-proportional-point-size (pcase system-type
-                                                            (`darwin 13)
-                                                            (_ 10)))
-
-    (dynamic-fonts-setup)))
+  :config
+  (setq dynamic-fonts-preferred-monospace-fonts
+        '(
+          ;; Best fonts
+          "Source Code Pro"     ; https://github.com/adobe-fonts/source-code-pro
+          "Anonymous Pro" ; http://www.marksimonson.com/fonts/view/anonymous-pro
+          ;; Consolas and its free alternative.  Ok, but not my preference
+          "Inconsolata"
+          "Consolas"
+          ;; Also still kind of ok
+          "Fira Mono"
+          ;; System fonts, as last resort
+          "Menlo"
+          "DejaVu Sans Mono"
+          "Bitstream Vera Mono"
+          "Courier New")
+        dynamic-fonts-preferred-monospace-point-size (pcase system-type
+                                                       (`darwin 13)
+                                                       (_ 10))
+        dynamic-fonts-preferred-proportional-fonts
+        '(
+          ;; Best, from
+          ;; https://www.mozilla.org/en-US/styleguide/products/firefox-os/typeface/
+          "Fira Sans"
+          ;; System fonts, as last resort
+          "Helvetica"
+          "Segoe UI"
+          "DejaVu Sans"
+          "Bitstream Vera"
+          "Tahoma"
+          "Verdana"
+          "Arial Unicode MS"
+          "Arial")
+        dynamic-fonts-preferred-proportional-point-size (pcase system-type
+                                                          (`darwin 13)
+                                                          (_ 10)))
+  (dynamic-fonts-setup))
 
 (use-package unicode-fonts              ; Map Unicode blocks to fonts
+  :disabled t
   :ensure t
-  :init (unicode-fonts-setup))
+  :config (unicode-fonts-setup))
 
 (use-package zenburn-theme
   :disabled nil
   :ensure t
-  :defer t
   :init (load-theme 'zenburn t))
 
 
@@ -217,20 +221,7 @@ Homebrew: brew install trash")))
                 mode-line-buffer-identification " " mode-line-position
                 ;; Some specific information about the current buffer:
                 ;; - Paredit
-                ;; - Dired Omit Mode
                 ;; (paredit-mode (:propertize " ()" face bold))
-                ;; A little complicated, pending
-                ;; https://github.com/rolandwalker/ignoramus/pull/3
-                (dired-omit-mode (:eval (when (derived-mode-p 'dired-mode)
-                                          " ●")))
-                ;; Warn if whitespace isn't highlighted or cleaned in this
-                ;; buffer.
-                (:eval (unless buffer-read-only
-                         (cond
-                          ((not (bound-and-true-p whitespace-mode))
-                           (propertize " SPACE" 'face '(bold error)))
-                          ((not (bound-and-true-p whitespace-cleanup-mode))
-                           (propertize " WSC" 'face 'warning)))))
                 (projectile-mode projectile-mode-line)
                 (vc-mode vc-mode)
                 (flycheck-mode flycheck-mode-line) ; Flycheck status
@@ -256,16 +247,15 @@ Homebrew: brew install trash")))
 
 (use-package anzu                       ; Position/matches count for isearch
   :ensure t
-  :init (global-anzu-mode)
-  :config (setq anzu-cons-mode-line-p nil)
+  :defer 15
+  :config
+  (setq anzu-cons-mode-line-p nil)
+  (global-anzu-mode)
   :diminish anzu-mode)
 
 (use-package which-func                 ; Current function name in header line
-  :disabled nil
-  :defer t
-  :idle (which-function-mode)
-  :idle-priority 1
   :config
+  (which-function-mode)
   (setq which-func-unknown "⊥" ; The default is really boring…
         which-func-format
         `((:propertize (" ➤ " which-func-current)
@@ -278,10 +268,7 @@ mouse-3: go to end"))))
 
 (use-package fancy-battery              ; Fancy battery info for mode line
   :disabled t
-  :ensure t
-  :defer t
-  :idle (fancy-battery-mode)
-  :idle-priority 10)
+  :ensure t)
 
 
 ;;; The minibuffer
@@ -291,19 +278,46 @@ mouse-3: go to end"))))
   ;; :load-path "~/wip/emacs-helm"
   :ensure t
   :diminish helm-mode
-  :init
-  (progn
-    (use-package helm-config)
-    (unbind-key "C-x c")
-    (bind-keys ("C-c h"   . helm-command-prefix)
-               ("C-x b"   . helm-mini)
-               ("C-x f"   . helm-recentf)
-               ("C-x C-f" . helm-find-files)
-               ("M-l"     . helm-buffers-list)
-               ("M-y"     . helm-show-kill-ring)
-               ("M-x"     . helm-M-x)
-               ("C-c h o" . helm-occur))
-    (helm-mode)))
+  :config
+  (use-package helm-config)
+  (unbind-key "C-x c")
+  (bind-keys ("C-c h"   . helm-command-prefix)
+             ("C-x b"   . helm-mini)
+             ("C-x f"   . helm-recentf)
+             ("C-x C-f" . helm-find-files)
+             ("M-l"     . helm-buffers-list)
+             ("M-y"     . helm-show-kill-ring)
+             ("M-x"     . helm-M-x)
+             ("C-c h o" . helm-occur))
+  (helm-mode))
+
+(use-package ido
+  :disabled t
+  :config
+  (ido-mode 1)
+  (use-package ido-vertical-mode
+    :ensure t
+    :config
+    (ido-vertical-mode)
+    (setq ido-enable-prefix nil
+          ido-enable-flex-matching t
+          ido-case-fold t                       ;; ignore case
+          ido-auto-merge-work-directories-length -1 ;; disable auto-merge (it's confusing)
+          ido-create-new-buffer 'always             ;; create new files easily
+          ido-use-filename-at-point nil ;; don't try to be smart about what I want
+          )
+    ;; I like visual matching (colors)
+    (setq ido-use-faces t)))
+
+(use-package smex
+  :disabled t
+  :ensure t
+  :config
+  (smex-initialize)
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+  ;; This is your old M-x.
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command))
 
 
 ;;; Buffer, Windows and Frames
@@ -315,16 +329,15 @@ mouse-3: go to end"))))
 
 (use-package popwin
   :ensure t
-  :init (popwin-mode 1))
+  :config (popwin-mode 1))
 
 (use-package frame
   :bind (("C-c T F" . toggle-frame-fullscreen))
-  :init
-  (progn
-    ;; Kill `suspend-frame'
-    (global-set-key (kbd "C-z") nil)
-    (global-set-key (kbd "C-x C-z") nil))
-  :config (add-to-list 'initial-frame-alist '(fullscreen . maximized)))
+  :config
+  ;; Kill `suspend-frame'
+  (global-set-key (kbd "C-z") nil)
+  (global-set-key (kbd "C-x C-z") nil)
+  (add-to-list 'initial-frame-alist '(fullscreen . maximized)))
 
 (use-package uniquify                   ; Make buffer names unique
   :config (setq uniquify-buffer-name-style 'forward))
@@ -337,14 +350,8 @@ mouse-3: go to end"))))
   :bind (("M-o" . ace-window)))
 
 (use-package desktop                    ; Save buffers, windows and frames
-  :init (desktop-save-mode)
-  :config (progn
-            ;; Don't autosave desktops, it's too expensive.  Desktops aren't
-            ;; that precious, and Emacs will save the desktop on exit anyway.
-            (setq desktop-auto-save-timeout nil)
-
-            (dolist (mode '(magit-mode git-commit-mode))
-              (add-to-list 'desktop-modes-not-to-save mode))))
+  :config
+  (desktop-save-mode))
 
 (use-package writeroom-mode             ; Distraction-free editing
   :ensure t
@@ -365,51 +372,20 @@ mouse-3: go to end"))))
     (setq insert-directory-program gnu-ls)))
 
 (use-package dired                      ; Edit directories
-  :defer t
   :config
-  (progn
-    (require 'dired-x)
-
-    (setq dired-auto-revert-buffer t    ; Revert on re-visiting
-          ;; Better dired flags: `-l' is mandatory, `-a' shows all files, `-h'
-          ;; uses human-readable sizes, and `-F' appends file-type classifiers
-          ;; to file names (for better highlighting)
-          dired-listing-switches "-alhF"
-          dired-ls-F-marks-symlinks t   ; -F marks links with @
-          ;; Inhibit prompts for simple recursive operations
-          dired-recursive-copies 'always)
-
-    (when (or (memq system-type '(gnu gnu/linux))
-              (string= (file-name-nondirectory insert-directory-program) "gls"))
-      ;; If we are on a GNU system or have GNU ls, add some more `ls' switches:
-      ;; `--group-directories-first' lists directories before files, and `-v'
-      ;; sorts numbers in file names naturally, i.e. "image1" goes before
-      ;; "image02"
-      (setq dired-listing-switches
-            (concat dired-listing-switches " --group-directories-first -v")))))
-
-(use-package dired-x                    ; Additional tools for Dired
-  :defer t
-  :config
-  (progn
-    (setq dired-omit-verbose nil)        ; Shut up, dired
-
-    (when (eq system-type 'darwin)
-      ;; OS X bsdtar is mostly compatible with GNU Tar
-      (setq dired-guess-shell-gnutar "tar")))
-  :diminish ((dired-omit-mode . " ●")))
+  (use-package dired-x
+    :diminish dired-omit-mode
+    :config
+    (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
+    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))))
 
 (use-package direx
+  :disabled t
   :ensure t
-  :bind ("C-x C-j" . direx:jump-to-directory-other-window)
+  :bind (("C-x C-j" . direx:jump-to-directory-other-window))
   :config
   (push '(direx:direx-mode :position left :width 25 :dedicated t)
         popwin:special-display-config))
-
-(use-package ignoramus                  ; Ignore uninteresting files everywhere
-  :ensure t
-  :defer t
-  :idle (ignoramus-setup))
 
 (use-package bookmark                   ; Bookmarks for Emacs buffers
   :bind (("C-c l b" . list-bookmarks))
@@ -417,8 +393,6 @@ mouse-3: go to end"))))
   :config (setq bookmark-save-flag 1))
 
 (use-package recentf                    ; Save recently visited files
-  :defer t
-  :idle (recentf-mode)
   :config
   (setq recentf-max-saved-items 200
         recentf-max-menu-items 15
@@ -427,21 +401,21 @@ mouse-3: go to end"))))
         ;; idles often enough to have the recent files list clean up regularly
         recentf-auto-cleanup 300
         recentf-exclude (list "/\\.git/.*\\'" ; Git contents
-                              "/elpa/.*\\'" ; Package files
-                              "/itsalltext/" ; It's all text temp files
+                              "/elpa/.*\\'"   ; Package files
+                              "/itsalltext/"  ; It's all text temp files
                               ;; And all other kinds of boring files
-                              #'ignoramus-boring-p)))
+                              #'ignoramus-boring-p))
+  (recentf-mode))
 
 (use-package saveplace                  ; Save point position in files
   :config (setq-default save-place t))
 
 (use-package autorevert                 ; Auto-revert buffers of changed files
-  :init (global-auto-revert-mode))
+  :config (global-auto-revert-mode))
 
 (use-package launch                     ; Open files in external programs
   :ensure t
-  :defer t
-  :idle (global-launch-mode))
+  :config (global-launch-mode))
 
 (use-package lunaryorn-files            ; Personal file tools
   :load-path "personal/"
@@ -464,10 +438,10 @@ mouse-3: go to end"))))
               tab-width 8)
 
 (use-package electric                   ; Electric code layout
-  :init (electric-layout-mode))
+  :config (electric-layout-mode))
 
 (use-package elec-pair                  ; Electric pairs
-  :init (electric-pair-mode))
+  :config (electric-pair-mode))
 
 ;; Indicate empty lines at the end of a buffer in the fringe, but require a
 ;; final new line
@@ -490,25 +464,23 @@ mouse-3: go to end"))))
 (use-package whitespace-cleanup-mode    ; Cleanup whitespace in buffers
   :ensure t
   :bind (("C-c T W" . whitespace-cleanup-mode))
-  :init (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
+  :config (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
           (add-hook hook #'whitespace-cleanup-mode))
   :diminish whitespace-cleanup-mode)
 
 (use-package subword                    ; Subword/superword editing
-  :defer t
   :diminish subword-mode)
 
 (use-package adaptive-wrap              ; Choose wrap prefix automatically
   :ensure t
-  :defer t
-  :init (add-hook 'visual-line-mode-hook #'adaptive-wrap-prefix-mode))
+  :config (add-hook 'visual-line-mode-hook #'adaptive-wrap-prefix-mode))
 
 (use-package visual-fill-column
   :ensure t
-  :defer t
-  :init (add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
   ;; Keep the fringe
-  :config (setq visual-fill-column-disable-fringe nil))
+  :config
+  (setq visual-fill-column-disable-fringe nil)
+  (add-hook 'visual-line-mode-hook #'visual-fill-column-mode))
 
 (use-package visual-regexp              ; Regexp replace with in-buffer display
   :disabled t
@@ -556,7 +528,9 @@ mouse-3: go to end"))))
 
 (use-package undo-tree                  ; Branching undo
   :ensure t
-  :init (global-undo-tree-mode)
+  :disabled t
+  :commands undo-tree-mode
+  :config (global-undo-tree-mode)
   :diminish undo-tree-mode)
 
 (use-package nlinum                     ; Line numbers in display margin
@@ -590,12 +564,11 @@ mouse-3: go to end"))))
 
 (use-package page-break-lines           ; Turn page breaks into lines
   :ensure t
-  :init (global-page-break-lines-mode)
+  :config (global-page-break-lines-mode)
   :diminish page-break-lines-mode)
 
 (use-package outline                    ; Navigate outlines in buffers
-  :defer t
-  :init (dolist (hook '(text-mode-hook prog-mode-hook))
+  :config (dolist (hook '(text-mode-hook prog-mode-hook))
           (add-hook hook #'outline-minor-mode))
   :diminish outline-minor-mode)
 
@@ -615,17 +588,16 @@ mouse-3: go to end"))))
          ("C-c M-i" . helm-multi-swoop)
          ("C-c M-I" . helm-multi-swoop-all))
   :config
-  (progn
-    (setq helm-swoop-speed-or-color t)
-    ;; When doing isearch, hand the word over to helm-swoop
-    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-    ;; From helm-swoop to helm-multi-swoop-all
-    (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-    ;; Move up and down like isearch
-    (define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
-    (define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
-    (define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
-    (define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line)))
+  (setq helm-swoop-speed-or-color t)
+  ;; When doing isearch, hand the word over to helm-swoop
+  (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+  ;; From helm-swoop to helm-multi-swoop-all
+  (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+  ;; Move up and down like isearch
+  (define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
+  (define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
+  (define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
+  (define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line))
 
 (use-package pinyin-search
   :ensure t)
@@ -634,10 +606,9 @@ mouse-3: go to end"))))
 ;;; Highlights
 (use-package whitespace                 ; Highlight bad whitespace
   :bind (("C-c T w" . whitespace-mode))
-  :init
+  :config
   (dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
     (add-hook hook #'whitespace-mode))
-  :config
   ;; Highlight tabs, empty lines at beg/end, trailing whitespaces and overlong
   ;; portions of lines via faces.  Also indicate tabs via characters
   (setq whitespace-style '(face indentation space-after-tab space-before-tab
@@ -645,20 +616,21 @@ mouse-3: go to end"))))
         whitespace-line-column nil)     ; Use `fill-column' for overlong lines
   :diminish whitespace-mode)
 
-(use-package hl-line                    ; Highlight the current line
-  :disabled t
-  :init (global-hl-line-mode 1))
+(use-package hl-line
+  :commands hl-line-mode
+  :bind (("C-c C-l" . hl-line-mode))
+  :config
+  (use-package hl-line+
+    :ensure t))
 
 (use-package paren                      ; Highlight paired delimiters
-  :init (show-paren-mode)
-  :config (setq show-paren-when-point-inside-paren t
-                show-paren-when-point-in-periphery t))
+  :config
+  (show-paren-mode 1))
 
 (use-package rainbow-delimiters         ; Highlight delimiters by depth
   :ensure t
-  :defer t
-  :init (dolist (hook '(text-mode-hook prog-mode-hook))
-          (add-hook hook #'rainbow-delimiters-mode)))
+  :config (dolist (hook '(text-mode-hook prog-mode-hook))
+            (add-hook hook #'rainbow-delimiters-mode)))
 
 
 ;;; Skeletons, completion and expansion
@@ -683,73 +655,55 @@ mouse-3: go to end"))))
 
 (use-package company                    ; Graphical (auto-)completion
   :ensure t
-  :defer t
   :diminish company-mode
-  :idle (global-company-mode)
   :config
-  (progn
-    ;; Use Company for completion
-    (bind-key [remap completion-at-point] #'company-complete company-mode-map)
-    (setq company-tooltip-align-annotations t
-          ;; Easy navigation to candidates with M-<n>
-          company-show-numbers t)))
+  ;; Use Company for completion
+  (bind-key [remap completion-at-point] #'company-complete company-mode-map)
+  (setq company-tooltip-align-annotations t
+        ;; Easy navigation to candidates with M-<n>
+        company-show-numbers t)
+  (global-company-mode))
 
 (use-package company-quickhelp          ; Documentation popups for Company
   :disabled t
   :ensure t
-  :defer t
-  :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode))
+  :config (add-hook 'global-company-mode-hook #'company-quickhelp-mode))
 
 
 ;;; Spelling and syntax checking
 (use-package flyspell
   :diminish flyspell-mode
   :bind (("C-c n s" . flyspell-mode)
-         ("C-c n c" . flyspell-prog-mode))
-  :config (flyspell-mode 1))
+         ("C-c n c" . flyspell-prog-mode)))
 
 (use-package flycheck
   :ensure t
   :diminish flycheck-mode
   :bind (("C-c n f" . global-flycheck-mode)
-         ("C-c l e" . list-flycheck-errors))
-  :init (global-flycheck-mode 1)
-  :config
-  (progn
-    (setq flycheck-command-map 'ido)
-    ;; Use italic face for checker name
-    (set-face-attribute 'flycheck-error-list-checker-name nil :inherit 'italic)
-    (eval-after-load 'flycheck
-      '(add-hook 'flycheck-mode-hook #'flycheck-cask-setup))))
+         ("C-c l e" . list-flycheck-errors)))
 
 (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
+  :disabled t
   :ensure t
-  :defer t
-  :init
+  :config
   (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
 
 
 ;;; Text editing
 (use-package typo
   :disabled t
-  :ensure t
-  :bind (("C-c T t" . typo-mode))
-  :idle (typo-global-mode -1)
-  :init (dolist (hook '(markdown-mode-hook
-                        rst-mode-hook))
-          (add-hook hook 'typo-mode)))
+  :ensure t)
 
 
 ;;; Other markup languages
-(use-package markdown-mode              ; Markdown
+(use-package markdown-mode
   :ensure t
-  ;; Use GFM Mode for Markdown files from It's All Text.  It's better for most
-  ;; sites to not add hard line breaks to content.
-  :mode ("/itsalltext/.*\\.md\\'" . gfm-mode))
+  :mode (("\\`README\\.md\\'" . gfm-mode)
+         ("\\.md\\'"          . markdown-mode)
+         ("\\.markdown\\'"    . markdown-mode)))
 
 (use-package yaml-mode                  ; YAML
   :ensure t
-  :defer t
   :config
   (add-hook 'yaml-mode-hook (lambda () (run-hooks 'prog-mode-hook))))
 
@@ -759,38 +713,33 @@ mouse-3: go to end"))))
   :bind (("C-c c" . compile)
          ("C-c C" . recompile))
   :config
-  (progn
-    (setq compilation-ask-about-save nil ; Just save before compiling
-          compilation-always-kill t     ; Just kill old compile processes before
+  (setq compilation-ask-about-save nil  ; Just save before compiling
+        compilation-always-kill t       ; Just kill old compile processes before
                                         ; starting the new one
-          compilation-scroll-output 'first-error ; Automatically scroll to first
+        compilation-scroll-output 'first-error ; Automatically scroll to first
                                         ; error
-          )))
+        ))
 
 (use-package highlight-numbers          ; Fontify number literals
   :ensure t
-  :defer t
-  :init
+  :config
   (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 
 (use-package highlight-symbol           ; Highlighting and commands for symbols
   :ensure t
-  :defer t
+  :defer 15
   :bind
   (("C-c s %" . highlight-symbol-query-replace)
    ("C-c s n" . highlight-symbol-next-in-defun)
    ("C-c s o" . highlight-symbol-occur)
    ("C-c s p" . highlight-symbol-prev-in-defun))
-  :init
-  (progn
-    ;; Navigate occurrences of the symbol under point with M-n and M-p
-    (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
-    ;; Highlight symbol occurrences
-    (add-hook 'prog-mode-hook #'highlight-symbol-mode))
   :config
-  (setq highlight-symbol-idle-delay 0.4     ; Highlight almost immediately
-        highlight-symbol-on-navigation-p t) ; Highlight immediately after
-                                        ; navigation
+  (setq highlight-symbol-idle-delay 0.4 ; Highlight almost immediately
+        highlight-symbol-on-navigation-p t)
+  ;; Navigate occurrences of the symbol under point with M-n and M-p
+  (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
+  ;; Highlight symbol occurrences
+  (add-hook 'prog-mode-hook #'highlight-symbol-mode)
   :diminish highlight-symbol-mode)
 
 (use-package rainbow-mode               ; Fontify color values in code
@@ -803,33 +752,28 @@ mouse-3: go to end"))))
 (use-package paredit                    ; Balanced sexp editing
   :ensure t
   :diminish paredit-mode
-  :defer t
-  :init
-  (progn
-    (dolist (hook '(eval-expression-minibuffer-setup-hook
-                    emacs-lisp-mode-hook
-                    inferior-emacs-lisp-mode-hook
-                    clojure-mode-hook))
-      (add-hook hook #'paredit-mode)))
   :config
-  (progn
-    ;; Free M-s.  There are some useful bindings in that prefix map.
-    (define-key paredit-mode-map (kbd "M-s") nil)
-    (define-key paredit-mode-map (kbd "M-s M-s") #'paredit-splice-sexp)
-    (unbind-key "C-j" paredit-mode-map)))
+  (dolist (hook '(eval-expression-minibuffer-setup-hook
+                  emacs-lisp-mode-hook
+                  inferior-emacs-lisp-mode-hook
+                  clojure-mode-hook))
+    (add-hook hook #'paredit-mode))
+  ;; Free M-s.  There are some useful bindings in that prefix map.
+  (define-key paredit-mode-map (kbd "M-s") nil)
+  (define-key paredit-mode-map (kbd "M-s M-s") #'paredit-splice-sexp)
+  (unbind-key "C-j" paredit-mode-map))
 
 
 ;;; Emacs Lisp
 (use-package elisp-slime-nav            ; Jump to definition of symbol at point
+  :disabled t
   :ensure t
-  :defer t
-  :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
+  :config (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
   :diminish elisp-slime-nav-mode)
 
 (use-package flycheck-package           ; Check package conventions with Flycheck
   :ensure t
-  :defer t
-  :init (with-eval-after-load 'flycheck (flycheck-package-setup)))
+  :config (with-eval-after-load 'flycheck (flycheck-package-setup)))
 
 (use-package ielm                       ; Emacs Lisp REPL
   :bind (("C-c u z" . ielm)))
@@ -840,48 +784,32 @@ mouse-3: go to end"))))
 ;;; Version control
 (use-package diff-hl                    ; Highlight hunks in fringe
   :ensure t
-  :defer t
-  :init
-  (progn
-    ;; Highlight changes to the current file in the fringe
-    (global-diff-hl-mode)
-    ;; Highlight changed files in the fringe of Dired
-    (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
+  :config
+  ;; Highlight changes to the current file in the fringe
+  (global-diff-hl-mode)
+  ;; Highlight changed files in the fringe of Dired
+  (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
 
-    ;; Fall back to the display margin, if the fringe is unavailable
-    (unless (display-graphic-p)
-      (diff-hl-margin-mode))))
+  ;; Fall back to the display margin, if the fringe is unavailable
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode)))
 
 (use-package magit                      ; The one and only Git frontend
   :ensure t
-  :defer t
   :bind ("C-x g" . magit-status)
-  :config
-  (progn
-    ;; Shut up, Magit!
-    (setq magit-save-some-buffers 'dontask
-          magit-stage-all-confirm nil
-          magit-unstage-all-confirm nil
-          ;; Except when you ask something useful…
-          magit-set-upstream-on-push t)
-
-    ;; Auto-revert files after Magit operations
-    (magit-auto-revert-mode))
   :diminish magit-auto-revert-mode)
 
 (use-package git-commit-mode            ; Git commit message mode
-  :ensure t
-  :defer t)
+  :ensure t)
 
 (use-package gitconfig-mode             ; Git configuration mode
-  :ensure t
-  :defer t)
+  :ensure t)
 
 (use-package gitignore-mode             ; .gitignore mode
-  :ensure t
-  :defer t)
+  :ensure t)
 
 (use-package git-timemachine            ; Go back in Git time
+  :disabled t
   :ensure t
   :bind (("C-c v t" . git-timemachine)))
 
@@ -889,36 +817,39 @@ mouse-3: go to end"))))
 ;;; Tools and utilities
 (use-package projectile                 ; Project management
   :ensure t
-  :defer t
-  :init (projectile-global-mode)
+  :config (projectile-global-mode)
   :diminish projectile-mode)
 
 (use-package helm-projectile
   :ensure t
-  :defer t
-  :idle (helm-projectile-on)
   :config
-  (progn
-    (setq projectile-completion-system 'helm)
-    (use-package helm-ag
-      :ensure t)
-    (use-package helm-ack
-      :ensure t)))
+  (setq projectile-completion-system 'helm)
+  (helm-projectile-on)
+  (use-package helm-ag
+    :bind (("M-s s" . helm-projectile-ag))
+    :ensure t)
+  (use-package helm-ack
+    :ensure t))
 
 (use-package helm-open-github
   :ensure t
+  :defer 30
   :bind (("C-c o i" . helm-open-github-from-issues)
          ("C-c o f" . helm-open-github-from-file)
          ("C-c o c" . helm-open-github-from-commit)
          ("C-c o p" . helm-open-github-from-pull-requests)))
 
 (use-package helm-github-stars
+  :defer 20
   :load-path "~/wip/helm-github-stars"
   :config (setq helm-github-stars-username "xuchunyang"
+                helm-github-stars-name-length 30
                 helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"))
 
 (use-package paradox                    ; Better package menu
+  :disabled t
   :ensure t
+  :defer 20
   :bind (("C-c l p" . paradox-list-packages)
          ("C-c l P" . package-list-packages-no-fetch))
   :config
@@ -927,186 +858,128 @@ mouse-3: go to end"))))
 
 (use-package guide-key
   :ensure t
-  :defer t
-  :idle (guide-key-mode 1)
+  :diminish guide-key-mode
+  :commands guide-key-mode
+  :defer 10
   :config
   (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c h"))
-  :diminish guide-key-mode)
+  (guide-key-mode 1))
 
 (use-package hydra
   :ensure t
-  :config
-  (progn
-    ;; Page navigation
-    (defhydra hydra-page (ctl-x-map "" :pre (widen))
-      "page"
-      ("]" forward-page "next")
-      ("[" backward-page "prev")
-      ("n" narrow-to-page "narrow" :bind nil :exit t))
-    ;; Goto Line
-    (defhydra hydra-goto-line (goto-map ""
-                                        :pre (linum-mode 1)
-                                        :post (linum-mode -1))
-      "goto-line"
-      ("g" goto-line "go")
-      ("m" set-mark-command "mark" :bind nil)
-      ("q" nil "quit"))
-    ;; Moving Text
-    (use-package move-text
-      :ensure t
-      :config (move-text-default-bindings)) ; M-<up> M-<down> to move line up/down
-    (defhydra hydra-move-text ()
-      "Move text"
-      ("u" move-text-up "up")
-      ("d" move-text-down "down"))
-    (defhydra hydra-window (:color pink)
-      "
- Split: _v_ert _x_:horz
-Delete: _o_nly  _da_ce  _dw_indow  _db_uffer  _df_rame
-  Move: _s_wap
-Frames: _f_rame new  _df_ delete
-  Misc: _m_ark _a_ce  _u_ndo  _r_edo"
-      ("h" windmove-left nil)
-      ("j" windmove-down nil)
-      ("k" windmove-up nil)
-      ("l" windmove-right nil)
-      ("H" hydra-move-splitter-left nil)
-      ("J" hydra-move-splitter-down nil)
-      ("K" hydra-move-splitter-up nil)
-      ("L" hydra-move-splitter-right nil)
-      ("|" (lambda ()
-             (interactive)
-             (split-window-right)
-             (windmove-right)) nil)
-      ("_" (lambda ()
-             (interactive)
-             (split-window-below)
-             (windmove-down)) nil)
-      ("v" split-window-right nil)
-      ("x" split-window-below nil)
-                                        ;("t" transpose-frame "'")
-      ("u" winner-undo nil)
-      ("r" winner-redo nil) ;;Fixme, not working?
-      ("o" delete-other-windows nil :exit t)
-      ("a" ace-window nil :exit t)
-      ("f" new-frame nil :exit t)
-      ("s" ace-swap-window nil)
-      ("da" ace-delete-window nil)
-      ("dw" delete-window nil)
-      ("db" kill-this-buffer nil)
-      ("df" delete-frame nil :exit t)
-      ("q" nil nil)
-                                        ;("i" ace-maximize-window "ace-one" :color blue)
-                                        ;("b" ido-switch-buffer "buf")
-      ("m" headlong-bookmark-jump nil))
-    (bind-key "C-c w w" #'hydra-window/body)))
+  :disabled t)
 
 (use-package chinese-pyim
   :disabled t
   :load-path "~/wip/chinese-pyim"
   :init
-  (progn
-    (require 'chinese-pyim)
-    (setq default-input-method "chinese-pyim")
-    (setq
-     pyim-dicts
-     '((:name "dict1" :file "~/wip/chinese-pyim/pyim-bigdict.txt" :coding utf-8-unix)))))
+  (require 'chinese-pyim)
+  (setq default-input-method "chinese-pyim")
+  (setq pyim-dicts
+        '((:name "dict1" :file "~/wip/chinese-pyim/pyim-bigdict.txt" :coding utf-8-unix))))
 
 
 ;;; Net & Web & Email
 (use-package eww                        ; Emacs' built-in web browser
+  :disabled t
   :bind (("C-c w b" . eww-list-bookmarks)
          ("C-c w W" . eww)))
 
 (use-package circe
   :ensure t
-  :defer t
   :config
-  (progn
-    (load-file  "~/.private.el")
-    (setq circe-network-options
-          `(("Freenode"
-             :nick "chunyang"
-             :channels ("#emacs", "#MacPorts")
-             :nickserv-password ,freenode-password)))))
+  (load-file  "~/.private.el")
+  (setq circe-network-options
+        `(("Freenode"
+           :nick "chunyang"
+           :channels ("#emacs", "#MacPorts")
+           :nickserv-password ,freenode-password))))
 
-(use-package weibo
-  :ensure t
-  :defer t
-  :config
-  (progn
-    (require 'weibo)
-    (load-file "~/.private.el")))
+;; (add-to-list 'load-path "~/wip/weibo.el/")
+;; (require 'weibo)
+;; (load-file "~/.private.el")
+
+;; (use-package weibo
+;;   :disabled nil
+;;   :load-path "~/wip/weibo.el/"
+;;   :defer 30
+;;   :config
+;;   (require 'weibo)
+;;   (load-file "~/.private.el"))
 
 (use-package google-this
   :ensure t
   :diminish google-this-mode
-  :config
-  (progn
-    (global-set-key (kbd "C-c g") #'google-this-mode-submap)
-    (global-unset-key (kbd "C-c /"))))
+  :bind (("C-c g" . google-this-mode-submap)))
 
 (use-package sx                         ; StackExchange client for Emacs
+  :disabled t
   :ensure t
   :bind (("C-c w s" . sx-tab-frontpage)
          ("C-c w S" . sx-tab-newest)
          ("C-c w a" . sx-ask)))
 
 (use-package mu4e
+  :disabled t
   :load-path "lisp/mu4e/"
-  :defer t
-  :idle (require 'org-mu4e)
+  :defer 15
   :config
-  (progn
-    (setq mu4e-maildir "~/Maildir"
-          mu4e-drafts-folder "/[Gmail].Drafts"
-          mu4e-sent-folder   "/[Gmail].Sent Mail"
-          mu4e-trash-folder  "/[Gmail].Trash"
-          mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
-                                   ("/[Gmail].Sent Mail"   . ?s)
-                                   ("/[Gmail].Starred"     . ?r)
-                                   ("/[Gmail].Trash"       . ?t)
-                                   ("/[Gmail].All Mail"    . ?a))
-          ;; allow for updating mail using 'U' in the main view:
-          mu4e-get-mail-command "proxychains4 offlineimap"
-          ;; update every 30 minutes
-          mu4e-update-interval (* 18 60)
-          ;; something about ourselves
-          user-mail-address "xuchunyang56@gmail.com"
-          user-full-name  "Chunyang Xu"
-          mu4e-compose-signature "Chunyang Xu"
-          mu4e-headers-skip-duplicates t)))
+  (setq mu4e-maildir "~/Maildir"
+        mu4e-drafts-folder "/[Gmail].Drafts"
+        mu4e-sent-folder   "/[Gmail].Sent Mail"
+        mu4e-trash-folder  "/[Gmail].Trash"
+        mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
+                                 ("/[Gmail].Sent Mail"   . ?s)
+                                 ("/[Gmail].Starred"     . ?r)
+                                 ("/[Gmail].Trash"       . ?t)
+                                 ("/[Gmail].All Mail"    . ?a))
+        ;; allow for updating mail using 'U' in the main view:
+        mu4e-get-mail-command "proxychains4 offlineimap"
+        ;; update every 30 minutes
+        mu4e-update-interval (* 18 60)
+        ;; something about ourselves
+        user-mail-address "xuchunyang56@gmail.com"
+        user-full-name  "Chunyang Xu"
+        mu4e-compose-signature "Chunyang Xu"
+        mu4e-headers-skip-duplicates t))
 
+(use-package notmuch
+  :disabled t
+  :load-path "/opt/local/share/emacs/site-lisp"
+  :config
+  (setq notmuch-saved-searches
+        '((:name "inbox" :query "tag:inbox")
+          (:name "unread" :query "tag:inbox AND tag:unread"))))
 
 ;;; Dictionary
 (use-package youdao-dictionary
   :ensure t
-  :defer t
+  :defer 10
   :bind (("C-c y" . youdao-dictionary-search-at-point))
   :config
-  (progn
-    (setq url-automatic-caching t)
-    (push "*Youdao Dictionary*" popwin:special-display-config)))
+  (setq url-automatic-caching t)
+  (push "*Youdao Dictionary*" popwin:special-display-config))
 
 (use-package osx-dictionary
   :ensure t
-  :defer t
+  :defer 10
   :bind (("C-c d" . osx-dictionary-search-pointer))
   :config
   (push "*osx-dictionary*" popwin:special-display-config))
 
 (use-package helm-dict
   :load-path "personal/"
+  :defer 10
   ;; TODO: how to add new key to a existing prefix keymap?
   :bind ("M-4" . helm-dict))
 
 (use-package langtool
   :ensure t
+  :disabled t
   :config
-  (progn
-    (setq langtool-language-tool-jar
-          "~/Downloads/LanguageTool-2.8/languagetool-commandline.jar")
-    (setq langtool-mother-tongue "en")))
+  (setq
+   langtool-language-tool-jar "~/Downloads/LanguageTool-2.8/languagetool-commandline.jar"
+   setq) langtool-mother-tongue "en")
 
 
 ;;; Org-mode
@@ -1115,23 +988,21 @@ Frames: _f_rame new  _df_ delete
          ("C-c c" . org-capture)
          ("C-c L" . org-store-link))
   :config
-  (progn
-    (setq org-default-notes-file "~/org/task.org"
-          org-agenda-files '("~/org/task.org")
-          org-capture-templates
-          `(("t" "Todo" entry (file+headline "~/org/task.org" "Tasks")
-             "* TODO %?\n  %i\n%a")
-            ("i" "Inbox" entry (file+headline "~/org/task.org" "Inbox")
-             "* %?\n  %i\n%a")))
-    (org-babel-do-load-languages 'org-babel-load-languages
-                                 '((emacs-lisp . t)
-                                   (sh . t)
-                                   (scheme . t)))))
+  (setq org-default-notes-file "~/org/task.org"
+        org-agenda-files '("~/org/task.org")
+        org-capture-templates
+        `(("t" "Todo" entry (file+headline "~/org/task.org" "Tasks")
+           "* TODO %?\n  %i\n%a")
+          ("i" "Inbox" entry (file+headline "~/org/task.org" "Inbox")
+           "* %?\n  %i\n%a")))
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((emacs-lisp . t)
+                                 (sh . t)
+                                 (scheme . t))))
 
 
 ;;; Online help
 (use-package info                       ; Info manual viewer
-  :defer t
   :config
   ;; Fix the stupid `Info-quoted' face.  Courier is an abysmal face, so go back
   ;; to the default face.
