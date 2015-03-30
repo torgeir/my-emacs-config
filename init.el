@@ -225,9 +225,9 @@ Homebrew: brew install trash")))
                 (projectile-mode projectile-mode-line)
                 (vc-mode vc-mode)
                 (flycheck-mode flycheck-mode-line) ; Flycheck status
-                (anzu-mode (:eval                  ; isearch pos/matches
-                            (when (> anzu--total-matched 0)
-                              (concat " " (anzu--update-mode-line)))))
+                ;; (anzu-mode (:eval                  ; isearch pos/matches
+                ;;             (when (> anzu--total-matched 0)
+                ;;               (concat " " (anzu--update-mode-line)))))
                 (multiple-cursors-mode mc/mode-line) ; Number of cursors
                 ;; And the modes, which we don't really care for anyway
                 " " mode-line-misc-info mode-line-modes mode-line-end-spaces)
@@ -247,10 +247,17 @@ Homebrew: brew install trash")))
 
 (use-package anzu                       ; Position/matches count for isearch
   :ensure t
-  :defer 15
+  :bind (("M-%"   . anzu-query-replace)
+         ("C-M-%" . anzu-query-replace-regexp))
   :config
-  (setq anzu-cons-mode-line-p nil)
   (global-anzu-mode)
+  (set-face-attribute 'anzu-mode-line nil
+                      :foreground "yellow" :weight 'bold)
+  (custom-set-variables
+   '(anzu-mode-lighter "")
+   '(anzu-deactivate-region t)
+   '(anzu-search-threshold 1000)
+   '(anzu-replace-to-string-separator " => "))
   :diminish anzu-mode)
 
 (use-package which-func                 ; Current function name in header line
@@ -388,6 +395,7 @@ mouse-3: go to end"))))
         popwin:special-display-config))
 
 (use-package neotree
+  :disabled t
   :ensure t
   :bind (("C-x C-j" . neotree-toggle)))
 
@@ -673,6 +681,9 @@ mouse-3: go to end"))))
   :ensure t
   :config (add-hook 'global-company-mode-hook #'company-quickhelp-mode))
 
+;; (require 'auto-complete-config)
+;; (ac-config-default)
+
 
 ;;; Spelling and syntax checking
 (use-package flyspell
@@ -684,13 +695,16 @@ mouse-3: go to end"))))
   :ensure t
   :diminish flycheck-mode
   :bind (("C-c n f" . global-flycheck-mode)
-         ("C-c l e" . list-flycheck-errors)))
+         ("C-c l e" . list-flycheck-errors))
+  ;; :config
+  ;; (setq flycheck-emacs-lisp-load-path 'inherit)
+  )
 
 (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
-  :disabled t
   :ensure t
   :config
   (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
+
 
 
 ;;; Text editing
