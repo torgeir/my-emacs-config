@@ -18,6 +18,13 @@
    (apply 'encode-time (parse-time-string
                         (concat time ", 12:12:12")))))
 
+;;;###autoload
+(defun chunyang-insert-current-date (arg)
+  "Display current date.
+With prefix argument, insert current date at point."
+  (interactive "P")
+  (funcall (if arg 'insert 'message) (format-time-string "%Y/%m/%d")))
+
 (defun chunyang-region-length (start end)
   "Return the length of current region."
   (interactive (list (region-beginning) (region-end)))
