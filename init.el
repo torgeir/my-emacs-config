@@ -864,11 +864,9 @@ mouse-3: go to end"))))
          ("C-c o p" . helm-open-github-from-pull-requests)))
 
 (use-package helm-github-stars
-  :defer 20
-  ;; :load-path "~/wip/helm-github-stars"
-  :config (setq helm-github-stars-username "xuchunyang"
-                helm-github-stars-name-length 30
-                helm-github-stars-token "b0b687cd06cfd4f300504878b1fd9cf222bb6ecd"
+  :load-path "~/wip/helm-github-stars"
+  :commands (helm-github-stars helm-github-stars-fetch)
+  :config (setq helm-github-stars-name-length 30
                 helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"))
 
 (use-package paradox                    ; Better package menu
