@@ -200,16 +200,19 @@ Homebrew: brew install trash")))
   :ensure t
   :config (unicode-fonts-setup))
 
-(use-package zenburn-theme
-  :disabled nil
-  :ensure t
-  :init (load-theme 'zenburn t))
+;; (use-package zenburn-theme
+;;   :disabled nil
+;;   :ensure t
+;;   :init (load-theme 'zenburn t))
+
+(require 'zenburn-theme)
+(load-theme 'zenburn t)
 
 
 ;;; The mode line
 
-(setq-default header-line-format
-              '(which-func-mode ("" which-func-format " "))
+(setq-default ;; header-line-format
+              ;; '(which-func-mode ("" which-func-format " "))
               mode-line-format
               '("%e" mode-line-front-space
                 ;; Standard info about the current buffer
@@ -378,13 +381,14 @@ mouse-3: go to end"))))
   (when-let (gnu-ls (and (eq system-type 'darwin) (executable-find "gls")))
     (setq insert-directory-program gnu-ls)))
 
-(use-package dired                      ; Edit directories
-  :config
-  (use-package dired-x
-    :diminish dired-omit-mode
-    :config
-    (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
-    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))))
+;; (use-package dired                      ; Edit directories
+;;   :config
+;;   (use-package dired-x
+;;     :diminish dired-omit-mode
+;;     :config
+;;     (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
+;;     (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+;;     ))
 
 (use-package direx
   :disabled t
@@ -471,7 +475,9 @@ mouse-3: go to end"))))
 
 (use-package chunyang-simple
   :load-path "personal"
-  :bind (([remap split-window-right] . chunyang-split-window-right)))
+  ;; :bind (([remap split-window-right] . chunyang-split-window-right)
+  ;;        ("C-c t" . chunyang-insert-current-date))
+  )
 
 (use-package whitespace-cleanup-mode    ; Cleanup whitespace in buffers
   :ensure t
@@ -696,9 +702,8 @@ mouse-3: go to end"))))
   :diminish flycheck-mode
   :bind (("C-c n f" . global-flycheck-mode)
          ("C-c l e" . list-flycheck-errors))
-  ;; :config
-  ;; (setq flycheck-emacs-lisp-load-path 'inherit)
-  )
+  :config
+  (setq flycheck-emacs-lisp-load-path 'inherit))
 
 (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
   :ensure t
@@ -744,6 +749,7 @@ mouse-3: go to end"))))
   (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 
 (use-package highlight-symbol           ; Highlighting and commands for symbols
+  :disabled t
   :ensure t
   :defer 15
   :bind
@@ -859,9 +865,10 @@ mouse-3: go to end"))))
 
 (use-package helm-github-stars
   :defer 20
-  :load-path "~/wip/helm-github-stars"
+  ;; :load-path "~/wip/helm-github-stars"
   :config (setq helm-github-stars-username "xuchunyang"
                 helm-github-stars-name-length 30
+                helm-github-stars-token "b0b687cd06cfd4f300504878b1fd9cf222bb6ecd"
                 helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"))
 
 (use-package paradox                    ; Better package menu
@@ -890,11 +897,14 @@ mouse-3: go to end"))))
 (use-package chinese-pyim
   :disabled t
   :load-path "~/wip/chinese-pyim"
-  :init
-  (require 'chinese-pyim)
+  :config
   (setq default-input-method "chinese-pyim")
   (setq pyim-dicts
         '((:name "dict1" :file "~/wip/chinese-pyim/pyim-bigdict.txt" :coding utf-8-unix))))
+
+(use-package helm-go
+  :load-path "~/wip/helm-go"
+  :bind (("C-c C-g" . helm-go)))
 
 
 ;;; Net & Web & Email
@@ -917,13 +927,12 @@ mouse-3: go to end"))))
 ;; (require 'weibo)
 ;; (load-file "~/.private.el")
 
-;; (use-package weibo
-;;   :disabled nil
-;;   :load-path "~/wip/weibo.el/"
-;;   :defer 30
-;;   :config
-;;   (require 'weibo)
-;;   (load-file "~/.private.el"))
+(use-package weibo
+  :disabled nil
+  :load-path "~/wip/weibo.el/"
+  :defer 30
+  :init
+  (load-file "~/.private.el"))
 
 (use-package google-this
   :ensure t
@@ -937,29 +946,29 @@ mouse-3: go to end"))))
          ("C-c w S" . sx-tab-newest)
          ("C-c w a" . sx-ask)))
 
-(use-package mu4e
-  :disabled t
-  :load-path "lisp/mu4e/"
-  :defer 15
-  :config
-  (setq mu4e-maildir "~/Maildir"
-        mu4e-drafts-folder "/[Gmail].Drafts"
-        mu4e-sent-folder   "/[Gmail].Sent Mail"
-        mu4e-trash-folder  "/[Gmail].Trash"
-        mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
-                                 ("/[Gmail].Sent Mail"   . ?s)
-                                 ("/[Gmail].Starred"     . ?r)
-                                 ("/[Gmail].Trash"       . ?t)
-                                 ("/[Gmail].All Mail"    . ?a))
-        ;; allow for updating mail using 'U' in the main view:
-        mu4e-get-mail-command "proxychains4 offlineimap"
-        ;; update every 30 minutes
-        mu4e-update-interval (* 18 60)
-        ;; something about ourselves
-        user-mail-address "xuchunyang56@gmail.com"
-        user-full-name  "Chunyang Xu"
-        mu4e-compose-signature "Chunyang Xu"
-        mu4e-headers-skip-duplicates t))
+;; (use-package mu4e
+;;   :disabled t
+;;   :load-path "/opt/local/share/emacs/site-lisp/mu4e/"
+;;   :defer 15
+;;   :config
+;;   (setq mu4e-maildir "~/Maildir"
+;;         mu4e-drafts-folder "/[Gmail].Drafts"
+;;         mu4e-sent-folder   "/[Gmail].Sent Mail"
+;;         mu4e-trash-folder  "/[Gmail].Trash"
+;;         mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
+;;                                  ("/[Gmail].Sent Mail"   . ?s)
+;;                                  ("/[Gmail].Starred"     . ?r)
+;;                                  ("/[Gmail].Trash"       . ?t)
+;;                                  ("/[Gmail].All Mail"    . ?a))
+;;         ;; allow for updating mail using 'U' in the main view:
+;;         mu4e-get-mail-command "proxychains4 offlineimap"
+;;         ;; update every 30 minutes
+;;         mu4e-update-interval (* 18 60)
+;;         ;; something about ourselves
+;;         user-mail-address "xuchunyang56@gmail.com"
+;;         user-full-name  "Chunyang Xu"
+;;         mu4e-compose-signature "Chunyang Xu"
+;;         mu4e-headers-skip-duplicates t))
 
 (use-package notmuch
   :disabled t
@@ -1026,6 +1035,11 @@ mouse-3: go to end"))))
   ;; to the default face.
   (set-face-attribute 'Info-quoted nil :family 'unspecified
                       :inherit font-lock-type-face))
+
+
+;;; MacPorts related tools
+(use-package tcl-mode
+  :mode "Portfile")
 
 (bind-key "C-c h h" #'describe-personal-keybindings)
 

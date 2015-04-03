@@ -54,18 +54,38 @@ from URL `https://github.com/first20hours/google-10000-english/'.")
     ("Lookup with Youdao Dictionary" . (lambda (candidates)
                                          (youdao-dictionary--search-and-show-in-buffer
                                           candidates)))))
-(defvar helm-dict--word-source
-  (helm-build-in-buffer-source "English word"
-    :init (lambda ()
-            (with-current-buffer (helm-candidate-buffer 'local)
-              (insert-file-contents helm-dict--words-list-file)))
-    :action helm-dict-actions))
+
+(defun helm-dict--suggest-fetch ()
+  (list (concat helm-pattern "es")
+        (concat helm-pattern "s")
+        (concat helm-pattern "ing")))
+
+(setq helm-dict--word-source
+  `((name . "English word")
+    (candidates . ;; '("skin" "sfsfa faf a")
+                helm-dict--suggest-fetch
+                )
+    (action . (("X" . (lambda (cand)
+                        (message cand)))))
+    (persistent-action .
+                       (lambda (cand)
+                         (let ((buf (get-buffer-create "*helm dict summary*"))
+                               result)
+                           (setq result (format "[%s]" cand))
+                           (with-current-buffer buf
+                             (erase-buffer)
+                             (setq cursor-type nil)
+                             (insert result)
+                             (goto-char (point-min)))
+                           (display-buffer buf))))
+    (volatile)
+    (follow . 1)
+    (follow-delay . 2)
+    (require--pattern . 3)))
 
 (defvar helm-dict--not-found-source
   (helm-build-dummy-source "Fallback"
     :action helm-dict-actions))
-
-(defvar helm-dict--lookup-history nil)
 
 ;;;###autoload
 (defun helm-dict (arg)
@@ -74,8 +94,6 @@ If ARG is non-nil, don't any input."
   (interactive "P")
   (helm :sources '(helm-dict--word-source helm-dict--not-found-source)
         :input (unless arg (youdao-dictionary--region-or-word))
-        :history 'helm-dict--lookup-history
-        :case-fold-search t
         :prompt "Lookup: "
         :buffer "*Helm Lookup words*"))
 
