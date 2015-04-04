@@ -200,13 +200,9 @@ Homebrew: brew install trash")))
   :ensure t
   :config (unicode-fonts-setup))
 
-;; (use-package zenburn-theme
-;;   :disabled nil
-;;   :ensure t
-;;   :init (load-theme 'zenburn t))
-
-(require 'zenburn-theme)
-(load-theme 'zenburn t)
+(use-package zenburn-theme
+  :ensure t
+  :config (load-theme 'zenburn t))
 
 
 ;;; The mode line
@@ -248,20 +244,6 @@ Homebrew: brew install trash")))
 (line-number-mode)
 (column-number-mode)
 
-(use-package anzu                       ; Position/matches count for isearch
-  :ensure t
-  :bind (("M-%"   . anzu-query-replace)
-         ("C-M-%" . anzu-query-replace-regexp))
-  :config
-  (global-anzu-mode)
-  (set-face-attribute 'anzu-mode-line nil
-                      :foreground "yellow" :weight 'bold)
-  (custom-set-variables
-   '(anzu-mode-lighter "")
-   '(anzu-deactivate-region t)
-   '(anzu-search-threshold 1000)
-   '(anzu-replace-to-string-separator " => "))
-  :diminish anzu-mode)
 
 (use-package which-func                 ; Current function name in header line
   :config
@@ -360,8 +342,7 @@ mouse-3: go to end"))))
   :bind (("M-o" . ace-window)))
 
 (use-package desktop                    ; Save buffers, windows and frames
-  :config
-  (desktop-save-mode))
+  :config (desktop-save-mode))
 
 (use-package writeroom-mode             ; Distraction-free editing
   :ensure t
@@ -475,9 +456,8 @@ mouse-3: go to end"))))
 
 (use-package chunyang-simple
   :load-path "personal"
-  ;; :bind (([remap split-window-right] . chunyang-split-window-right)
-  ;;        ("C-c t" . chunyang-insert-current-date))
-  )
+  :bind (([remap split-window-right] . chunyang-split-window-right)
+         ("C-c t" . chunyang-insert-current-date)))
 
 (use-package whitespace-cleanup-mode    ; Cleanup whitespace in buffers
   :ensure t
@@ -541,12 +521,12 @@ mouse-3: go to end"))))
                       face font-lock-warning-face)))
 
 (use-package expand-region              ; Expand region by semantic units
+  :disabled t
   :ensure t
   :bind (("C-=" . er/expand-region)))
 
 (use-package undo-tree                  ; Branching undo
   :ensure t
-  :disabled t
   :commands undo-tree-mode
   :config (global-undo-tree-mode)
   :diminish undo-tree-mode)
@@ -596,8 +576,20 @@ mouse-3: go to end"))))
 
 
 ;;; Search
-(use-package isearch                    ; Search buffers
-  :bind (("C-c s s" . isearch-forward-symbol-at-point)))
+(use-package anzu                       ; Position/matches count for isearch
+  :ensure t
+  :diminish anzu-mode
+  :config
+  (global-anzu-mode +1)
+  (set-face-attribute 'anzu-mode-line nil
+                      :foreground "yellow" :weight 'bold)
+  (custom-set-variables
+   '(anzu-mode-lighter "")
+   '(anzu-deactivate-region t)
+   '(anzu-search-threshold 1000)
+   '(anzu-replace-to-string-separator " => "))
+  (bind-key "M-%" 'anzu-query-replace)
+  (bind-key "C-M-%" 'anzu-query-replace-regexp))
 
 (use-package helm-swoop
   :ensure t
@@ -677,9 +669,10 @@ mouse-3: go to end"))))
   :config
   ;; Use Company for completion
   (bind-key [remap completion-at-point] #'company-complete company-mode-map)
-  (setq company-tooltip-align-annotations t
-        ;; Easy navigation to candidates with M-<n>
-        company-show-numbers t)
+  ;; (setq company-tooltip-align-annotations t
+  ;;       ;; Easy navigation to candidates with M-<n>
+  ;;       company-show-numbers t
+  ;;       )
   (global-company-mode))
 
 (use-package company-quickhelp          ; Documentation popups for Company
@@ -749,52 +742,87 @@ mouse-3: go to end"))))
   (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 
 (use-package highlight-symbol           ; Highlighting and commands for symbols
-  :disabled t
   :ensure t
-  :defer 15
-  :bind
-  (("C-c s %" . highlight-symbol-query-replace)
-   ("C-c s n" . highlight-symbol-next-in-defun)
-   ("C-c s o" . highlight-symbol-occur)
-   ("C-c s p" . highlight-symbol-prev-in-defun))
-  :config
+  :diminish highlight-symbol-mode
+  :init
   (setq highlight-symbol-idle-delay 0.4 ; Highlight almost immediately
         highlight-symbol-on-navigation-p t)
   ;; Navigate occurrences of the symbol under point with M-n and M-p
   (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
   ;; Highlight symbol occurrences
   (add-hook 'prog-mode-hook #'highlight-symbol-mode)
-  :diminish highlight-symbol-mode)
+  :bind (("C-c s %" . highlight-symbol-query-replace)
+         ("C-c s n" . highlight-symbol-next-in-defun)
+         ("C-c s o" . highlight-symbol-occur)
+         ("C-c s p" . highlight-symbol-prev-in-defun)))
 
 (use-package rainbow-mode               ; Fontify color values in code
+  :disabled t
   :ensure t
   :bind (("C-c T r" . rainbow-mode))
   :config (add-hook 'css-mode-hook #'rainbow-mode))
 
 
 ;;; Generic Lisp
+(defsubst hook-into-modes (func &rest modes)
+  (dolist (mode-hook modes) (add-hook mode-hook func)))
+
+(defvar lisp-modes '(emacs-lisp-mode
+                     inferior-emacs-lisp-mode
+                     ielm-mode
+                     lisp-mode
+                     inferior-lisp-mode
+                     lisp-interaction-mode
+                     slime-repl-mode))
+
+(defvar lisp-mode-hooks
+  (mapcar (function
+           (lambda (mode)
+             (intern
+              (concat (symbol-name mode) "-hook"))))
+          lisp-modes))
+
+(use-package lisp-mode
+  :defer t
+  :preface
+  (defvar lisp-mode-initialized nil)
+  (defun my-lisp-mode-hook ()
+    (unless lisp-mode-initialized
+      (setq lisp-mode-initialized t))
+
+    (use-package elisp-slime-nav
+      :disabled t
+      :ensure t
+      :diminish elisp-slime-nav-mode)
+
+    (use-package ert
+      :bind ("C-c e t" . ert-run-tests-interactively))
+
+    (auto-fill-mode 1)
+    ;; (elisp-slime-nav-mode 1)
+    (paredit-mode 1))
+
+  :init
+  (apply #'hook-into-modes 'my-lisp-mode-hook lisp-mode-hooks))
+
 (use-package paredit                    ; Balanced sexp editing
   :ensure t
-  :diminish paredit-mode
   :config
   (dolist (hook '(eval-expression-minibuffer-setup-hook
                   emacs-lisp-mode-hook
                   inferior-emacs-lisp-mode-hook
                   clojure-mode-hook))
-    (add-hook hook #'paredit-mode))
-  ;; Free M-s.  There are some useful bindings in that prefix map.
-  (define-key paredit-mode-map (kbd "M-s") nil)
-  (define-key paredit-mode-map (kbd "M-s M-s") #'paredit-splice-sexp)
-  (unbind-key "C-j" paredit-mode-map))
+    (add-hook hook 'paredit-mode))
+
+  (unbind-key "M-r" paredit-mode-map)
+  (unbind-key "M-s" paredit-mode-map)
+
+  (unbind-key "C-j" paredit-mode-map)
+
+  (bind-key "M-s M-s" 'paredit-splice-sexp paredit-mode-map))
 
 
 ;;; Emacs Lisp
-(use-package elisp-slime-nav            ; Jump to definition of symbol at point
-  :disabled t
-  :ensure t
-  :config (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode)
-  :diminish elisp-slime-nav-mode)
-
 (use-package flycheck-package           ; Check package conventions with Flycheck
   :ensure t
   :config (with-eval-after-load 'flycheck (flycheck-package-setup)))
@@ -841,27 +869,21 @@ mouse-3: go to end"))))
 ;;; Tools and utilities
 (use-package projectile                 ; Project management
   :ensure t
-  :config (projectile-global-mode)
-  :diminish projectile-mode)
+  :diminish projectile-mode
+  :config (projectile-global-mode))
 
 (use-package helm-projectile
   :ensure t
   :config
   (setq projectile-completion-system 'helm)
   (helm-projectile-on)
-  (use-package helm-ag
-    :bind (("M-s s" . helm-projectile-ag))
+  (use-package helm-ag 
     :ensure t)
   (use-package helm-ack
     :ensure t))
 
 (use-package helm-open-github
-  :ensure t
-  :defer 30
-  :bind (("C-c o i" . helm-open-github-from-issues)
-         ("C-c o f" . helm-open-github-from-file)
-         ("C-c o c" . helm-open-github-from-commit)
-         ("C-c o p" . helm-open-github-from-pull-requests)))
+  :ensure t)
 
 (use-package helm-github-stars
   :load-path "~/wip/helm-github-stars"
@@ -870,11 +892,8 @@ mouse-3: go to end"))))
                 helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"))
 
 (use-package paradox                    ; Better package menu
-  :disabled t
   :ensure t
-  :defer 20
-  :bind (("C-c l p" . paradox-list-packages)
-         ("C-c l P" . package-list-packages-no-fetch))
+  :commands paradox-list-packages
   :config
   (setq paradox-github-token t
         paradox-execute-asynchronously nil))
@@ -883,7 +902,6 @@ mouse-3: go to end"))))
   :ensure t
   :diminish guide-key-mode
   :commands guide-key-mode
-  :defer 10
   :config
   (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c h"))
   (guide-key-mode 1))
@@ -904,6 +922,10 @@ mouse-3: go to end"))))
   :load-path "~/wip/helm-go"
   :bind (("C-c C-g" . helm-go)))
 
+(use-package macrostep
+  :ensure t
+  :bind ("C-c e m" . macrostep-expand))
+
 
 ;;; Net & Web & Email
 (use-package eww                        ; Emacs' built-in web browser
@@ -912,6 +934,7 @@ mouse-3: go to end"))))
          ("C-c w W" . eww)))
 
 (use-package circe
+  :disabled t
   :ensure t
   :config
   (load-file  "~/.private.el")
@@ -921,16 +944,14 @@ mouse-3: go to end"))))
            :channels ("#emacs", "#MacPorts")
            :nickserv-password ,freenode-password))))
 
-;; (add-to-list 'load-path "~/wip/weibo.el/")
-;; (require 'weibo)
-;; (load-file "~/.private.el")
-
 (use-package weibo
-  :disabled nil
   :load-path "~/wip/weibo.el/"
-  :defer 30
   :init
   (load-file "~/.private.el"))
+
+(use-package helm-zhihu-daily
+  :load-path "~/wip/helm-zhihu-daily"
+  :commands helm-zhihu-daily)
 
 (use-package google-this
   :ensure t
@@ -938,35 +959,30 @@ mouse-3: go to end"))))
   :bind (("C-c g" . google-this-mode-submap)))
 
 (use-package sx                         ; StackExchange client for Emacs
-  :disabled t
-  :ensure t
-  :bind (("C-c w s" . sx-tab-frontpage)
-         ("C-c w S" . sx-tab-newest)
-         ("C-c w a" . sx-ask)))
+  :ensure t)
 
-;; (use-package mu4e
-;;   :disabled t
-;;   :load-path "/opt/local/share/emacs/site-lisp/mu4e/"
-;;   :defer 15
-;;   :config
-;;   (setq mu4e-maildir "~/Maildir"
-;;         mu4e-drafts-folder "/[Gmail].Drafts"
-;;         mu4e-sent-folder   "/[Gmail].Sent Mail"
-;;         mu4e-trash-folder  "/[Gmail].Trash"
-;;         mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
-;;                                  ("/[Gmail].Sent Mail"   . ?s)
-;;                                  ("/[Gmail].Starred"     . ?r)
-;;                                  ("/[Gmail].Trash"       . ?t)
-;;                                  ("/[Gmail].All Mail"    . ?a))
-;;         ;; allow for updating mail using 'U' in the main view:
-;;         mu4e-get-mail-command "proxychains4 offlineimap"
-;;         ;; update every 30 minutes
-;;         mu4e-update-interval (* 18 60)
-;;         ;; something about ourselves
-;;         user-mail-address "xuchunyang56@gmail.com"
-;;         user-full-name  "Chunyang Xu"
-;;         mu4e-compose-signature "Chunyang Xu"
-;;         mu4e-headers-skip-duplicates t))
+(use-package mu4e
+  :disabled t
+  :load-path "/opt/local/share/emacs/site-lisp/mu4e/"
+  :config
+  (setq mu4e-maildir "~/Maildir"
+        mu4e-drafts-folder "/[Gmail].Drafts"
+        mu4e-sent-folder   "/[Gmail].Sent Mail"
+        mu4e-trash-folder  "/[Gmail].Trash"
+        mu4e-maildir-shortcuts '(("/INBOX"               . ?i)
+                                 ("/[Gmail].Sent Mail"   . ?s)
+                                 ("/[Gmail].Starred"     . ?r)
+                                 ("/[Gmail].Trash"       . ?t)
+                                 ("/[Gmail].All Mail"    . ?a))
+        ;; allow for updating mail using 'U' in the main view:
+        mu4e-get-mail-command "proxychains4 offlineimap"
+        ;; update every 30 minutes
+        mu4e-update-interval (* 18 60)
+        ;; something about ourselves
+        user-mail-address "xuchunyang56@gmail.com"
+        user-full-name  "Chunyang Xu"
+        mu4e-compose-signature "Chunyang Xu"
+        mu4e-headers-skip-duplicates t))
 
 (use-package notmuch
   :disabled t
@@ -979,7 +995,6 @@ mouse-3: go to end"))))
 ;;; Dictionary
 (use-package youdao-dictionary
   :ensure t
-  :defer 10
   :bind (("C-c y" . youdao-dictionary-search-at-point))
   :config
   (setq url-automatic-caching t)
@@ -987,24 +1002,20 @@ mouse-3: go to end"))))
 
 (use-package osx-dictionary
   :ensure t
-  :defer 10
   :bind (("C-c d" . osx-dictionary-search-pointer))
   :config
   (push "*osx-dictionary*" popwin:special-display-config))
 
 (use-package helm-dict
   :load-path "personal/"
-  :defer 10
-  ;; TODO: how to add new key to a existing prefix keymap?
   :bind ("M-4" . helm-dict))
 
 (use-package langtool
   :ensure t
   :disabled t
   :config
-  (setq
-   langtool-language-tool-jar "~/Downloads/LanguageTool-2.8/languagetool-commandline.jar"
-   setq) langtool-mother-tongue "en")
+  (setq langtool-language-tool-jar "~/Downloads/LanguageTool-2.8/languagetool-commandline.jar"
+        langtool-mother-tongue "en"))
 
 
 ;;; Org-mode

@@ -34,7 +34,7 @@ With prefix argument, insert current date at point."
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Sections" "^;;; \\(.+\\)$" 1) t))
 
-(add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
+;; (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here
