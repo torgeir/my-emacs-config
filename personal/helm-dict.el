@@ -1,4 +1,4 @@
-;;; helm-dict.e --- Dictionary with Helm interface
+;;; helm-dict.el --- Dictionary with Helm interface
 
 ;;; Copyright (C) 2015 Chunyang Xu
 ;;
