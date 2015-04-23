@@ -692,12 +692,12 @@ Homebrew: brew install trash")))
   :config
   (setq flycheck-emacs-lisp-load-path 'inherit)
   ;; (global-flycheck-mode 1)
-  )
-
-(use-package flycheck-pos-tip           ; Show Flycheck messages in popups
-  :ensure t
-  :config
-  (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
+  (bind-keys ("C-c n f" . global-flycheck-mode)
+             ("C-c l e" . list-flycheck-errors))
+  (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
+    :ensure t
+    :config (setq flycheck-display-errors-function
+                  #'flycheck-pos-tip-error-messages)))
 
 
 ;;; Text editing
@@ -815,30 +815,9 @@ Homebrew: brew install trash")))
 (use-package command-log-mode
   :ensure t)
 
-(defun sanityinc/cl-libify-next ()
-  "Find next symbol from 'cl and replace it with the 'cl-lib equivalent."
-  (interactive)
-  (let ((case-fold-search nil))
-    (re-search-forward
-     (concat
-      "("
-      (regexp-opt
-       ;; Not an exhaustive list
-       '("loop" "incf" "plusp" "first" "decf" "minusp" "assert"
-         "case" "destructuring-bind" "second" "third" "defun*"
-         "defmacro*" "return-from" "labels" "cadar" "fourth"
-         "cadadr") t)
-      "\\_>")))
-  (let ((form (match-string 1)))
-    (backward-sexp)
-    (cond
-     ((string-match "^\\(defun\\|defmacro\\)\\*$")
-      (kill-sexp)
-      (insert (concat "cl-" (match-string 1))))
-     (t
-      (insert "cl-")))
-    (when (fboundp 'aggressive-indent-indent-defun)
-      (aggressive-indent-indent-defun))))
+(use-package chunyang-elisp
+  :load-path "personal/"
+  :bind ("C-h C-." . chunyang-elisp-function-or-variable-quickhelp))
 
 
 ;;; Version control
@@ -931,7 +910,9 @@ Homebrew: brew install trash")))
   ;; :commands paradox-list-packages
   :config
   (setq paradox-github-token t
-        paradox-execute-asynchronously nil))
+        paradox-execute-asynchronously nil)
+  (bind-keys ("C-c l p" . paradox-list-packages)
+             ("C-c l P" . package-list-packages-no-fetch)))
 
 (use-package guide-key
   ;; :ensure t
@@ -939,7 +920,16 @@ Homebrew: brew install trash")))
   :diminish guide-key-mode
   :config
   (setq guide-key/guide-key-sequence
-        '("C-c" "C-h" "C-x r" "C-x 4" "C-c h" "C-x n" "C-c p")
+        '("C-h"                         ; Help
+          "C-x r"                       ; Registers and Rectangle
+          "C-x 4"                       ; other-window
+          "C-c h"                       ; Helm
+          "C-x n"                       ; Narrowing
+          "C-c p"                       ; Projectile
+          "C-c T"                       ; Personal Toggle commands
+          "C-c l"                       ; Personal List something commands
+          "C-c f"                       ; File
+          )
         guide-key/highlight-command-regexp "rectangle")
   (guide-key-mode 1))
 
@@ -1070,7 +1060,7 @@ Homebrew: brew install trash")))
 (use-package org
   :bind (("C-c a"   . org-agenda)
          ("C-c c"   . org-capture)
-         ("C-c l"   . org-store-link)
+         ("C-c L"   . org-store-link)
          ("C-c C-o" . org-open-at-point-global))
   :config
   (setq org-default-notes-file "~/org/task.org"
@@ -1100,7 +1090,7 @@ Homebrew: brew install trash")))
   :mode "Portfile")
 
 (bind-key "C-h C-k" #'find-function-on-key)
-(bind-key "C-h h" #'describe-personal-keybindings)
+;; (bind-key "C-h h" #'describe-personal-keybindings)
 
 
 ;;; Web Development
