@@ -888,8 +888,8 @@ Homebrew: brew install trash")))
 (use-package projectile                 ; Project management
   :ensure t
   :config
-  (setq projectile-mode-line
-        '(:eval (format " P[%s]" (projectile-project-name))))
+  ;; (setq projectile-mode-line
+  ;;       '(:eval (format " P[%s]" (projectile-project-name))))
   ;; Enable projectile globally
   (projectile-global-mode)
   ;; helm
@@ -964,6 +964,10 @@ Homebrew: brew install trash")))
 (use-package helm-go
   :load-path "~/wip/helm-go"
   :bind (("C-c C-p" . helm-go)))
+
+(use-package M-x-dwim
+  :load-path "personal"
+  :bind ("<C-return>" . M-x-dwim))
 
 
 ;;; Net & Web & Email
