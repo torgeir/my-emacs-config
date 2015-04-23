@@ -305,12 +305,13 @@ Homebrew: brew install trash")))
   :config (popwin-mode 1))
 
 (use-package frame
-  :bind (("C-c T F" . toggle-frame-fullscreen))
   :config
   ;; Kill `suspend-frame'
   ;; (global-set-key (kbd "C-z") nil)
-  (global-set-key (kbd "C-x C-z") nil)
-  (add-to-list 'initial-frame-alist '(fullscreen . maximized)))
+  (unbind-key "C-x C-z")
+  (bind-keys ("C-c T F" . toggle-frame-fullscreen)
+             ("C-c T m" . toggle-frame-maximized))
+  (add-to-list 'initial-frame-alist '(maximized . fullscreen)))
 
 ;;; Note: already enabled by default from Emacs 24.4 (?)
 ;; (use-package uniquify                   ; Make buffer names unique
@@ -347,17 +348,17 @@ Homebrew: brew install trash")))
 (use-package dired                      ; Edit directories
   :config
   (use-package dired-x
-    ;; :diminish dired-omit-mode
     :config
     (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
     (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))))
 
 (use-package direx
   :ensure t
-  :bind (([remap dired-jump] . direx:jump-to-directory-other-window))
   :config
   (push '(direx:direx-mode :position left :width 25 :dedicated t)
-        popwin:special-display-config))
+        popwin:special-display-config)
+  ;; (bind-key "C-x C-J" #'direx:jump-to-directory-other-window)
+  )
 
 (use-package neotree
   :disabled t
@@ -459,27 +460,28 @@ Homebrew: brew install trash")))
   :ensure t)
 
 (use-package visual-regexp              ; Regexp replace with in-buffer display
-  :disabled t
+  :disabled t                           ; This feature is replaced by `anzu'
   :ensure t
   :bind (("C-c r" . vr/query-replace)
          ("C-c R" . vr/replace)))
 
 (use-package zop-to-char
-  :disabled t
   :ensure t
-  :bind (("M-z" . zop-to-char)
-         ("M-Z" . zop-up-to-char)))
+  :config
+  (bind-keys ([remap zap-to-char] . zop-to-char)
+             ("M-z"               . zop-up-to-char)))
 
 (use-package easy-kill                  ; Easy killing and marking on C-w
-  :disabled t
   :ensure t
-  :bind (([remap kill-ring-save] . easy-kill)
-         ([remap mark-sexp]      . easy-mark)))
+  :config
+  (bind-keys ([remap kill-ring-save] . easy-kill)
+             ([remap mark-sexp]      . easy-mark)))
 
 (use-package align                      ; Align text in buffers
-  :bind (("C-c A a" . align)
-         ("C-c A c" . align-current)
-         ("C-c A r" . align-regexp)))
+  :config
+  (bind-keys ("C-c A a" . align)
+             ("C-c A c" . align-current)
+             ("C-c A r" . align-regexp)))
 
 (use-package multiple-cursors           ; Edit text with multiple cursors
   :disabled t
@@ -510,7 +512,7 @@ Homebrew: brew install trash")))
 
 (use-package nlinum                     ; Line numbers in display margin
   :ensure t
-  :bind (("C-c n l" . nlinum-mode)))
+  :bind (("C-c T l" . nlinum-mode)))
 
 ;; Give us narrowing back!
 (put 'narrow-to-region 'disabled nil)
@@ -692,7 +694,7 @@ Homebrew: brew install trash")))
   :config
   (setq flycheck-emacs-lisp-load-path 'inherit)
   ;; (global-flycheck-mode 1)
-  (bind-keys ("C-c n f" . global-flycheck-mode)
+  (bind-keys ("C-c T f" . global-flycheck-mode)
              ("C-c l e" . list-flycheck-errors))
   (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
     :ensure t
@@ -721,8 +723,6 @@ Homebrew: brew install trash")))
 
 ;;; Programming utilities
 (use-package compile                    ; Compile from Emacs
-  :bind (("C-c c" . compile)
-         ("C-c C" . recompile))
   :config
   (setq compilation-ask-about-save nil  ; Just save before compiling
         compilation-always-kill t       ; Just kill old compile processes before
@@ -740,16 +740,15 @@ Homebrew: brew install trash")))
 (use-package highlight-symbol           ; Highlighting and commands for symbols
   :ensure t
   :diminish highlight-symbol-mode
-  :init
+  :config
   (setq highlight-symbol-on-navigation-p t)
   ;; Navigate occurrences of the symbol under point with M-n and M-p
   (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
   ;; Highlight symbol occurrences
   (add-hook 'prog-mode-hook #'highlight-symbol-mode)
-  :bind (("C-c s %" . highlight-symbol-query-replace)
-         ("C-c s n" . highlight-symbol-next-in-defun)
-         ("C-c s o" . highlight-symbol-occur)
-         ("C-c s p" . highlight-symbol-prev-in-defun)))
+  ;; Don't tell me how many symbols at point, I'm not interested.
+  (when (fboundp 'highlight-symbol-count)
+    (setf (symbol-function 'highlight-symbol-count) #'ignore)))
 
 (use-package rainbow-mode               ; Fontify color values in code
   :disabled t
@@ -822,7 +821,7 @@ Homebrew: brew install trash")))
 
 ;;; Version control
 (use-package diff-hl                    ; Highlight hunks in fringe
-  :disabled t
+  :disabled t                           ; Replaced by `git-gutter'
   :ensure t
   :config
   ;; Highlight changes to the current file in the fringe
@@ -838,18 +837,18 @@ Homebrew: brew install trash")))
   :ensure t
   :diminish git-gutter-mode
   :config
-  ;; (global-git-gutter-mode t)
+  (global-git-gutter-mode t)
   (bind-keys ("C-x C-g" . git-gutter:toggle)
-             ;; ("C-x p"   . git-gutter:previous-hunk)
-             ;; ("C-x n"   . git-gutter:next-hunk)
+             ("C-x v P" . git-gutter:previous-hunk)
+             ("C-x v N" . git-gutter:next-hunk)
              ("C-x v s" . git-gutter:stage-hunk)
              ("C-x v r" . git-gutter:revert-hunk)))
 
 (use-package git-messenger
   :ensure t
   :config
-  (bind-key "C-x v p" 'git-messenger:popup-message)
-  (bind-key "m" 'git-messenger:copy-message git-messenger-map))
+  (bind-key "C-x v p" #'git-messenger:popup-message)
+  (bind-key "m" #'git-messenger:copy-message git-messenger-map))
 
 (use-package magit                      ; The one and only Git frontend
   :ensure t
@@ -858,9 +857,8 @@ Homebrew: brew install trash")))
   :bind ("C-x g" . magit-status))
 
 (use-package git-timemachine            ; Go back in Git time
-  :disabled t
   :ensure t
-  :bind (("C-c v t" . git-timemachine)))
+  :bind (("C-x v t" . git-timemachine)))
 
 
 ;;; Tools and utilities
@@ -929,6 +927,8 @@ Homebrew: brew install trash")))
           "C-c T"                       ; Personal Toggle commands
           "C-c l"                       ; Personal List something commands
           "C-c f"                       ; File
+          "C-x v"                       ; VCS
+          "C-c A"                       ; Align
           )
         guide-key/highlight-command-regexp "rectangle")
   (guide-key-mode 1))
