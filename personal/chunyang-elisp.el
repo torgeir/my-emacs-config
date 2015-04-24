@@ -69,6 +69,60 @@ See also `describe-function-or-variable'."
     (when (fboundp 'aggressive-indent-indent-defun)
       (aggressive-indent-indent-defun))))
 
+;;;###autoload
+(defun helm-package-install ()
+  "Preconfigured `package-install' by indicating installed packages."
+  (interactive)
+  (require 'helm)
+  (require 'package)
+  (let ((package-install-source
+         (helm-build-in-buffer-source "Install Package"
+           :init (lambda ()
+                   (with-current-buffer (helm-candidate-buffer 'global)
+                     (setf (buffer-string)
+                           (mapconcat
+                            'identity
+                            (delq nil
+                                  (mapcar
+                                   (lambda (elt)
+                                     (unless (package-installed-p (car elt))
+                                       (symbol-name (car elt))))
+                                   package-archive-contents))
+                            "\n"))))
+           :action (helm-make-actions
+                    "Install"
+                    (lambda (candidate) (package-install (intern candidate)))
+                    "Describe"
+                    (lambda (candidate)
+                      (describe-package (intern candidate))))))
+        (package-installed-source
+         (helm-build-in-buffer-source "Reinstall package"
+           :init (lambda ()
+                   (with-current-buffer (helm-candidate-buffer 'global)
+                     (setf (buffer-string)
+                           (mapconcat
+                            'identity
+                            (delq nil
+                                  (mapcar (lambda (elt)
+                                            (when (package-installed-p (car elt))
+                                              (symbol-name (car elt))))
+                                          package-archive-contents))
+                            "\n"))))
+           :action (helm-make-actions
+                    "Reinstall"
+                    (lambda (candidate) (package-reinstall (intern candidate)))
+                    ;; "Uninstall"
+                    ;; (lambda (candidate)
+                    ;;   (and (y-or-n-p
+                    ;;         (format "Are you sure to uninstall %s ?" candidate))
+                    ;;        (package-delete
+                    ;;         (cadr (assq (intern candidate) package-alist)))))
+                    "Describe"
+                    (lambda (candidate) (describe-package (intern candidate)))))))
+    (helm :sources '(package-install-source package-installed-source)
+          :buffer "*Helm package install*"
+          :candidate-number-limit 9999)))
+
 (provide 'chunyang-elisp)
 
 ;;; chunyang-elisp.el ends here

@@ -249,13 +249,13 @@ Homebrew: brew install trash")))
              ("g" . helm-chrome-bookmarks)
              ("z" . helm-complex-command-history))
   ;; Global map
-  (bind-keys ("M-x"     . helm-M-x)
-             ("C-x C-f" . helm-find-files)
-             ("C-x f"   . helm-recentf)
-             ("M-l"     . helm-buffers-list)
-             ("C-x b"   . helm-mini)
-             ("M-y"     . helm-show-kill-ring)
-             ("C-z"     . helm-resume))
+  (bind-keys ([remap execute-extended-command] . helm-M-x)            ; M-x
+             ([remap find-file]                . helm-find-files)     ; C-x C-f
+             ([remap set-fill-column]          . helm-recentf)        ; C-x f
+             ([remap switch-to-buffer]         . helm-mini)           ; C-x b
+             ([remap downcase-word]            . helm-buffers-list)   ; M-l
+             ([remap yank-pop]                 . helm-show-kill-ring) ; M-y
+             ([remap suspend-frame]            . helm-resume))        ; C-z
   (require 'helm-regexp)
 
   ;; (defmethod helm-setup-user-source ((source helm-source-multi-occur))
@@ -286,7 +286,20 @@ Homebrew: brew install trash")))
             :truncate-lines t)))
 
   (bind-key "M-i" #'my-helm-occur)
-  (bind-key "M-i" #'helm-occur-from-isearch isearch-mode-map))
+  (bind-key "M-i" #'helm-occur-from-isearch isearch-mode-map)
+
+
+  (defun toggle-helm (arg)
+    "Toggle helm.  With prefix argument, always turn off."
+    (interactive "P")
+    (if (or arg helm-mode)
+        (progn (helm-mode -1)
+               (unbind-key [remap execute-extended-command]))
+      (helm-mode +1)
+      (bind-key [remap execute-extended-command] #'helm-M-x)))
+
+
+  )
 
 ;; (bind-key "C-o" #'helm-occur)       ; TODO let `helm-occur' supports
 ;;                                         ;`from-isearch' easier, just like helm swoop
@@ -617,7 +630,9 @@ Homebrew: brew install trash")))
 
 (use-package color-identifiers-mode     ; highlight each source code identifier uniquely based on its name
   :ensure t
-  ;; :config (global-color-identifiers-mode)
+  :config
+  ;; (global-color-identifiers-mode)
+  (bind-key "C-c T c" #'global-color-identifiers-mode)
   )
 
 
@@ -816,6 +831,7 @@ Homebrew: brew install trash")))
 
 (use-package chunyang-elisp
   :load-path "personal/"
+  :commands helm-package-install
   :bind ("C-h C-." . chunyang-elisp-function-or-variable-quickhelp))
 
 
@@ -913,8 +929,8 @@ Homebrew: brew install trash")))
              ("C-c l P" . package-list-packages-no-fetch)))
 
 (use-package guide-key
-  ;; :ensure t
-  :load-path "~/wip/guide-key/"
+  :ensure t
+  ;; :load-path "~/wip/guide-key/"
   :diminish guide-key-mode
   :config
   (setq guide-key/guide-key-sequence
