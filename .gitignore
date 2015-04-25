@@ -23,3 +23,4 @@ auto-save-list
 *.elc
 
 helm-adaptive-history
+srecode-map.el

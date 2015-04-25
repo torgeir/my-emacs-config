@@ -27,7 +27,7 @@ See also `describe-function-or-variable'."
            (fdoc-short (string-first-line fdoc))
            (vdoc (when  (boundp symbol)
                    (or (documentation-property symbol 'variable-documentation t)
-                       "Not documented.")))
+                       "Not documented as a variable.")))
            (vdoc-short (string-first-line vdoc)))
       (and (require 'popup nil t)
            (popup-tip
@@ -69,59 +69,71 @@ See also `describe-function-or-variable'."
     (when (fboundp 'aggressive-indent-indent-defun)
       (aggressive-indent-indent-defun))))
 
+(require 'helm)
+(require 'package)
+
+(defun helm-package-open-homepage (candidate)
+  "Helm Action."
+  (let* ((pkg (intern candidate))
+         (desc
+          (or
+           (if (package-desc-p pkg) pkg)
+           (cadr (assq pkg package-alist))
+           (let ((built-in (assq pkg package--builtins)))
+             (if built-in
+                 (package--from-builtin built-in)
+               (cadr (assq pkg package-archive-contents))))))
+         (extras (and desc (package-desc-extras desc)))
+         (homepage (cdr (assoc :url extras))))
+    (if homepage
+        (browse-url homepage)
+      (message "No homepage for '%S" pkg))))
+
+(defvar helm-package-install-source
+  (helm-build-sync-source "Install Package"
+    :candidates (delq nil
+                      (mapcar
+                       (lambda (elt)
+                         (unless (package-installed-p (car elt))
+                           (symbol-name (car elt))))
+                       package-archive-contents))
+    :action (helm-make-actions
+             "Install"
+             (lambda (candidate) (package-install (intern candidate)))
+             "Describe"
+             (lambda (candidate)
+               (describe-package (intern candidate)))
+             "Open homepage"
+             #'helm-package-open-homepage)))
+
+(defvar helm-package-installed-source
+  (helm-build-sync-source "Reinstall package"
+    :candidates (delq nil
+                      (mapcar (lambda (elt)
+                                (when (package-installed-p (car elt))
+                                  (symbol-name (car elt))))
+                              package-archive-contents))
+    :action (helm-make-actions
+             "Reinstall"
+             (lambda (candidate) (package-reinstall (intern candidate)))
+             ;; "Uninstall"
+             ;; (lambda (candidate)
+             ;;   (and (y-or-n-p
+             ;;         (format "Are you sure to uninstall %s ?" candidate))
+             ;;        (package-delete
+             ;;         (cadr (assq (intern candidate) package-alist)))))
+             "Describe"
+             (lambda (candidate) (describe-package (intern candidate)))
+             "Open homepage"
+             #'helm-package-open-homepage)))
+
 ;;;###autoload
 (defun helm-package-install ()
   "Preconfigured `package-install' by indicating installed packages."
   (interactive)
-  (require 'helm)
-  (require 'package)
-  (let ((package-install-source
-         (helm-build-in-buffer-source "Install Package"
-           :init (lambda ()
-                   (with-current-buffer (helm-candidate-buffer 'global)
-                     (setf (buffer-string)
-                           (mapconcat
-                            'identity
-                            (delq nil
-                                  (mapcar
-                                   (lambda (elt)
-                                     (unless (package-installed-p (car elt))
-                                       (symbol-name (car elt))))
-                                   package-archive-contents))
-                            "\n"))))
-           :action (helm-make-actions
-                    "Install"
-                    (lambda (candidate) (package-install (intern candidate)))
-                    "Describe"
-                    (lambda (candidate)
-                      (describe-package (intern candidate))))))
-        (package-installed-source
-         (helm-build-in-buffer-source "Reinstall package"
-           :init (lambda ()
-                   (with-current-buffer (helm-candidate-buffer 'global)
-                     (setf (buffer-string)
-                           (mapconcat
-                            'identity
-                            (delq nil
-                                  (mapcar (lambda (elt)
-                                            (when (package-installed-p (car elt))
-                                              (symbol-name (car elt))))
-                                          package-archive-contents))
-                            "\n"))))
-           :action (helm-make-actions
-                    "Reinstall"
-                    (lambda (candidate) (package-reinstall (intern candidate)))
-                    ;; "Uninstall"
-                    ;; (lambda (candidate)
-                    ;;   (and (y-or-n-p
-                    ;;         (format "Are you sure to uninstall %s ?" candidate))
-                    ;;        (package-delete
-                    ;;         (cadr (assq (intern candidate) package-alist)))))
-                    "Describe"
-                    (lambda (candidate) (describe-package (intern candidate)))))))
-    (helm :sources '(package-install-source package-installed-source)
-          :buffer "*Helm package install*"
-          :candidate-number-limit 9999)))
+  (helm :sources '(helm-package-install-source helm-package-installed-source)
+        :buffer "*Helm package install*"
+        :candidate-number-limit 9999))
 
 (provide 'chunyang-elisp)
 
