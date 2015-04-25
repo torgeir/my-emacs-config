@@ -1,4 +1,4 @@
-;;; M-x-dwim.el --- M-x with a context (Do What I Mean)
+;;; M-x-dwim.el --- M-x with a context (Do What I Mean)  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

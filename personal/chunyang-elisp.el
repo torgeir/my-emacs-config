@@ -1,4 +1,4 @@
-;;; chunyang-elisp.el ---
+;;; chunyang-elisp.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

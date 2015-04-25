@@ -1,4 +1,4 @@
-;;; helm-dict.el --- Dictionary with Helm interface
+;;; helm-dict.el --- Dictionary with Helm interface  -*- lexical-binding: t; -*-
 
 ;;; Copyright (C) 2015 Chunyang Xu
 ;;

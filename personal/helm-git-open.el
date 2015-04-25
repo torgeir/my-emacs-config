@@ -1,4 +1,4 @@
-;;; helm-git-open.el --- git open
+;;; helm-git-open.el --- git open  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

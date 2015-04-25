@@ -1,4 +1,4 @@
-;;; chunyang-simple.e --- Simple editing functions
+;;; chunyang-simple.e --- Simple editing functions  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

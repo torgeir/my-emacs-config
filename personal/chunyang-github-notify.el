@@ -1,4 +1,4 @@
-;;; chunyang-github-notify.el --- Show Github notification numbers in modelien
+;;; chunyang-github-notify.el --- Show Github notification numbers in modelien  -*- lexical-binding: t; -*-
 
 ;;; Copyright (C) 2015 Chunyang Xu
 ;;
