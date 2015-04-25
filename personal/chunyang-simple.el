@@ -109,6 +109,18 @@ prefix argument, the process's buffer is displayed."
 (defun chunyang-launch-sentinel (proc event)
   "Reports on changes in `chunyang-launch'ed applications."
   (message (format "%s: %s" proc event)))
-
+
+;;; @TODO: finish this.
+(defun chunyang-kill-all-buffer ()
+  "Kill almost all buffers."
+  (interactive)
+  (mapc (lambda (elt)
+          (with-current-buffer elt
+            (save-buffer elt)))
+        (seq-remove
+         (lambda (elt)
+           (member (buffer-name elt)
+                   '("*scratch*" "*Messages*" "*Help*" "*info*")))
+         (buffer-list))))
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here

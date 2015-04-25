@@ -170,10 +170,29 @@ Homebrew: brew install trash")))
   :ensure t)
 (use-package color-theme-sanityinc-tomorrow
   :ensure t)
+(use-package solarized-theme
+  :ensure t)
 
 ;;------------------------------------------------------------------------------
 ;; Toggle between light and dark
 ;;------------------------------------------------------------------------------
+
+(defvar my-favourite-themes
+  '(zenburn
+    sanityinc-tomorrow-night
+    sanityinc-tomorrow-eighties
+    solarized-dark))
+
+(defun helm-my-themes ()
+  (interactive)
+  (let ((source
+         (helm-build-sync-source "My Favourite Themes"
+           :candidates my-favourite-themes
+           :action (lambda (candidate)
+                     (message "%S" candidate)
+                     (chunyang--switch-theme (intern candidate))))))
+    (helm :sources '(source))))
+
 (defun chunyang--switch-theme (theme)
   (unless (eq (car custom-enabled-themes) theme)
     ;; (mapc 'disable-theme custom-enabled-themes)
@@ -288,6 +307,20 @@ Homebrew: brew install trash")))
   (bind-key "M-i" #'my-helm-occur)
   (bind-key "M-i" #'helm-occur-from-isearch isearch-mode-map)
 
+  ;; Distinguish <TAB> and C-i, see (info "(emacs) Named ASCII Chars")
+  ;; (global-set-key [tab] 'indent-for-tab-command)
+  ;; (global-set-key "\C-i" 'helm-semantic-or-imenu)
+
+  ;; http://stackoverflow.com/a/1792482/2999892
+  ;; (setq local-function-key-map (delq '(kp-tab . [9]) local-function-key-map))
+  ;; (global-set-key (kbd "C-i") 'helm-semantic-or-imenu)
+
+  ;; http://stackoverflow.com/a/11319885/2999892
+  (define-key input-decode-map (kbd "C-i") (kbd "H-i"))
+  (global-set-key (kbd "H-i") 'helm-semantic-or-imenu)
+
+
+  ;; ;; (global-set-key [011] 'emacs-version)
 
   (defun toggle-helm (arg)
     "Toggle helm.  With prefix argument, always turn off."
@@ -631,9 +664,8 @@ Homebrew: brew install trash")))
 (use-package color-identifiers-mode     ; highlight each source code identifier uniquely based on its name
   :ensure t
   :config
-  ;; (global-color-identifiers-mode)
-  (bind-key "C-c T c" #'global-color-identifiers-mode)
-  )
+  (global-color-identifiers-mode)
+  (bind-key "C-c T c" #'global-color-identifiers-mode))
 
 
 ;;; Skeletons, completion and expansion
