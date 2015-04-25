@@ -256,13 +256,14 @@ Homebrew: brew install trash")))
   :ensure t
   :diminish helm-mode
   :config
+  ;; Old value is "C-x c", needs to be changed before loading helm-config
+  (setq helm-command-prefix-key "C-c h")
   (require 'helm-config)
+
   (helm-mode 1)
   (helm-adaptive-mode 1)
   ;; (helm-autoresize-mode 1)
-  ;; Change helm command prefix
-  (bind-keys ("C-x c" . nil)
-             ("C-c h" . helm-command-prefix))
+
   ;; Local map
   (bind-keys :map helm-command-map
              ("g" . helm-chrome-bookmarks)
@@ -275,10 +276,10 @@ Homebrew: brew install trash")))
              ([remap downcase-word]            . helm-buffers-list)   ; M-l
              ([remap yank-pop]                 . helm-show-kill-ring) ; M-y
              ([remap suspend-frame]            . helm-resume))        ; C-z
-  (require 'helm-regexp)
 
-  ;; (defmethod helm-setup-user-source ((source helm-source-multi-occur))
-  ;;   (oset source :follow 1))
+  (require 'helm-regexp)
+  (defmethod helm-setup-user-source ((source helm-source-multi-occur))
+    (oset source :follow 1))
 
   (defun my-helm-occur ()
     "Preconfigured helm for Occur."
@@ -299,13 +300,27 @@ Homebrew: brew install trash")))
             :buffer "*helm occur*"
             :history 'helm-grep-history
             :input input
-            :follow t
             :preselect (and (memq 'helm-source-occur helm-sources-using-default-as-input)
                             (format "%s:%d:" (buffer-name) (line-number-at-pos (point))))
             :truncate-lines t)))
 
+  ;; (with-eval-after-load "helm-regexp.el"
+  ;;   (setq helm-source-occur (helm-make-source "Occur" 'helm-source-multi-occur))
+  ;;   (setq helm-source-occur (helm-make-source "Moccur" 'helm-source-multi-occur)))
+
   (bind-key "M-i" #'my-helm-occur)
   (bind-key "M-i" #'helm-occur-from-isearch isearch-mode-map)
+
+  (when (eq system-type 'darwin)
+    (setq helm-grep-default-command
+          "ggrep --color=never -a -d skip %e -n%cH -e %p %f"))
+  (bind-key "M-I" #'helm-do-grep)
+
+  ;; Edit grep buffer
+  (use-package wgrep
+    :ensure t)
+
+  (bind-key "C-c <SPC>" #'helm-all-mark-rings)
 
   ;; Distinguish <TAB> and C-i, see (info "(emacs) Named ASCII Chars")
   ;; (global-set-key [tab] 'indent-for-tab-command)
@@ -319,7 +334,6 @@ Homebrew: brew install trash")))
   (define-key input-decode-map (kbd "C-i") (kbd "H-i"))
   (global-set-key (kbd "H-i") 'helm-semantic-or-imenu)
 
-
   ;; ;; (global-set-key [011] 'emacs-version)
 
   (defun toggle-helm (arg)
@@ -330,8 +344,6 @@ Homebrew: brew install trash")))
                (unbind-key [remap execute-extended-command]))
       (helm-mode +1)
       (bind-key [remap execute-extended-command] #'helm-M-x)))
-
-
   )
 
 ;; (bind-key "C-o" #'helm-occur)       ; TODO let `helm-occur' supports
@@ -944,8 +956,10 @@ Homebrew: brew install trash")))
 (use-package helm-github-stars
   :load-path "~/wip/helm-github-stars"
   :commands (helm-github-stars helm-github-stars-fetch)
-  :config (setq helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"
-                helm-github-stars-refetch-time (/ 6.0 24)))
+  :config
+  (setq helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"
+        helm-github-stars-refetch-time (/ 6.0 24))
+  (bind-key "G" #'helm-github-stars helm-command-map))
 
 (use-package jist                       ; Gist
   :ensure t
@@ -1000,6 +1014,7 @@ Homebrew: brew install trash")))
         '((:name "dict1" :file "~/wip/chinese-pyim/pyim-bigdict.txt" :coding utf-8-unix))))
 
 (use-package helm-go
+  :disabled t
   :load-path "~/wip/helm-go"
   :bind (("C-c C-p" . helm-go)))
 
