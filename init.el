@@ -195,8 +195,8 @@ Homebrew: brew install trash")))
 
 (defun chunyang--switch-theme (theme)
   (unless (eq (car custom-enabled-themes) theme)
-    ;; (mapc 'disable-theme custom-enabled-themes)
-    ;; (load-theme theme t)
+    (mapc 'disable-theme custom-enabled-themes)
+    (load-theme theme t)
     (custom-set-variables
      `(custom-enabled-themes '(,theme)))
     (custom-save-all)))
@@ -278,8 +278,8 @@ Homebrew: brew install trash")))
              ([remap suspend-frame]            . helm-resume))        ; C-z
 
   (require 'helm-regexp)
-  (defmethod helm-setup-user-source ((source helm-source-multi-occur))
-    (oset source :follow 1))
+  ;; (defmethod helm-setup-user-source ((source helm-source-multi-occur))
+  ;;   (oset source :follow 1))
 
   (defun my-helm-occur ()
     "Preconfigured helm for Occur."
@@ -310,6 +310,16 @@ Homebrew: brew install trash")))
 
   (bind-key "M-i" #'my-helm-occur)
   (bind-key "M-i" #'helm-occur-from-isearch isearch-mode-map)
+
+  ;; @TODO:
+  ;; (defun isearch-from-helm-occur ()
+  ;;   "Invoke `isearch-forward' from helm-occur."
+  ;;   (interactive)
+  ;;   (setq helm-exit-status 0)
+  ;;   (condition-case nil
+  ;;       (exit-minibuffer)
+  ;;     (call-interactively #'isearch-forward)))
+  ;; (bind-key "C-s" #'isearch-from-helm-occur helm-moccur-map)
 
   (when (eq system-type 'darwin)
     (setq helm-grep-default-command
