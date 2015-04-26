@@ -44,6 +44,21 @@ See also `describe-function-or-variable'."
             )))))
 
 ;;;###autoload
+(defun chunyang-elisp-describe-thing-at-point (symbol &optional buffer frame)
+  ""
+  (interactive
+   (let* ((v-or-f (variable-at-point))
+          (found (symbolp v-or-f))
+          (v-or-f (if found v-or-f (function-called-at-point)))
+          (found (or found v-or-f)))
+     (list v-or-f)))
+  (if (not (and symbol (symbolp symbol)))
+      (message "You didn't specify a function or variable")
+    (unless (buffer-live-p buffer) (setq buffer (current-buffer)))
+    (unless (frame-live-p frame) (setq frame (selected-frame)))
+    (help-xref-interned symbol buffer frame)))
+
+;;;###autoload
 (defun sanityinc/cl-libify-next ()
   "Find next symbol from 'cl and replace it with the 'cl-lib equivalent."
   (interactive)

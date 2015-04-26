@@ -183,15 +183,15 @@ Homebrew: brew install trash")))
     sanityinc-tomorrow-eighties
     solarized-dark))
 
-(defun helm-my-themes ()
-  (interactive)
-  (let ((source
-         (helm-build-sync-source "My Favourite Themes"
-           :candidates my-favourite-themes
-           :action (lambda (candidate)
-                     (message "%S" candidate)
-                     (chunyang--switch-theme (intern candidate))))))
-    (helm :sources '(source))))
+;; (defun helm-my-themes ()
+;;   (interactive)
+;;   (let ((source
+;;          (helm-build-sync-source "My Favourite Themes"
+;;            :candidates my-favourite-themes
+;;            :action (lambda (candidate)
+;;                      (message "%S" candidate)
+;;                      (chunyang--switch-theme (intern candidate))))))
+;;     (helm :sources '(source))))
 
 (defun chunyang--switch-theme (theme)
   (unless (eq (car custom-enabled-themes) theme)
@@ -253,7 +253,8 @@ Homebrew: brew install trash")))
 
 ;;; The minibuffer
 (use-package helm
-  :ensure t
+  ;; :ensure t
+  :load-path "~/wip/helm"
   :diminish helm-mode
   :config
   ;; Old value is "C-x c", needs to be changed before loading helm-config
@@ -690,6 +691,7 @@ Homebrew: brew install trash")))
             (add-hook hook #'rainbow-delimiters-mode)))
 
 (use-package fic-mode
+  :disabled t                           ; @FIXME: not work well, try another one
   :ensure t
   :diminish fic-mode
   :config (fic-mode))
@@ -794,6 +796,7 @@ Homebrew: brew install trash")))
 (use-package markdown-mode
   :ensure t
   :mode (("\\`README\\.md\\'" . gfm-mode)
+         ("\\.mdpp\\'"        . gfm-mode)
          ("\\.md\\'"          . markdown-mode)
          ("\\.markdown\\'"    . markdown-mode)))
 
@@ -870,14 +873,29 @@ Homebrew: brew install trash")))
     (with-current-buffer out-buffer-name
       (view-mode 1))))
 
-(use-package elisp-slime-nav
-  :ensure t
-  :diminish elisp-slime-nav-mode
-  :config
-  (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
-    (add-hook hook 'turn-on-elisp-slime-nav-mode))
-  (bind-key
-   [remap display-local-help] #'elisp-slime-nav-describe-elisp-thing-at-point))
+(unless
+    (use-package elisp-slime-nav
+      :disabled t
+      :ensure t
+      :diminish elisp-slime-nav-mode
+      :config
+      (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+        (add-hook hook 'turn-on-elisp-slime-nav-mode))
+      (bind-key                         ; C-h . (`display-local-help') is for
+                                        ; show tooltip in terminal, but I use
+                                        ; only GUI, so make use of it.
+       [remap display-local-help] #'elisp-slime-nav-describe-elisp-thing-at-point))
+  ;; Invert my own wheel
+  (use-package chunyang-elisp
+    :load-path "personal"
+    :config
+    (bind-key [remap display-local-help]
+              #'chunyang-elisp-describe-thing-at-point))
+  (bind-key [remap describe-distribution]
+            (key-binding "\C-ho")
+            ;; #'describe-function-or-variable
+            )
+  )
 
 (use-package ipretty
   :ensure t
@@ -989,7 +1007,8 @@ Homebrew: brew install trash")))
   :config (load-file "~/.private.el"))
 
 (use-package paradox                    ; Better package menu
-  :ensure t
+  ;; :ensure t
+  :load-path "~/repos/paradox/"
   ;; :commands paradox-list-packages
   :config
   (setq paradox-github-token t
