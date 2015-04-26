@@ -415,10 +415,11 @@ Homebrew: brew install trash")))
 
 (use-package dired                      ; Edit directories
   :config
+  ;; VCS integration with `diff-hl'
+  ;; (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
   (use-package dired-x
     :config
-    (setq dired-omit-files (concat dired-omit-files "\\|^\\..+$"))
-    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))))
+    (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))))
 
 (use-package direx
   :ensure t
@@ -628,6 +629,16 @@ Homebrew: brew install trash")))
   :ensure t
   :bind (("C-c i" . helm-imenu-anywhere)))
 
+;; Code folding
+(use-package origami
+  :ensure t
+  ;; @TODO: Setup key or add menu for this by using easy-menu, see `helm-config'
+  ;; for example.
+  )
+
+(use-package yafolding
+  :disabled t
+  :ensure t)
 
 ;;; Search
 (setq isearch-allow-scroll t)
@@ -755,6 +766,8 @@ Homebrew: brew install trash")))
   :config
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
+  (unbind-key "C-M-i" flyspell-mode-map)
+  (unbind-key "C-."   flyspell-mode-map)
   (add-hook 'text-mode-hook #'flyspell-mode)
   (add-hook 'prog-mode-hook #'flyspell-prog-mode))
 
@@ -1003,6 +1016,8 @@ Homebrew: brew install trash")))
           "C-c A"                       ; Align
           )
         guide-key/highlight-command-regexp "rectangle")
+  (add-hook 'dired-mode-hook
+            (lambda () (guide-key/add-local-guide-key-sequence "%")))
   (guide-key-mode 1))
 
 (use-package keyfreq
@@ -1029,6 +1044,7 @@ Homebrew: brew install trash")))
   :bind (("C-c C-p" . helm-go)))
 
 (use-package M-x-dwim
+  :disabled t
   :load-path "personal"
   :bind ("<C-return>" . M-x-dwim))
 
@@ -1056,7 +1072,9 @@ Homebrew: brew install trash")))
 (use-package google-this
   :ensure t
   :diminish google-this-mode
-  :bind (("C-c g" . google-this-mode-submap)))
+  :config
+  (google-this-mode)
+  (bind-key "C-c g" #'google-this-mode-submap))
 
 (use-package sx                         ; StackExchange client for Emacs
   :ensure t

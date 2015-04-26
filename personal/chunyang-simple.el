@@ -122,5 +122,32 @@ prefix argument, the process's buffer is displayed."
            (member (buffer-name elt)
                    '("*scratch*" "*Messages*" "*Help*" "*info*")))
          (buffer-list))))
+
+;;; Download stuffs
+(defun chunyang-download-file (url file)
+  "Download URL as file."
+  (interactive
+   (let* ((url (read-string "URL: "))
+          (guess (file-name-nondirectory url))
+          (file (read-file-name "Save to: " nil nil nil guess)))
+     (list url file)))
+  ;; Let's Check our conditions.
+  (unless (executable-find "curl") (error "curl not found."))
+  (if (string= url "") (error "Empty URL."))
+  (if (file-exists-p file) (error "Existing file (%s)." file))
+  (unless (require 'spinner nil t) (error "Package `spinner' not found."))
+  ;; Looks cool. Let's do it.
+  (unless (alist-get 'download spinner-types)
+    (push '(download . ["下" "载" "中"]) spinner-types))
+  ;; @TODO: this process reporter is not working.
+  (spinner-start 'download 3)
+  (unwind-protect
+      (if (zerop (call-process "curl" nil nil nil
+                               url
+                               "-o" file))
+          (message "Download (%s) done." file)
+        (error "curl error."))
+    (spinner-stop)))
+
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here
