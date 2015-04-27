@@ -149,5 +149,20 @@ prefix argument, the process's buffer is displayed."
         (error "curl error."))
     (spinner-stop)))
 
+
+;;; Misc
+(defun chunyang-sum-numbers-in-region (beg end)
+  "Sum numbers in region.  Notes the effect with `string-to-number'.
+
+See also Emacs SE question: URL
+  `http://emacs.stackexchange.com/questions/10939/sum-numbers-in-region'."
+  (interactive "r")
+  (message
+   "%s"
+   (seq-reduce
+    #'+
+    (mapcar #'string-to-number (split-string (buffer-substring beg end)))
+    0)))
+
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here

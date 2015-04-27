@@ -276,7 +276,8 @@ Homebrew: brew install trash")))
              ([remap switch-to-buffer]         . helm-mini)           ; C-x b
              ([remap downcase-word]            . helm-buffers-list)   ; M-l
              ([remap yank-pop]                 . helm-show-kill-ring) ; M-y
-             ([remap suspend-frame]            . helm-resume))        ; C-z
+             ([remap suspend-frame]            . helm-resume)         ; C-z
+             ([remap apropos-command]          . helm-apropos))       ; C-h a
 
   (require 'helm-regexp)
   ;; (defmethod helm-setup-user-source ((source helm-source-multi-occur))
