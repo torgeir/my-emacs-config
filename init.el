@@ -7,7 +7,8 @@
 ;;; init.el --- Emacs configuration of Chunyang Xu -*- lexical-binding: t; -*-
 
 ;;; Debugging
-;; (setq debug-on-error t)
+(setq debug-on-error t)
+(setq ad-redefinition-action 'accept)
 
 (add-to-list 'load-path "/Users/xcy/repos/benchmark-init-el")
 (require 'benchmark-init-loaddefs)
@@ -396,6 +397,9 @@ Homebrew: brew install trash")))
 
 (use-package desktop                    ; Save buffers, windows and frames
   :config (desktop-save-mode))
+
+(use-package winner                     ; C-c <left>, undo
+  :config (winner-mode))                ; C-c <right>, redo
 
 (use-package writeroom-mode             ; Distraction-free editing
   :ensure t
@@ -1207,3 +1211,11 @@ Homebrew: brew install trash")))
 ;;; Web Development
 (use-package restclient
   :ensure t)
+
+
+;;; TEST
+(defun bar ()
+  1)
+
+(defadvice bar (around bar-around)
+  ad-do-it)
