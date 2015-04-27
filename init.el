@@ -384,8 +384,8 @@ Homebrew: brew install trash")))
   (add-to-list 'initial-frame-alist '(maximized . fullscreen)))
 
 ;;; Note: already enabled by default from Emacs 24.4 (?)
-;; (use-package uniquify                   ; Make buffer names unique
-;;   :config (setq uniquify-buffer-name-style 'forward))
+(use-package uniquify                   ; Make buffer names unique
+  :config (setq uniquify-buffer-name-style 'forward))
 
 (use-package ibuffer                    ; Better buffer list
   :bind (([remap list-buffers] . ibuffer)))

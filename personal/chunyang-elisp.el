@@ -150,6 +150,35 @@ See also `describe-function-or-variable'."
         :buffer "*Helm package install*"
         :candidate-number-limit 9999))
 
+
+(require 'package)
+(require 'subr-x)
+
+;;; Show upgrade package number in mode line
+(defvar chunyang--upgradeable-packages nil)
+(defvar chunyang--upgradeable-packages-number nil)
+(defvar chunyang--upgradeable-packages-any? nil)
+
+(defun chunyang--package-upgradeable-p (package)
+  "Return t if PACKAGE (symbol) is upgradeable."
+  (unless package-archive-contents
+    (package-refresh-contents))
+  (when-let ((newest-desc (cadr (assq package package-archive-contents)))
+             (newest-version (package-desc-version newest-desc)))
+    (not (package-installed-p package newest-version))))
+
+(defun chunyang--find-upgrades ()
+  (let (upgrades)
+    (dolist (installed package-alist)
+      (when-let ((pkg-name  (car installed))
+                 (upgrade-p (chunyang--package-upgradeable-p pkg-name)))
+        (push pkg-name upgrades)))
+    (setq chunyang--upgradeable-packages upgrades)
+    (setq chunyang--upgradeable-packages-number
+          (length chunyang--upgradeable-packages))
+    (setq chunyang--upgradeable-packages-any?
+          (> chunyang--upgradeable-packages-number 0))))
+
 (provide 'chunyang-elisp)
 
 ;;; chunyang-elisp.el ends here
