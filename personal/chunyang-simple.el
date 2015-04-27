@@ -149,6 +149,11 @@ prefix argument, the process's buffer is displayed."
         (error "curl error."))
     (spinner-stop)))
 
+;;; @TODO: git clone repository
+(defun chunyang-git-clone (url dir)
+  ""
+  (interactive))
+
 
 ;;; Misc
 (defun chunyang-sum-numbers-in-region (beg end)

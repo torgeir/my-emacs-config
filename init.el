@@ -207,6 +207,7 @@ Homebrew: brew install trash")))
   (interactive)
   (chunyang--switch-theme 'zenburn))
 
+;;; @FIXME: these funcs not work well.
 (defun dark (arg)
   "Activate a dark color theme."
   (interactive "P")
@@ -262,9 +263,9 @@ Homebrew: brew install trash")))
   (setq helm-command-prefix-key "C-c h")
   (require 'helm-config)
 
-  (helm-mode 1)
-  (helm-adaptive-mode 1)
-  ;; (helm-autoresize-mode 1)
+  (helm-mode)
+  (helm-adaptive-mode)
+  ;; (helm-autoresize-mode)
 
   ;; Local map
   (bind-keys :map helm-command-map
@@ -272,13 +273,30 @@ Homebrew: brew install trash")))
              ("z" . helm-complex-command-history))
   ;; Global map
   (bind-keys ([remap execute-extended-command] . helm-M-x)            ; M-x
+             ;; File
              ([remap find-file]                . helm-find-files)     ; C-x C-f
              ([remap set-fill-column]          . helm-recentf)        ; C-x f
+             ;; Buffer
              ([remap switch-to-buffer]         . helm-mini)           ; C-x b
              ([remap downcase-word]            . helm-buffers-list)   ; M-l
+             ;; Kill ring
              ([remap yank-pop]                 . helm-show-kill-ring) ; M-y
              ([remap suspend-frame]            . helm-resume)         ; C-z
-             ([remap apropos-command]          . helm-apropos))       ; C-h a
+             ;; Register
+             ([remap jump-to-register]         . helm-register)
+             ;; Help
+             ([remap apropos-command]          . helm-apropos)        ; C-h a
+             ;; Bookmark
+             ([remap bookmark-jump]            . helm-filtered-bookmarks) ; C-x r b
+             ;; Project (Git)
+             ([remap list-directory]           . helm-browse-project) ; C-x C-d
+             ;; TAGS
+             ([remap xref-find-definitions]    . helm-etags-select)
+             )
+
+  (use-package helm-descbinds           ; Yet Another `describe-bindings' with
+    :ensure t                           ; `helm', just invoke C-h b
+    :config (helm-descbinds-mode))
 
   (require 'helm-regexp)
   ;; (defmethod helm-setup-user-source ((source helm-source-multi-occur))
@@ -359,9 +377,15 @@ Homebrew: brew install trash")))
       (bind-key [remap execute-extended-command] #'helm-M-x)))
   )
 
-;; (bind-key "C-o" #'helm-occur)       ; TODO let `helm-occur' supports
-;;                                         ;`from-isearch' easier, just like helm swoop
-;; (bind-key "C-c h i" #'helm-occur-from-isearch)
+;;; Save-minibuffer-history
+;;
+;;
+(use-package savehist
+  :config
+  (setq savehist-file "~/.emacs.d/history"
+        history-delete-duplicates t)
+  (setq history-length 100) ; default is 30.
+  (savehist-mode 1))
 
 
 ;;; Buffer, Windows and Frames
@@ -377,8 +401,8 @@ Homebrew: brew install trash")))
 
 (use-package frame
   :config
-  ;; Kill `suspend-frame'
   ;; (global-set-key (kbd "C-z") nil)
+                                        ; Disable `suspend-frame'.
   (unbind-key "C-x C-z")
   (bind-keys ("C-c T F" . toggle-frame-fullscreen)
              ("C-c T m" . toggle-frame-maximized))
@@ -415,6 +439,7 @@ Homebrew: brew install trash")))
 (use-package files
   :bind (("C-c f u" . revert-buffer))
   :config
+  (bind-key "C-c R" (lambda () (interactive) (revert-buffer t t)))
   ;; Use GNU ls for Emacs
   (when-let (gnu-ls (and (eq system-type 'darwin) (executable-find "gls")))
     (setq insert-directory-program gnu-ls)))
@@ -796,6 +821,12 @@ Homebrew: brew install trash")))
   :disabled t
   :ensure t)
 
+(use-package iedit
+  :disabled t                           ; @TODO: read manual
+  :ensure t
+  :config
+  (bind-key [C-return] #'iedit-rectangle-mode))
+
 
 ;;; Other markup languages
 (use-package markdown-mode
@@ -866,7 +897,11 @@ Homebrew: brew install trash")))
 
 ;;; Emacs Lisp
 (use-package ielm                       ; Emacs Lisp REPL
-  :bind (("C-c u z" . ielm)))
+  )
+
+(use-package eshell
+  :config
+  (bind-key "C-!" #'eshell-command))
 
 (bind-key "C-c T d" #'toggle-debug-on-error)
 
