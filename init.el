@@ -7,7 +7,7 @@
 ;;; init.el --- Emacs configuration of Chunyang Xu -*- lexical-binding: t; -*-
 
 ;;; Debugging
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (setq ad-redefinition-action 'accept)
 
 (add-to-list 'load-path "/Users/xcy/repos/benchmark-init-el")
@@ -167,53 +167,36 @@ Homebrew: brew install trash")))
   (set-fontset-font t 'han (font-spec :family "STFangsong"))
   (setq face-font-rescale-alist '(("STFangsong" . 1.3))))
 
-(use-package zenburn-theme
-  :ensure t)
-(use-package color-theme-sanityinc-tomorrow
-  :ensure t)
-(use-package solarized-theme
-  :ensure t)
+(use-package zenburn-theme :ensure t)
+(use-package color-theme-sanityinc-tomorrow :ensure t)
+(use-package solarized-theme :ensure t)
 
-;;------------------------------------------------------------------------------
-;; Toggle between light and dark
-;;------------------------------------------------------------------------------
+(defcustom chunyang-theme-favourites nil
+  "My favourite color themes."
+  :type '(list symbol))
 
-(defvar my-favourite-themes
-  '(zenburn
-    sanityinc-tomorrow-night
-    sanityinc-tomorrow-eighties
-    solarized-dark))
+(defvar chunyang-theme-helm-source
+  (helm-build-sync-source "My favourite color themes"
+    :candidates (lambda () chunyang-theme-favourites) ; Dynamically
+    :action (helm-make-actions
+             "Enable theme"
+             (lambda (candicate)
+               (let ((current-theme (car custom-enabled-themes))
+                     (new-theme     (intern candicate)))
+                 (disable-theme current-theme)
+                 (load-theme new-theme t))))))
 
-;; (defun helm-my-themes ()
-;;   (interactive)
-;;   (let ((source
-;;          (helm-build-sync-source "My Favourite Themes"
-;;            :candidates my-favourite-themes
-;;            :action (lambda (candidate)
-;;                      (message "%S" candidate)
-;;                      (chunyang--switch-theme (intern candidate))))))
-;;     (helm :sources '(source))))
-
-(defun chunyang--switch-theme (theme)
-  (unless (eq (car custom-enabled-themes) theme)
-    (mapc 'disable-theme custom-enabled-themes)
-    (load-theme theme t)
-    (custom-set-variables
-     `(custom-enabled-themes '(,theme)))
-    (custom-save-all)))
-
-(defun light ()
-  "Activate a light color theme."
+(defun chunyang-switch-theme ()
+  "Load one of my favourite themes."
   (interactive)
-  (chunyang--switch-theme 'zenburn))
+  (helm :sources '(chunyang-theme-helm-source)
+        :buffer "*chunyang theme*"))
 
-;;; @FIXME: these funcs not work well.
-(defun dark (arg)
-  "Activate a dark color theme."
-  (interactive "P")
-  (chunyang--switch-theme (if arg 'sanityinc-tomorrow-night
-                            'sanityinc-tomorrow-eighties)))
-
+(setq chunyang-theme-favourites
+      '(zenburn
+        solarized-dark
+        sanityinc-tomorrow-eighties
+        sanityinc-tomorrow-night))
 
 ;;; The mode line
 
@@ -362,8 +345,8 @@ Homebrew: brew install trash")))
   ;; (global-set-key (kbd "C-i") 'helm-semantic-or-imenu)
 
   ;; http://stackoverflow.com/a/11319885/2999892
-  (define-key input-decode-map (kbd "C-i") (kbd "H-i"))
-  (global-set-key (kbd "H-i") 'helm-semantic-or-imenu)
+  ;; (define-key input-decode-map (kbd "C-i") (kbd "H-i"))
+  ;; (global-set-key (kbd "H-i") 'helm-semantic-or-imenu)
 
   ;; ;; (global-set-key [011] 'emacs-version)
 
@@ -1248,9 +1231,6 @@ Homebrew: brew install trash")))
   :ensure t)
 
 
-;;; TEST
-(defun bar ()
-  1)
-
-(defadvice bar (around bar-around)
-  ad-do-it)
+;; https://github.com/Malabarba/elisp-bug-hunter
+(use-package bug-hunter
+  :ensure t)

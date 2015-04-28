@@ -183,45 +183,45 @@ See also `describe-function-or-variable'."
 ;;
 ;; Add actions to `helm-source-find-files' IF:
 
-(defmethod helm-setup-user-source ((source helm-source-ffiles))
-  (helm-source-add-action-to-source-if
-   "Byte compile file(s) async"
-   'async-byte-compile-file
-   source
-   'helm-ff-candidates-lisp-p))
+;; (defmethod helm-setup-user-source ((source helm-source-ffiles))
+;;   (helm-source-add-action-to-source-if
+;;    "Byte compile file(s) async"
+;;    'async-byte-compile-file
+;;    source
+;;    'helm-ff-candidates-lisp-p))
 
-;;; Add magit to `helm-source-ls-git'
-;;
-(defmethod helm-setup-user-source ((source helm-ls-git-source))
-  (let ((actions (oref source :action)))
-    (set-slot-value
-     source
-     'action
-     (helm-append-at-nth
-      actions
-      (helm-make-actions
-       "Magit status"
-       (lambda (_candidate)
-         (magit-status (helm-default-directory))))
-      1))))
+;; ;;; Add magit to `helm-source-ls-git'
+;; ;;
+;; (defmethod helm-setup-user-source ((source helm-ls-git-source))
+;;   (let ((actions (oref source :action)))
+;;     (set-slot-value
+;;      source
+;;      'action
+;;      (helm-append-at-nth
+;;       actions
+;;       (helm-make-actions
+;;        "Magit status"
+;;        (lambda (_candidate)
+;;          (magit-status (helm-default-directory))))
+;;       1))))
 
-(defmethod helm-setup-user-source ((source helm-source-buffers))
-  (set-slot-value source 'candidate-number-limit 200))
+;; (defmethod helm-setup-user-source ((source helm-source-buffers))
+;;   (set-slot-value source 'candidate-number-limit 200))
 
-(defmethod helm-setup-user-source :after ((source helm-source-buffers))
-  (let ((actions (oref source :action))
-        (name (oref source :name)))
-    (when (string= name "Buffers in project")
-      (set-slot-value
-       source
-       'action
-       (helm-append-at-nth
-        actions
-        (helm-make-actions
-         "Magit status"
-         (lambda (_candidate)
-           (magit-status (helm-default-directory))))
-        1)))))
+;; (defmethod helm-setup-user-source :after ((source helm-source-buffers))
+;;   (let ((actions (oref source :action))
+;;         (name (oref source :name)))
+;;     (when (string= name "Buffers in project")
+;;       (set-slot-value
+;;        source
+;;        'action
+;;        (helm-append-at-nth
+;;         actions
+;;         (helm-make-actions
+;;          "Magit status"
+;;          (lambda (_candidate)
+;;            (magit-status (helm-default-directory))))
+;;         1)))))
 
 (provide 'chunyang-elisp)
 
