@@ -175,6 +175,7 @@ Homebrew: brew install trash")))
   "My favourite color themes."
   :type '(list symbol))
 
+(require 'helm)
 (defvar chunyang-theme-helm-source
   (helm-build-sync-source "My favourite color themes"
     :candidates (lambda () chunyang-theme-favourites) ; Dynamically
