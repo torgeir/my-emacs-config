@@ -124,7 +124,7 @@ prefix argument, the process's buffer is displayed."
          (buffer-list))))
 
 ;;; Download stuffs
-(defun chunyang-download-file (url file)
+(defun chunyang-download-file-old (url file)
   "Download URL as file."
   (interactive
    (let* ((url (read-string "URL: "))
@@ -148,6 +148,20 @@ prefix argument, the process's buffer is displayed."
           (message "Download (%s) done." file)
         (error "curl error."))
     (spinner-stop)))
+
+(defun chunyang-download-file (url file)
+  "Same as `chunyang-download-file-old' but use `url-copy-file' instead of curl(1)."
+  (interactive
+   (let* ((url (read-string "URL: "))
+          (guess (file-name-nondirectory url))
+          (file (read-file-name "Save to: " nil nil nil guess)))
+     (list url file)))
+  (unless (alist-get 'download spinner-types)
+    (push '(download . ["下" "载" "中"]) spinner-types))
+  ;; @TODO: this process reporter is not working.
+  (spinner-start 'download 3)
+  (url-copy-file url file)
+  (spinner-stop))
 
 ;;; @TODO: git clone repository
 (defun chunyang-git-clone (url dir)
