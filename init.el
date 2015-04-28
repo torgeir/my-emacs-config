@@ -944,6 +944,32 @@ Homebrew: brew install trash")))
   :bind ("C-h C-." . chunyang-elisp-function-or-variable-quickhelp))
 
 
+;;; Common Lisp
+
+(use-package slime
+  :ensure t)
+
+
+;;; Haskell
+
+(use-package haskell-mode
+  :ensure t
+  :config
+  (add-hook 'haskell-mode-hook #'haskell-indentation-mode)
+  (add-hook 'haskell-mode-hook #'interactive-haskell-mode))
+
+
+;;; Scheme
+
+(use-package geiser
+  :ensure t
+  :config
+  ;; geiser replies on a REPL to provide autodoc and completion
+  (setq geiser-mode-start-repl-p t))
+
+(add-hook 'scheme-mode-hook (lambda () (paredit-mode)))
+
+
 ;;; Version control
 (use-package diff-hl                    ; Highlight hunks in fringe
   :disabled t                           ; Replaced by `git-gutter'
