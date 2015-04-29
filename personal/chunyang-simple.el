@@ -191,5 +191,46 @@ See also Emacs SE question: URL
     (mapcar #'string-to-number (split-string (buffer-substring beg end)))
     0)))
 
+
+;;; Debug and Log
+(defvar chunyang-debug-buffer "*Debug Chunyang Log*")
+
+(defvar chunyang-debug nil
+  "If non-nil, write log message into `chunyang-debug-buffer' buffer.
+It is disabled by default because `chunyang-debug-buffer' grows quickly.")
+
+;; Utility: logging
+(defun chunyang-log (format-string &rest args)
+  "Log message `chunyang-debug' is non-nil.
+Messages are written to the `chunyang-debug-buffer' buffer.
+
+Argument FORMAT-STRING is a string to use with `format'.
+Use optional arguments ARGS like in `format'."
+  (when chunyang-debug
+    (with-current-buffer (get-buffer-create chunyang-debug-buffer)
+      (outline-mode)
+      (buffer-disable-undo)
+      (set (make-local-variable 'inhibit-read-only) t)
+      (goto-char (point-max))
+      (insert (let ((tm (current-time)))
+                (format (concat (if (string-match "Start session" format-string)
+                                    "* " "** ")
+                                "%s.%06d (%s)\n %s\n")
+                        (format-time-string "%H:%M:%S" tm)
+                        (nth 2 tm)
+                        (chunyang-log-get-current-function)
+                        (apply #'format (cons format-string args))))))))
+
+(defun chunyang-log-get-current-function ()
+  "Get function name calling `chunyang-log'.
+The original idea is from `tramp-debug-message'."
+  (cl-loop with exclude-func-re = "^chunyang-\\(?:interpret\\|log\\|.*funcall\\)"
+           for btn from 1 to 40
+           for btf = (cl-second (backtrace-frame btn))
+           for fn  = (if (symbolp btf) (symbol-name btf) "")
+           if (and (string-match "^chunyang" fn)
+                   (not (string-match exclude-func-re fn)))
+           return fn))
+
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here
