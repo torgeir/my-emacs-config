@@ -263,6 +263,8 @@ Homebrew: brew install trash")))
   (helm-adaptive-mode)
   ;; (helm-autoresize-mode)
 
+  (setq helm-M-x-always-save-history t)
+
   ;; Local map
   (bind-keys :map helm-command-map
              ("g" . helm-chrome-bookmarks)
@@ -416,7 +418,27 @@ Homebrew: brew install trash")))
   :bind (("M-o" . ace-window)))
 
 (use-package desktop                    ; Save buffers, windows and frames
-  :config (desktop-save-mode))
+  :config
+  (desktop-save-mode)
+  ;; (add-hook 'desktop-after-read-hook #'ibuffer)
+
+  (defun chunyang--osx-maximize-for-sure ()
+    "After invoking `desktop-save-mode', make sure the window is maximized if need.
+
+This is workaround for Mac OS X system."
+    (require 'chunyang-simple)
+    (let ((chunyang-debug t))
+      (when (and (window-system)
+                 (eq 'maximized (frame-parameter nil 'fullscreen)))
+        (chunyang-log "Before first toggle")
+        (toggle-frame-maximized)
+        (chunyang-log "After first toggle")
+        (sit-for 0.5)
+        (chunyang-log "Before second toggle")
+        (toggle-frame-maximized)
+        (chunyang-log "After second toggle"))))
+  (add-hook 'after-init-hook #'chunyang--osx-maximize-for-sure)
+  )
 
 (use-package winner                     ; C-c <left>, undo
   :config (winner-mode))                ; C-c <right>, redo
