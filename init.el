@@ -1254,6 +1254,13 @@ This is workaround for Mac OS X system."
         langtool-mother-tongue "en"))
 
 
+;;;; autoinsert
+
+(use-package autoinsert
+  :config
+  (auto-insert-mode))
+
+
 ;;; Org-mode
 (use-package org
   :bind (("C-c a"   . org-agenda)
