@@ -203,7 +203,7 @@ Homebrew: brew install trash")))
   "Load one of my favourite themes."
   (interactive)
   (helm :sources '(chunyang-theme-helm-source)
-        :buffer "*chunyang theme*"))
+        :buffer "*helm chunyang theme*"))
 
 (setq chunyang-theme-favourites
       '(zenburn
