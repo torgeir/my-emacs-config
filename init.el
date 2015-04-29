@@ -733,7 +733,7 @@ Homebrew: brew install trash")))
 
 ;; In `completion-at-point', do not pop up silly completion buffers for less
 ;; than five candidates.  Cycle instead.
-(setq completion-cycle-threshold 5)
+;; (setq completion-cycle-threshold 5)
 
 (use-package hippie-exp                 ; Powerful expansion and completion
   :bind (([remap dabbrev-expand] . hippie-expand))
@@ -1064,6 +1064,10 @@ Homebrew: brew install trash")))
         helm-github-stars-refetch-time (/ 6.0 24))
   (bind-key "G" #'helm-github-stars helm-command-map))
 
+(use-package github
+  :load-path "personal"
+  :commands (github-trending))
+
 (use-package jist                       ; Gist
   :ensure t
   :config (load-file "~/.private.el"))
@@ -1273,3 +1277,11 @@ Homebrew: brew install trash")))
 ;; https://github.com/Malabarba/elisp-bug-hunter
 (use-package bug-hunter
   :ensure t)
+
+
+;;; TAGS
+(setq tags-table-list
+      '("~/repos/emacs/src" "~/repos/emacs/lisp" ; Emacs
+        "~/wip/helm"                             ; Helm
+        "~/.emacs.d"
+        ))

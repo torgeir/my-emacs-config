@@ -73,8 +73,15 @@ This requires either the OS X \"open\" command, or the freedesktop
 			   "--subject" subject
 			   "--body" body
 			   (concat "mailto:" to)))
-	(error "Subject, To or body not found")))))
+        (error "Subject, To or body not found")))))
 
+(defun chunyang--notmuch-unread-count ()
+  "Number of unread mails by notmuch."
+  (string-to-number
+   (shell-command-to-string
+    "notmuch search tag:unread | wc -l")))
+
+
 ;;;###autoload
 (defun chunyang-make-another-scratch-buffer (arg)
   "Make another *scratch* buffer.
@@ -92,6 +99,7 @@ With ARG, put *scratch* buffer right."
 ;;;###autoload
 (defalias 'demo #'chunyang-make-another-scratch-buffer)
 
+
 ;;; stole from https://github.com/expez/.emacs.d/blob/master/lisp/init-util.el
 (defun chunyang-launch (command)
   "Launch an application from Emacs, with its own output
