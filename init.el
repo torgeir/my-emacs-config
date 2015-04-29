@@ -171,6 +171,18 @@ Homebrew: brew install trash")))
 (use-package color-theme-sanityinc-tomorrow :ensure t)
 (use-package solarized-theme :ensure t)
 
+(use-package moe-theme
+  :disabled t
+  :ensure t
+  :config
+  ;; Show highlighted buffer-id as decoration. (Default: nil)
+  (setq moe-theme-highlight-buffer-id t)
+
+  ;; Choose a color for mode-line.(Default: blue)
+  ;; (moe-theme-set-color 'purple)
+
+  (moe-dark))
+
 (defcustom chunyang-theme-favourites nil
   "My favourite color themes."
   :type '(list symbol))
@@ -275,7 +287,7 @@ Homebrew: brew install trash")))
              ;; Project (Git)
              ([remap list-directory]           . helm-browse-project) ; C-x C-d
              ;; TAGS
-             ([remap xref-find-definitions]    . helm-etags-select)
+             ;; ([remap xref-find-definitions]    . helm-etags-select)
              )
 
   (use-package helm-descbinds           ; Yet Another `describe-bindings' with
