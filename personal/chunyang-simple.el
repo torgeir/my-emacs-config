@@ -231,6 +231,84 @@ The original idea is from `tramp-debug-message'."
            if (and (string-match "^chunyang" fn)
                    (not (string-match exclude-func-re fn)))
            return fn))
+
+;;; Key binding
+;;
+;;
+
+;;; `forward-line'
+(bind-key "C-S-n" #'chunyang-line-adjust)
+(defun chunyang-line-adjust (inc)
+  "Move cursor vertically down/up INC lines."
+  (interactive "p")
+  (let ((ev last-command-event)
+        (echo-keystrokes nil))
+    (let* ((base (event-basic-type ev))
+           (step
+            (pcase base
+              (?n inc)
+              (?p (- inc))
+              (t inc))))
+      (forward-line step)
+      (message "Use n,p for further move lines.")
+      (set-transient-map
+       (let ((map (make-sparse-keymap)))
+         (dolist (mods '(() (control)))
+           (dolist (key '(?n ?p))
+             (define-key map (vector (append mods (list key)))
+               (lambda ()               ; `lexical-binding' must be t
+                 (interactive)
+                 (chunyang-line-adjust (abs inc)))
+               )))
+         map)))))
+
+;;; C-x [, C-x ]
+(bind-key [remap backward-page] #'chunyang-page-adjust)
+(bind-key [remap forward-page]  #'chunyang-page-adjust)
+(defun chunyang-page-adjust (inc)
+  ""
+  (interactive "p")
+  (let ((ev last-command-event)
+        (echo-keystrokes nil))
+    (let* ((base (event-basic-type ev))
+           (step
+            (pcase base
+              (?\[ (- inc))
+              (?\] inc)
+              (t  inc))))
+      (forward-page step)
+      (message "Use [,] for further move.")
+      (set-transient-map
+       (let ((map (make-sparse-keymap)))
+         (dolist (mods '(() (control)))
+           (dolist (key '(91 93))
+             (define-key map (vector (append mods (list key)))
+               (lambda () (interactive) (chunyang-page-adjust (abs inc))))))
+         map)))))
+
+;; `other-window'
+;;
+;; from 'C-x o C-x z z z z' to 'C-x o o o o'
+;;
+(define-key global-map [remap other-window] #'chunyang-other-window)
+(defun chunyang-other-window (count)
+  (interactive "p")
+  (let ((ev last-command-event)
+        (echo-keystrokes nil))
+    (let* ((base (event-basic-type ev))
+           (step
+            (pcase base
+              (?o count)
+              (t  count))))
+      (other-window step)
+      (message "use o for future.")
+      (set-transient-map
+       (let ((map (make-sparse-keymap)))
+         (dolist (mods '(() (control)))
+           (dolist (key '(o))
+             (define-key map (vector (append mods (list key)))
+               (lambda () (interactive) (chunyang-other-window (abs count))))))
+         map)))))
 
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here

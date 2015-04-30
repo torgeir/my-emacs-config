@@ -638,6 +638,7 @@ This is workaround for Mac OS X system."
 (put 'narrow-to-defun 'disabled nil)
 
 (use-package fancy-narrow
+  :disabled t
   :ensure t
   ;; :config (fancy-narrow-mode)           ; overwrite standard narrowing keys
   )
