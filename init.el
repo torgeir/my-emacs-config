@@ -429,7 +429,10 @@ Homebrew: brew install trash")))
 
 (use-package ace-window
   :ensure t
-  :bind (("M-o" . ace-window)))
+  :config (bind-key "M-o" #'ace-window))
+
+(use-package windmove
+  :config (windmove-default-keybindings))
 
 (use-package desktop                    ; Save buffers, windows and frames
   :config
