@@ -1,11 +1,25 @@
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
-;; (package-initialize)
-
 ;;; init.el --- Emacs configuration of Chunyang Xu -*- lexical-binding: t; -*-
 
+
+;;; Use my own version of package manager (upon `package.el')
+;;
+;; 1. install if needs
+;; 2. config for package (eval after load)
+;; 3. pin (archive, e.g., MELPA-stable)
+;; 4. upgrade all outdated package
+;; 5. key bind macro (like `bind-key')
+;; 6. find a way to support both manual & `package.el'
+
+
+
+;;; Resources:
+;;
+;; * https://github.com/pierre-lecocq/emacs.d
+;; * https://github.com/Silex/package-utils
+;; * https://github.com/Malabarba/paradox
+;; * https://github.com/milkypostman/package-filter
+
+
 ;;; Debugging
 ;; (setq debug-on-error t)
 (setq ad-redefinition-action 'accept)
@@ -509,6 +523,7 @@ This is workaround for Mac OS X system."
   :config (global-auto-revert-mode))
 
 (use-package launch                     ; Open files in external programs
+  :disabled                             ; Replaced by helm
   :ensure t
   :config (global-launch-mode))
 
@@ -1055,6 +1070,9 @@ This is workaround for Mac OS X system."
   ;;       '(:eval (format " P[%s]" (projectile-project-name))))
   ;; Enable projectile globally
   (projectile-global-mode)
+
+  (bind-key "C-x K" #'projectile-kill-buffers)
+
   ;; helm
   (use-package helm-projectile
     :ensure t
