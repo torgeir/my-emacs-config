@@ -310,5 +310,23 @@ The original idea is from `tramp-debug-message'."
                (lambda () (interactive) (chunyang-other-window (abs count))))))
          map)))))
 
+;;; @TODO: add timeout support
+
+;;; Use functions from `helm' package
+;;
+;; * `helm-define-key-with-subkeys'
+
+;;; `other-window'
+;; (helm-define-key-with-subkeys global-map [?\C-x ?o] ?o #'other-window)
+
+;;; `forward-page' / `backward-page'
+;; (helm-define-key-with-subkeys global-map
+;;   (kbd "C-x ]") ?\] #'forward-page
+;;   '((?\[ . backward-page)))
+
+;; (helm-define-key-with-subkeys global-map
+;;   (kbd "C-x [") ?\[ #'backward-page
+;;   '((?\] . forward-page)))
+
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here
