@@ -847,6 +847,26 @@ This is workaround for Mac OS X system."
   ;; (global-flycheck-mode 1)
   (bind-keys ("C-c T f" . global-flycheck-mode)
              ("C-c l e" . list-flycheck-errors))
+
+  ;; Configuring buffer display in Emacs
+  ;; http://www.lunaryorn.com/2015/04/29/the-power-of-display-buffer-alist.html
+  (add-to-list 'display-buffer-alist
+               `(,(rx bos "*Flycheck errors*" eos)
+                 (display-buffer-reuse-window
+                  display-buffer-in-side-window)
+                 (reusable-frames . visible)
+                 (side            . bottom)
+                 (window-height   . 0.4)))
+
+  (defun lunaryorn-quit-bottom-side-windows ()
+    "Quit side windows of the current frame."
+    (interactive)
+    (dolist (window (window-at-side-list))
+      (quit-window nil window)))
+
+  (global-set-key (kbd "C-c q") #'lunaryorn-quit-bottom-side-windows)
+
+
   (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
     :ensure t
     :config (setq flycheck-display-errors-function
