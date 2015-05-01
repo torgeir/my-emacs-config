@@ -1,5 +1,10 @@
 ;;; init.el --- Emacs configuration of Chunyang Xu -*- lexical-binding: t; -*-
 
+;;; Commentary:
+;;
+
+;;; Code:
+
 
 ;;; Use my own version of package manager (upon `package.el')
 ;;
@@ -73,6 +78,10 @@
 
 
 ;;; Environment fixup
+
+;; http://emacs.stackexchange.com/questions/10570/executing-commands-through-shell-command-what-is-the-path-used
+(setq shell-command-switch "-ic")
+
 (use-package exec-path-from-shell
   :ensure t
   :if (eq system-type 'darwin)
@@ -240,7 +249,6 @@ Homebrew: brew install trash")))
   (sml/setup))
 
 (use-package powerline
-  :disabled t
   :ensure t
   :config (powerline-default-theme))
 
@@ -251,7 +259,7 @@ Homebrew: brew install trash")))
 
 (use-package which-func                 ; Current function name in header line
   :config
-  (which-function-mode)
+  ;; (which-function-mode)
   (setq which-func-unknown "⊥"          ; The default is really boring…
         which-func-format
         `((:propertize (" ➤ " which-func-current)
@@ -272,12 +280,14 @@ Homebrew: brew install trash")))
   ;; Old value is "C-x c", needs to be changed before loading helm-config
   (setq helm-command-prefix-key "C-c h")
   (require 'helm-config)
-
   (helm-mode)
   (helm-adaptive-mode)
   ;; (helm-autoresize-mode)
 
   (setq helm-M-x-always-save-history t)
+
+  (eval-after-load "helm-buffers"
+    '(add-to-list 'helm-boring-buffer-regexp-list "TAGS"))
 
   ;; Local map
   (bind-keys :map helm-command-map
@@ -387,7 +397,25 @@ Homebrew: brew install trash")))
                (unbind-key [remap execute-extended-command]))
       (helm-mode +1)
       (bind-key [remap execute-extended-command] #'helm-M-x)))
+
+  (defun toggle-small-helm-window ()
+    (interactive)
+    (if (get 'toggle-small-helm-window 'once)
+        (setq display-buffer-alist
+              (seq-remove
+               (lambda (elt)
+                 (and (stringp (car elt))
+                      (string-match "helm" (car elt))))
+               display-buffer-alist))
+      (add-to-list 'display-buffer-alist
+                   `(,(rx bos "*helm" (* not-newline) "*" eos)
+                     (display-buffer-in-side-window)
+                     (inhibit-same-window . t)
+                     (window-height . 0.4))))
+    (put 'toggle-small-helm-window 'once (not (get 'toggle-small-helm-window 'once))))
+
   )
+
 
 ;;; Save-minibuffer-history
 ;;
@@ -765,6 +793,7 @@ This is workaround for Mac OS X system."
 
 (use-package color-identifiers-mode     ; highlight each source code identifier uniquely based on its name
   :ensure t
+  :diminish color-identifiers-mode
   :config
   (global-color-identifiers-mode)
   (bind-key "C-c T c" #'global-color-identifiers-mode))
@@ -835,10 +864,23 @@ This is workaround for Mac OS X system."
   :config
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
+
   (unbind-key "C-M-i" flyspell-mode-map)
   (unbind-key "C-."   flyspell-mode-map)
-  (add-hook 'text-mode-hook #'flyspell-mode)
-  (add-hook 'prog-mode-hook #'flyspell-prog-mode))
+
+  (defun toggle-flyspell ()
+    (interactive)
+    (message
+     (if (memq 'flyspell-mode text-mode-hook)
+         (progn
+           (remove-hook 'text-mode-hook #'flyspell-mode)
+           (remove-hook 'prog-mode-hook #'flyspell-prog-mode)
+           "Turn off")
+       (add-hook 'text-mode-hook #'flyspell-mode)
+       (add-hook 'prog-mode-hook #'flyspell-prog-mode)
+       "Turn on")))
+
+  )
 
 (use-package flycheck
   :ensure t
@@ -866,11 +908,18 @@ This is workaround for Mac OS X system."
 
   (global-set-key (kbd "C-c q") #'lunaryorn-quit-bottom-side-windows)
 
-
   (use-package flycheck-pos-tip           ; Show Flycheck messages in popups
     :ensure t
     :config (setq flycheck-display-errors-function
-                  #'flycheck-pos-tip-error-messages)))
+                  #'flycheck-pos-tip-error-messages))
+
+  (use-package flycheck-color-mode-line
+    :ensure t
+    :config
+    (eval-after-load "flycheck"
+      '(add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
+
+  )
 
 
 ;;; Text editing
@@ -1043,6 +1092,13 @@ This is workaround for Mac OS X system."
 (add-hook 'scheme-mode-hook (lambda () (paredit-mode)))
 
 
+;;; Ruby
+
+
+
+
+
+
 ;;; Version control
 (use-package diff-hl                    ; Highlight hunks in fringe
   :disabled t                           ; Replaced by `git-gutter'
@@ -1197,6 +1253,9 @@ This is workaround for Mac OS X system."
   :load-path "personal"
   :bind ("<C-return>" . M-x-dwim))
 
+(use-package dash-at-point
+  :ensure t)
+
 
 ;;; Net & Web & Email
 (use-package circe
@@ -1300,7 +1359,8 @@ This is workaround for Mac OS X system."
 
 (use-package autoinsert
   :config
-  (auto-insert-mode))
+  ;; (auto-insert-mode)
+  )
 
 
 ;;; Org-mode
@@ -1356,3 +1416,5 @@ This is workaround for Mac OS X system."
         "~/wip/helm"                             ; Helm
         "~/.emacs.d"
         ))
+
+;;; init.el ends here
