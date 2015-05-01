@@ -288,6 +288,8 @@ Homebrew: brew install trash")))
 
   (eval-after-load "helm-buffers"
     '(add-to-list 'helm-boring-buffer-regexp-list "TAGS"))
+  (eval-after-load "helm-files"
+    '(add-to-list 'helm-boring-file-regexp-list ".DS_Store"))
 
   ;; Local map
   (bind-keys :map helm-command-map
@@ -1370,17 +1372,44 @@ This is workaround for Mac OS X system."
          ("C-c L"   . org-store-link)
          ("C-c C-o" . org-open-at-point-global))
   :config
-  (setq org-default-notes-file "~/org/task.org"
-        org-agenda-files '("~/org/task.org")
-        org-capture-templates
-        `(("t" "Todo" entry (file+headline "~/org/task.org" "Tasks")
+  (setq org-directory "~/Dropbox/Notes")
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+  (setq org-agenda-files `(,org-default-notes-file))
+
+  (setq org-capture-templates
+        `(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
            "* TODO %?\n  %i\n%a")
-          ("i" "Inbox" entry (file+headline "~/org/task.org" "Inbox")
+          ("n" "Note" entry (file+headline org-default-notes-file "Notes")
            "* %?\n  %i\n%a")))
-  (org-babel-do-load-languages 'org-babel-load-languages
-                               '((emacs-lisp . t)
-                                 (sh . t)
-                                 (scheme . t))))
+
+  (defvar *is-a-mac* (eq 'darwin system-type))
+  (when *is-a-mac*
+    (use-package org-mac-link :ensure t)
+    (use-package org-mac-iCal :ensure t))
+
+  (setq org-src-fontify-natively t)
+
+  (after-load 'org
+              (org-babel-do-load-languages
+               'org-babel-load-languages
+               '((R . t)
+                 (ditaa . t)
+                 (dot . t)
+                 (emacs-lisp . t)
+                 (gnuplot . t)
+                 (haskell . nil)
+                 (latex . t)
+                 (ledger . t)
+                 (ocaml . nil)
+                 (octave . t)
+                 (python . t)
+                 (ruby . t)
+                 (screen . nil)
+                 (sh . t)
+                 (sql . nil)
+                 (sqlite . t))))
+  )
 
 
 ;;; Online help
