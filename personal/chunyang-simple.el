@@ -290,25 +290,74 @@ The original idea is from `tramp-debug-message'."
 ;;
 ;; from 'C-x o C-x z z z z' to 'C-x o o o o'
 ;;
+
 (define-key global-map [remap other-window] #'chunyang-other-window)
 (defun chunyang-other-window (count)
   (interactive "p")
-  (let ((ev last-command-event)
-        (echo-keystrokes nil))
-    (let* ((base (event-basic-type ev))
-           (step
-            (pcase base
-              (?o count)
-              (t  count))))
-      (other-window step)
-      (message "use o for future.")
-      (set-transient-map
-       (let ((map (make-sparse-keymap)))
-         (dolist (mods '(() (control)))
-           (dolist (key '(o))
-             (define-key map (vector (append mods (list key)))
-               (lambda () (interactive) (chunyang-other-window (abs count))))))
-         map)))))
+  (if (eq (selected-window) (next-window))
+      ;; (other-window count)
+      nil                               ; no other window, do nothing
+    (let ((ev last-command-event)
+          (echo-keystrokes nil))
+      (let* ((base (event-basic-type ev))
+             (step
+              (pcase base
+                (?o count)
+                (t  count))))
+        (other-window step)               ; @TODO: when there is only one window, it should not work like this.
+        (message "use o for future.")
+        (set-transient-map
+         (let ((map (make-sparse-keymap)))
+           (dolist (mods '(() (control)))
+             (dolist (key '(o))
+               (define-key map (vector (append mods (list key)))
+                 (lambda () (interactive) (chunyang-other-window (abs count))))))
+           map))))))
+
+;;; M-x other-window RET RET RET
+;;; C-x o o o o
+(defun foo--other-window (orig-fun &rest args)
+  "DOC"
+  (apply orig-fun args)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (vector last-command-event) #'repeat)
+     map)))
+
+
+;;; key Binding --- Repeat for a while
+
+(defvar repeat-commands-list
+  '(other-window
+    next-buffer
+    backward-page
+    forward-page))
+
+(defun repeat-and-repeat (orig-fun &rest args)
+  (apply orig-fun args)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (vector last-command-event) #'repeat)
+     map)))
+
+(defun repeat-add ()
+  (interactive)
+  (dolist (command repeat-commands-list)
+    (advice-add command :around #'repeat-and-repeat)))
+
+(defun repeat-clear ()
+  (interactive)
+  (dolist (command repeat-commands-list)
+    (advice-remove command #'repeat-and-repeat)))
+
+(repeat-add)
+
+
+;;; @TODO:
+;; (helm-define-key-with-subkeys global-map
+;;   (kbd "C-x v n") ?n #'git-gutter:next-hunk
+;;   '((?p . git-gutter:previous-hunk)))
+
 
 ;;; @TODO: add timeout support
 
