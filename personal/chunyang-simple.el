@@ -335,10 +335,12 @@ The original idea is from `tramp-debug-message'."
 
 (defun repeat-and-repeat (orig-fun &rest args)
   (apply orig-fun args)
-  (set-transient-map
-   (let ((map (make-sparse-keymap)))
-     (define-key map (vector last-command-event) #'repeat)
-     map)))
+
+  (when (called-interactively-p 'interactive)
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (define-key map (vector last-command-event) #'repeat)
+       map))))
 
 (defun repeat-add ()
   (interactive)
