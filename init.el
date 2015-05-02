@@ -604,8 +604,9 @@ This is workaround for Mac OS X system."
 
 (use-package chunyang-simple
   :load-path "personal"
-  :bind (([remap split-window-right] . chunyang-split-window-right)
-         ("C-c t" . chunyang-insert-current-date)))
+  :config
+  (bind-key [remap split-window-right] #'chunyang-split-window-right)
+  (bind-key "M-o" #'chunyang-other-window))
 
 (use-package easy-repeat
   :load-path "~/wip/easy-repeat.el"

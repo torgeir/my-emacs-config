@@ -11,6 +11,24 @@
   (select-window (split-window-right))
   (switch-to-buffer (other-buffer)))
 
+(defun chunyang--swap-window ()
+  (let ((this-buffer (window-buffer (selected-window)))
+        (other-buffer (prog2
+                          (other-window +1)
+                          (window-buffer (selected-window))
+                        (other-window -1))))
+    (switch-to-buffer other-buffer)
+    (switch-to-buffer-other-window this-buffer)))
+
+;;;###autoload
+(defun chunyang-other-window (arg)
+  "Run `other-window'.
+With ARG, swap two window."
+  (interactive "P")
+  (if arg
+      (chunyang--swap-window)
+    (other-window +1)))
+
 (defun chunyang-format-time (time)
   "Convert 'October 20, 2014' to '2014-10'."
   (format-time-string
