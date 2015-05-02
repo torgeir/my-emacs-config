@@ -607,6 +607,10 @@ This is workaround for Mac OS X system."
   :bind (([remap split-window-right] . chunyang-split-window-right)
          ("C-c t" . chunyang-insert-current-date)))
 
+(use-package easy-repeat
+  :load-path "~/wip/easy-repeat.el"
+  :config (easy-repeat-mode))
+
 (use-package ws-butler
   :ensure t
   :diminish ws-butler-mode

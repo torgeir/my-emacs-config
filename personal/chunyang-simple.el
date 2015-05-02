@@ -237,7 +237,7 @@ The original idea is from `tramp-debug-message'."
 ;;
 
 ;;; `forward-line'
-(bind-key "C-S-n" #'chunyang-line-adjust)
+;; (bind-key "C-S-n" #'chunyang-line-adjust)
 (defun chunyang-line-adjust (inc)
   "Move cursor vertically down/up INC lines."
   (interactive "p")
@@ -263,8 +263,8 @@ The original idea is from `tramp-debug-message'."
          map)))))
 
 ;;; C-x [, C-x ]
-(bind-key [remap backward-page] #'chunyang-page-adjust)
-(bind-key [remap forward-page]  #'chunyang-page-adjust)
+;; (bind-key [remap backward-page] #'chunyang-page-adjust)
+;; (bind-key [remap forward-page]  #'chunyang-page-adjust)
 (defun chunyang-page-adjust (inc)
   ""
   (interactive "p")
@@ -291,7 +291,7 @@ The original idea is from `tramp-debug-message'."
 ;; from 'C-x o C-x z z z z' to 'C-x o o o o'
 ;;
 
-(define-key global-map [remap other-window] #'chunyang-other-window)
+;; (define-key global-map [remap other-window] #'chunyang-other-window)
 (defun chunyang-other-window (count)
   (interactive "p")
   (if (eq (selected-window) (next-window))
@@ -327,32 +327,11 @@ The original idea is from `tramp-debug-message'."
 
 ;;; key Binding --- Repeat for a while
 
-(defvar repeat-commands-list
-  '(other-window
-    next-buffer
-    backward-page
-    forward-page))
+;; @TODO: single key sequence is not supported for now
+;; recenter-top-bottom
+;; move-to-window-line-top-bottom
 
-(defun repeat-and-repeat (orig-fun &rest args)
-  (apply orig-fun args)
-
-  (when (called-interactively-p 'interactive)
-    (set-transient-map
-     (let ((map (make-sparse-keymap)))
-       (define-key map (vector last-command-event) #'repeat)
-       map))))
-
-(defun repeat-add ()
-  (interactive)
-  (dolist (command repeat-commands-list)
-    (advice-add command :around #'repeat-and-repeat)))
-
-(defun repeat-clear ()
-  (interactive)
-  (dolist (command repeat-commands-list)
-    (advice-remove command #'repeat-and-repeat)))
-
-(repeat-add)
+;;; @TODO: timer
 
 
 ;;; @TODO:
