@@ -458,6 +458,7 @@ Homebrew: brew install trash")))
   :bind (([remap list-buffers] . ibuffer)))
 
 (use-package ace-window
+  :disabled t
   :ensure t
   :config (bind-key "M-o" #'ace-window))
 
@@ -974,10 +975,7 @@ This is workaround for Mac OS X system."
   ;; Navigate occurrences of the symbol under point with M-n and M-p
   (add-hook 'prog-mode-hook #'highlight-symbol-nav-mode)
   ;; Highlight symbol occurrences
-  (add-hook 'prog-mode-hook #'highlight-symbol-mode)
-  ;; Don't tell me how many symbols at point, I'm not interested.
-  (when (fboundp 'highlight-symbol-count)
-    (setf (symbol-function 'highlight-symbol-count) #'ignore)))
+  (add-hook 'prog-mode-hook #'highlight-symbol-mode))
 
 (use-package rainbow-mode               ; Fontify color values in code
   :disabled t
@@ -1121,15 +1119,15 @@ This is workaround for Mac OS X system."
   :config
   (global-git-gutter-mode t)
   (bind-keys ("C-x C-g" . git-gutter:toggle)
-             ("C-x v P" . git-gutter:previous-hunk)
-             ("C-x v N" . git-gutter:next-hunk)
+             ("C-x v p" . git-gutter:previous-hunk)
+             ("C-x v n" . git-gutter:next-hunk)
              ("C-x v s" . git-gutter:stage-hunk)
              ("C-x v r" . git-gutter:revert-hunk)))
 
 (use-package git-messenger
   :ensure t
   :config
-  (bind-key "C-x v p" #'git-messenger:popup-message)
+  (bind-key "C-x v P" #'git-messenger:popup-message)
   (bind-key "m" #'git-messenger:copy-message git-messenger-map))
 
 (use-package magit                      ; The one and only Git frontend
@@ -1324,8 +1322,11 @@ This is workaround for Mac OS X system."
   ;; (setq notmuch-saved-searches
   ;;       '((:name "inbox" :query "tag:inbox")
   ;;         (:name "unread" :query "tag:inbox AND tag:unread")))
-  user-mail-address "xuchunyang56@gmail.com"
-  user-full-name  "Chunyang Xu")
+  (setq
+   user-mail-address "xuchunyang56@gmail.com"
+   user-full-name  "Chunyang Xu")
+
+  (bind-key `[remap ,(key-binding [?\C-x ?m])] #'notmuch))
 
 
 ;;; Dictionary
@@ -1383,6 +1384,11 @@ This is workaround for Mac OS X system."
           ("n" "Note" entry (file+headline org-default-notes-file "Notes")
            "* %?\n  %i\n%a")))
 
+  ;; Clock work time
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+  (setq org-clock-persist t)
+
   (defvar *is-a-mac* (eq 'darwin system-type))
   (when *is-a-mac*
     (use-package org-mac-link :ensure t)
@@ -1390,25 +1396,6 @@ This is workaround for Mac OS X system."
 
   (setq org-src-fontify-natively t)
 
-  (after-load 'org
-              (org-babel-do-load-languages
-               'org-babel-load-languages
-               '((R . t)
-                 (ditaa . t)
-                 (dot . t)
-                 (emacs-lisp . t)
-                 (gnuplot . t)
-                 (haskell . nil)
-                 (latex . t)
-                 (ledger . t)
-                 (ocaml . nil)
-                 (octave . t)
-                 (python . t)
-                 (ruby . t)
-                 (screen . nil)
-                 (sh . t)
-                 (sql . nil)
-                 (sqlite . t))))
   )
 
 
