@@ -239,7 +239,7 @@ Homebrew: brew install trash")))
 ;; Standard stuff
 (line-number-mode)
 (column-number-mode)
-(size-indication-mode)
+;; (size-indication-mode)
 
 (use-package smart-mode-line
   :disabled t
@@ -250,7 +250,10 @@ Homebrew: brew install trash")))
 
 (use-package powerline
   :ensure t
-  :config (powerline-default-theme))
+  :config
+  (setq powerline-display-mule-info nil)
+  (setq powerline-display-buffer-size t)
+  (powerline-default-theme))
 
 (use-package nyan-mode
   :disabled t
@@ -1185,6 +1188,7 @@ This is workaround for Mac OS X system."
   :load-path "~/wip/helm-github-stars"
   :commands (helm-github-stars helm-github-stars-fetch)
   :config
+  (add-hook 'helm-github-stars-clone-done-hook #'magit-status)
   (setq helm-github-stars-cache-file "~/.emacs.d/var/hgs-cache"
         helm-github-stars-refetch-time (/ 6.0 24))
   (bind-key "G" #'helm-github-stars helm-command-map))
@@ -1393,6 +1397,12 @@ This is workaround for Mac OS X system."
   (setq org-clock-persist 'history)
   (org-clock-persistence-insinuate)
   (setq org-clock-persist t)
+
+  ;; (setq org-clock-string-limit 80)
+
+  (setq org-todo-keyword-faces
+        '(("TODO" . org-warning) ("STARTED" . "yellow")
+          ("CANCELED" . (:foreground "blue" :weight bold))))
 
   (defvar *is-a-mac* (eq 'darwin system-type))
   (when *is-a-mac*
