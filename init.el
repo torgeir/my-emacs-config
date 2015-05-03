@@ -877,11 +877,11 @@ This is workaround for Mac OS X system."
   :config (dolist (hook '(text-mode-hook prog-mode-hook))
             (add-hook hook #'rainbow-delimiters-mode)))
 
-(use-package fic-mode
-  :disabled t                           ; @FIXME: not work well, try another one
-  :ensure t
-  :diminish fic-mode
-  :config (fic-mode))
+(use-package fic-mode                   ; https://github.com/lewang/fic-mode,
+                                        ; not in MELPA
+  :load-path "~/repos/fic-mode"
+  :config
+  (add-hook 'prog-mode-hook 'fic-mode))
 
 (use-package color-identifiers-mode     ; highlight each source code identifier uniquely based on its name
   :ensure t
@@ -1275,9 +1275,16 @@ This is workaround for Mac OS X system."
 (use-package projectile                 ; Project management
   :ensure t
   :config
-  ;; (setq projectile-mode-line
-  ;;       '(:eval (format " P[%s]" (projectile-project-name))))
-  ;; Enable projectile globally
+  ;;,----------------------------------------------------------------------------------------------------------
+  ;;| http://emacs.stackexchange.com/questions/10465/turn-on-projectile-mode-only-for-files-in-actual-projects
+  ;;`----------------------------------------------------------------------------------------------------------
+  (setq projectile-mode-line '(:eval (if (condition-case nil
+                                             (and projectile-require-project-root
+                                                  (projectile-project-root))
+                                           (error nil))
+                                         (format " Project[%s]"
+                                                 (projectile-project-name))
+                                       "")))
   (projectile-global-mode)
 
   (bind-key "C-x K" #'projectile-kill-buffers)
@@ -1321,8 +1328,8 @@ This is workaround for Mac OS X system."
   :config (load-file "~/.private.el"))
 
 (use-package paradox                    ; Better package menu
-  ;; :ensure t
-  :load-path "~/repos/paradox/"
+  :ensure t
+  ;; :load-path "~/repos/paradox/"
   ;; :commands paradox-list-packages
   :config
   (setq paradox-github-token t
@@ -1343,7 +1350,7 @@ This is workaround for Mac OS X system."
           "C-x n"                       ; Narrowing
           "C-c p"                       ; Projectile
           "C-c T"                       ; Personal Toggle commands
-          "C-c l"                       ; Personal List something commands
+          "C-c L"                       ; Personal List something commands
           "C-c f"                       ; File
           "C-x v"                       ; VCS
           "C-c A"                       ; Align
