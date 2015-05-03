@@ -1172,6 +1172,29 @@ This is workaround for Mac OS X system."
   :commands helm-package-install
   :bind ("C-h C-." . chunyang-elisp-function-or-variable-quickhelp))
 
+
+(use-package rebox2
+  :ensure t
+  :diminish rebox-mode
+  :config
+  (defun chunyang--elisp-comment-setup ()
+    (setq-local rebox-style-loop '(21 25 27))
+    ;; Style 21
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; Style 25                       ;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    ;;,-----------------------------------
+    ;;| Style 27
+    ;;`-----------------------------------
+
+    ;; @FIXME: Do no abuse it, e.g., don't use it within a function like this.
+
+    (setq-local rebox-min-fill-column 40)
+    (rebox-mode 1))
+  (add-hook 'emacs-lisp-mode-hook #'chunyang--elisp-comment-setup))
+
 
 ;;; Common Lisp
 
