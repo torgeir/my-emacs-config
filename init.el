@@ -55,6 +55,62 @@
 (require 'bind-key)                ;; if you use any :bind variant
 
 
+;;; Org Mode
+
+;; Git version
+(add-to-list 'load-path (expand-file-name "~/repos/org-mode/lisp/"))
+(add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
+(require 'org)
+
+(add-to-list 'load-path (expand-file-name "~/repos/org-mode/contrib/lisp") t)
+
+(use-package org
+  :config
+  (bind-keys ("C-c a"   . org-agenda)
+             ("C-c c"   . org-capture)
+             ("C-c l"   . org-store-link)
+             ("C-c b"   . org-iswitchb)
+             ("C-c C-o" . org-open-at-point-global))
+
+  (setq org-directory "~/Dropbox/Notes")
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+  (setq org-agenda-files `(,org-default-notes-file))
+
+  (setq org-capture-templates
+        `(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
+           "* TODO %?\n  %i\n%a")
+          ("n" "Note" entry (file+headline org-default-notes-file "Notes")
+           "* %?\n  %i\n%a")))
+
+  ;; Clock work time
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+  (setq org-clock-persist t)
+
+  ;; (setq org-clock-string-limit 80)
+
+  (setq org-todo-keyword-faces
+        '(("TODO" . org-warning) ("STARTED" . "yellow")
+          ("CANCELED" . (:foreground "blue" :weight bold))))
+
+  (defvar *is-a-mac* (eq 'darwin system-type))
+  (when *is-a-mac*
+    (use-package org-mac-link :ensure t)
+    (use-package org-mac-iCal :ensure t))
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (sh . t)))
+  (setq org-confirm-babel-evaluate nil)
+
+  (setq org-edit-src-auto-save-idle-delay 5)
+
+  (setq org-src-fontify-natively t)
+  (setq org-src-tab-acts-natively t)
+  )
+
 ;;; Requires
 
 (require 'subr-x)
@@ -297,7 +353,8 @@ Homebrew: brew install trash")))
   ;; Local map
   (bind-keys :map helm-command-map
              ("g" . helm-chrome-bookmarks)
-             ("z" . helm-complex-command-history))
+             ("z" . helm-complex-command-history) ; @TODO: worth a shorter key binding
+             )
   ;; Global map
   (bind-keys ([remap execute-extended-command] . helm-M-x)            ; M-x
              ;; File
@@ -320,6 +377,8 @@ Homebrew: brew install trash")))
              ;; TAGS
              ;; ([remap xref-find-definitions]    . helm-etags-select)
              )
+
+  (define-key minibuffer-local-map (kbd "C-c C-l") 'helm-minibuffer-history)
 
   (use-package helm-descbinds           ; Yet Another `describe-bindings' with
     :ensure t                           ; `helm', just invoke C-h b
@@ -370,8 +429,8 @@ Homebrew: brew install trash")))
   ;; (bind-key "C-s" #'isearch-from-helm-occur helm-moccur-map)
 
   (when (eq system-type 'darwin)
-    (setq helm-grep-default-command
-          "ggrep --color=never -a -d skip %e -n%cH -e %p %f"))
+    (setq helm-grep-default-command     ; Make sure to use GNU grep
+          "grep --color=never -a -d skip %e -n%cH -e %p %f"))
   (bind-key "M-I" #'helm-do-grep)
 
   ;; Edit grep buffer
@@ -736,6 +795,10 @@ This is workaround for Mac OS X system."
   :ensure t
   :bind (("C-c i" . helm-imenu-anywhere)))
 
+(use-package imenu-list
+  :load-path "~/wip/imenu-list"
+  :commands (imenu-list imenu-list-minor-mode))
+
 ;; Code folding
 (use-package origami
   :ensure t
@@ -784,14 +847,15 @@ This is workaround for Mac OS X system."
 
 ;;; Highlights
 (use-package hl-line
-  :bind (("C-c C-l" . hl-line-mode))
   :config
+  (bind-key "C-c T L" #'hl-line-mode)
   (use-package hl-line+ :ensure t))
 
 (use-package paren                      ; Highlight paired delimiters
   :config (show-paren-mode 1))
 
 (use-package rainbow-delimiters         ; Highlight delimiters by depth
+  :disabled t
   :ensure t
   :config (dolist (hook '(text-mode-hook prog-mode-hook))
             (add-hook hook #'rainbow-delimiters-mode)))
@@ -871,7 +935,7 @@ This is workaround for Mac OS X system."
 
 ;;; Spelling and syntax checking
 (use-package flyspell
-  :diminish flyspell-mode
+  ;; :diminish flyspell-mode
   :config
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
@@ -879,18 +943,36 @@ This is workaround for Mac OS X system."
   (unbind-key "C-M-i" flyspell-mode-map)
   (unbind-key "C-."   flyspell-mode-map)
 
-  (defun toggle-flyspell ()
-    (interactive)
-    (message
-     (if (memq 'flyspell-mode text-mode-hook)
-         (progn
-           (remove-hook 'text-mode-hook #'flyspell-mode)
-           (remove-hook 'prog-mode-hook #'flyspell-prog-mode)
-           "Turn off")
-       (add-hook 'text-mode-hook #'flyspell-mode)
-       (add-hook 'prog-mode-hook #'flyspell-prog-mode)
-       "Turn on")))
+  (defgroup chunyang nil
+    "Emacs Chunyang configuration."
+    :prefix "chunyang-"
+    :group 'convenience)
 
+  (defcustom chunyang-flyspell nil
+    "Non-nil values enable Chunyang's flyspell support."
+    :type 'boolean
+    :group 'chunyang)
+
+  (when chunyang-flyspell
+    (add-hook 'text-mode-hook #'flyspell-mode)
+    (add-hook 'prog-mode-hook #'flyspell-prog-mode))
+
+  (defun chunyang-toggle-flyspell ()
+    (interactive)
+    (if flyspell-mode
+        (flyspell-mode-off)
+      (if (memq major-mode '(emacs-lisp-mode
+                             sh-mode
+                             python-mode
+                             ruby-mode
+                             html-mode
+                             javascript-mode
+                             tcl-mode
+                             lua-mode))
+          (progn (flyspell-prog-mode))
+        (flyspell-mode 1))))
+
+  (bind-key "C-c T s" #'chunyang-toggle-flyspell)
   )
 
 (use-package flycheck
@@ -899,7 +981,7 @@ This is workaround for Mac OS X system."
   (setq flycheck-emacs-lisp-load-path 'inherit)
   ;; (global-flycheck-mode 1)
   (bind-keys ("C-c T f" . global-flycheck-mode)
-             ("C-c l e" . list-flycheck-errors))
+             ("C-c L e" . list-flycheck-errors))
 
   ;; Configuring buffer display in Emacs
   ;; http://www.lunaryorn.com/2015/04/29/the-power-of-display-buffer-alist.html
@@ -1166,10 +1248,7 @@ This is workaround for Mac OS X system."
     :config
     (setq projectile-completion-system 'helm)
     (helm-projectile-on)
-    (use-package helm-ag
-      :ensure t)
-    (use-package helm-ack
-      :ensure t))
+    (use-package helm-ag :ensure t))
   ;; perspective
   (use-package perspective
     :disabled t
@@ -1208,8 +1287,8 @@ This is workaround for Mac OS X system."
   :config
   (setq paradox-github-token t
         paradox-execute-asynchronously nil)
-  (bind-keys ("C-c l p" . paradox-list-packages)
-             ("C-c l P" . package-list-packages-no-fetch)))
+  (bind-keys ("C-c L p" . paradox-list-packages)
+             ("C-c L P" . package-list-packages-no-fetch)))
 
 (use-package guide-key
   :ensure t
@@ -1372,45 +1451,6 @@ This is workaround for Mac OS X system."
 (use-package autoinsert
   :config
   ;; (auto-insert-mode)
-  )
-
-
-;;; Org-mode
-(use-package org
-  :bind (("C-c a"   . org-agenda)
-         ("C-c c"   . org-capture)
-         ("C-c L"   . org-store-link)
-         ("C-c C-o" . org-open-at-point-global))
-  :config
-  (setq org-directory "~/Dropbox/Notes")
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
-
-  (setq org-agenda-files `(,org-default-notes-file))
-
-  (setq org-capture-templates
-        `(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
-           "* TODO %?\n  %i\n%a")
-          ("n" "Note" entry (file+headline org-default-notes-file "Notes")
-           "* %?\n  %i\n%a")))
-
-  ;; Clock work time
-  (setq org-clock-persist 'history)
-  (org-clock-persistence-insinuate)
-  (setq org-clock-persist t)
-
-  ;; (setq org-clock-string-limit 80)
-
-  (setq org-todo-keyword-faces
-        '(("TODO" . org-warning) ("STARTED" . "yellow")
-          ("CANCELED" . (:foreground "blue" :weight bold))))
-
-  (defvar *is-a-mac* (eq 'darwin system-type))
-  (when *is-a-mac*
-    (use-package org-mac-link :ensure t)
-    (use-package org-mac-iCal :ensure t))
-
-  (setq org-src-fontify-natively t)
-
   )
 
 
