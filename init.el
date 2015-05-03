@@ -672,7 +672,10 @@ This is workaround for Mac OS X system."
 
 (use-package easy-repeat
   :load-path "~/wip/easy-repeat.el"
-  :config (easy-repeat-mode))
+  :config
+  (add-to-list 'easy-repeat-command-list 'git-gutter:previous-hunk)
+  (add-to-list 'easy-repeat-command-list 'git-gutter:next-hunk)
+  (easy-repeat-mode))
 
 (use-package ws-butler
   :ensure t
