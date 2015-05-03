@@ -180,7 +180,12 @@ prefix argument, the process's buffer is displayed."
   (interactive
    (let* ((url (read-string "URL: "))
           (guess (file-name-nondirectory url))
-          (file (read-file-name "Save to: " nil nil nil guess)))
+          (default-file (concat default-directory guess))
+          (file (read-file-name
+                 (if guess
+                     (format "Save to (default %s): " default-file)
+                   "Save to: ")
+                 nil default-file)))
      (list url file)))
   (unless (alist-get 'download spinner-types)
     (push '(download . ["下" "载" "中"]) spinner-types))
@@ -199,7 +204,11 @@ prefix argument, the process's buffer is displayed."
           (guess (file-name-nondirectory repo))
           (dir
            (read-directory-name
-            (format "Clone %s to: " repo) nil nil nil guess)))
+            (format
+             (if guess
+                 (format "Clone %s to (default %s): " repo (concat default-directory guess))
+               (format "Clone %s to: " repo)))
+            nil (concat default-directory guess))))
      (list repo dir)))
   (let* ((command (format "git clone %s %s" repo dir))
          (output-buffer "*git-clone-output*")
