@@ -189,10 +189,32 @@ prefix argument, the process's buffer is displayed."
   (url-copy-file url file)
   (spinner-stop))
 
-;;; @TODO: git clone repository
-(defun chunyang-git-clone (url dir)
+(defvar chunyang-git-clone-deon-action #'dired
+  "Funcall called by `chunyang-git-clone'.")
+
+(defun chunyang-git-clone (repo dir)
   ""
-  (interactive))
+  (interactive
+   (let* ((repo (read-string "Repo URL:"))
+          (guess (file-name-nondirectory repo))
+          (dir
+           (read-directory-name
+            (format "Clone %s to: " repo) nil nil nil guess)))
+     (list repo dir)))
+  (let* ((command (format "git clone %s %s" repo dir))
+         (output-buffer "*git-clone-output*")
+         (ret (let ((progress-reporter
+                     (make-progress-reporter (format "Running '%s'..." command)
+                                             nil nil)))
+                (prog1 (call-process-shell-command command nil output-buffer)
+                  (progress-reporter-done progress-reporter)))))
+    (if (zerop ret)
+        (progn
+          (kill-buffer output-buffer)
+          (message "Git clone done.")
+          (when (fboundp chunyang-git-clone-deon-action)
+            (funcall chunyang-git-clone-deon-action dir)))
+      (error "Git clone failed, see %s buffer for details" output-buffer))))
 
 
 ;;; Misc
@@ -304,44 +326,6 @@ The original idea is from `tramp-debug-message'."
                (lambda () (interactive) (chunyang-page-adjust (abs inc))))))
          map)))))
 
-;; `other-window'
-;;
-;; from 'C-x o C-x z z z z' to 'C-x o o o o'
-;;
-
-;; (define-key global-map [remap other-window] #'chunyang-other-window)
-(defun chunyang-other-window (count)
-  (interactive "p")
-  (if (eq (selected-window) (next-window))
-      ;; (other-window count)
-      nil                               ; no other window, do nothing
-    (let ((ev last-command-event)
-          (echo-keystrokes nil))
-      (let* ((base (event-basic-type ev))
-             (step
-              (pcase base
-                (?o count)
-                (t  count))))
-        (other-window step)               ; @TODO: when there is only one window, it should not work like this.
-        (message "use o for future.")
-        (set-transient-map
-         (let ((map (make-sparse-keymap)))
-           (dolist (mods '(() (control)))
-             (dolist (key '(o))
-               (define-key map (vector (append mods (list key)))
-                 (lambda () (interactive) (chunyang-other-window (abs count))))))
-           map))))))
-
-;;; M-x other-window RET RET RET
-;;; C-x o o o o
-(defun foo--other-window (orig-fun &rest args)
-  "DOC"
-  (apply orig-fun args)
-  (set-transient-map
-   (let ((map (make-sparse-keymap)))
-     (define-key map (vector last-command-event) #'repeat)
-     map)))
-
 
 ;;; key Binding --- Repeat for a while
 
@@ -349,16 +333,11 @@ The original idea is from `tramp-debug-message'."
 ;; recenter-top-bottom
 ;; move-to-window-line-top-bottom
 
-;;; @TODO: timer
-
 
 ;;; @TODO:
 ;; (helm-define-key-with-subkeys global-map
 ;;   (kbd "C-x v n") ?n #'git-gutter:next-hunk
 ;;   '((?p . git-gutter:previous-hunk)))
-
-
-;;; @TODO: add timeout support
 
 ;;; Use functions from `helm' package
 ;;
