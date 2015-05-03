@@ -109,6 +109,14 @@
 
   (setq org-src-fontify-natively t)
   (setq org-src-tab-acts-natively t)
+
+  (defun chunyang-org-make-orgcapture-frame ()
+    "Create a new frame and run org-capture."
+    (interactive)
+    (make-frame '((name . "remember") (width . 80) (height . 16)
+                  (top . 400) (left . 300)))
+    (select-frame-by-name "remember")
+    (org-capture))
   )
 
 ;;; Requires
@@ -198,7 +206,7 @@ Homebrew: brew install trash")))
 (fset 'display-startup-echo-area-message #'ignore)
 
 (use-package dynamic-fonts              ; Select best available font
-  ;; :disabled t
+  :disabled t
   :ensure t
   :config
   (setq dynamic-fonts-preferred-monospace-fonts
@@ -242,9 +250,12 @@ Homebrew: brew install trash")))
 ;; (when (member "Source Code Pro" (font-family-list))
 ;;   (set-face-attribute 'default nil :font "Source Code Pro 13"))
 
-(when (member "STFangsong" (font-family-list))
-  (set-fontset-font t 'han (font-spec :family "STFangsong"))
-  (setq face-font-rescale-alist '(("STFangsong" . 1.3))))
+(when (member "Source Code Pro for Powerline" (font-family-list))
+  (set-face-attribute 'default nil :font "Source Code Pro for Powerline 13"))
+
+;; (when (member "STFangsong" (font-family-list))
+;;   (set-fontset-font t 'han (font-spec :family "STFangsong"))
+;;   (setq face-font-rescale-alist '(("STFangsong" . 1.3))))
 
 (use-package zenburn-theme :ensure t)
 (use-package color-theme-sanityinc-tomorrow :ensure t)
@@ -261,6 +272,9 @@ Homebrew: brew install trash")))
   ;; (moe-theme-set-color 'purple)
 
   (moe-dark))
+
+(use-package yascroll
+  :ensure t)
 
 (defcustom chunyang-theme-favourites nil
   "My favourite color themes."
