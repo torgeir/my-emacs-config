@@ -1189,11 +1189,20 @@ This is workaround for Mac OS X system."
     ;;| Style 27
     ;;`-----------------------------------
 
-    ;; @FIXME: Do no abuse it, e.g., don't use it within a function like this.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; @FIXME: Do no abuse it, e.g., don't use it within a function like ;;
+    ;; this.                                                             ;;
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     (setq-local rebox-min-fill-column 40)
-    (rebox-mode 1))
-  (add-hook 'emacs-lisp-mode-hook #'chunyang--elisp-comment-setup))
+    ;;,-------------------------------------------------
+    ;;| @FIXME: This will broken partly `eldoc', too bad
+    ;;`-------------------------------------------------
+    ;; (rebox-mode 1)
+    )
+  (add-hook 'emacs-lisp-mode-hook #'chunyang--elisp-comment-setup)
+
+  (bind-key* [(meta q)] #'rebox-dwim))
 
 
 ;;; Common Lisp
