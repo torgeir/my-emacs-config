@@ -61,14 +61,17 @@
   (helm-build-sync-source (concat
                            "Github Trending"
                            " - "
-                           (propertize "https://github.com/trending" 'face 'link))
+                           (propertize "https://github.com/trending"
+                                       'face 'link))
     :candidates #'github--trending-init
-    :action '(("Browse Link" . (lambda (candidate) (browse-url candidate))))))
+    :action '(("Browse Link" .
+               (lambda (_ignore)
+                 (mapc #'browse-url (helm-marked-candidates)))))))
 
 ;;;###autoload
 (defun github-trending ()
   (interactive)
-  (helm :sources '(github-trending-source)
+  (helm :sources 'github-trending-source
         :buffer "*helm github trending*" :full-frame t
         :truncate-lines t))
 
