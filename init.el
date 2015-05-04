@@ -371,7 +371,7 @@ Homebrew: brew install trash")))
   ;; Local map
   (bind-keys :map helm-command-map
              ("g" . helm-chrome-bookmarks)
-             ("z" . helm-complex-command-history) ; @TODO: worth a shorter key binding
+             ("z" . helm-complex-command-history) ; TODO: worth a shorter key binding
              )
   ;; Global map
   (bind-keys ([remap execute-extended-command] . helm-M-x)            ; M-x
@@ -436,7 +436,7 @@ Homebrew: brew install trash")))
   (bind-key "M-i" #'my-helm-occur)
   (bind-key "M-i" #'helm-occur-from-isearch isearch-mode-map)
 
-  ;; @TODO:
+  ;; TODO:
   ;; (defun isearch-from-helm-occur ()
   ;;   "Invoke `isearch-forward' from helm-occur."
   ;;   (interactive)
@@ -823,7 +823,7 @@ This is workaround for Mac OS X system."
 ;; Code folding
 (use-package origami
   :ensure t
-  ;; @TODO: Setup key or add menu for this by using easy-menu, see `helm-config'
+  ;; TODO: Setup key or add menu for this by using easy-menu, see `helm-config'
   ;; for example.
   )
 
@@ -833,6 +833,15 @@ This is workaround for Mac OS X system."
 
 ;;; Search
 (setq isearch-allow-scroll t)
+
+(use-package pinyin-search
+  :ensure t)
+
+(use-package grep
+  :defer t
+  :config
+  (seq-doseq (file '("TAGS" "GPATH" "GRTAGS" "GTAGS"))
+    (add-to-list 'grep-find-ignored-files file)))
 
 (use-package anzu                       ; Position/matches count for isearch
   :ensure t
@@ -862,9 +871,6 @@ This is workaround for Mac OS X system."
   (define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
   (define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line))
 
-(use-package pinyin-search
-  :ensure t)
-
 
 ;;; Highlights
 (use-package hl-line
@@ -883,9 +889,14 @@ This is workaround for Mac OS X system."
 
 (use-package fic-mode                   ; https://github.com/lewang/fic-mode,
                                         ; not in MELPA
+  :disabled t
   :load-path "~/repos/fic-mode"
   :config
   (add-hook 'prog-mode-hook 'fic-mode))
+
+(use-package hl-todo
+  :ensure t
+  :config (global-hl-todo-mode))
 
 (use-package color-identifiers-mode     ; highlight each source code identifier uniquely based on its name
   :ensure t
@@ -1042,7 +1053,7 @@ This is workaround for Mac OS X system."
   :ensure t)
 
 (use-package iedit
-  :disabled t                           ; @TODO: read manual
+  :disabled t                           ; TODO: read manual
   :ensure t
   :config
   (bind-key [C-return] #'iedit-rectangle-mode))
@@ -1202,13 +1213,13 @@ This is workaround for Mac OS X system."
     ;;`-----------------------------------
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;; @FIXME: Do no abuse it, e.g., don't use it within a function like ;;
+    ;; FIXME: Do no abuse it, e.g., don't use it within a function like ;;
     ;; this.                                                             ;;
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     (setq-local rebox-min-fill-column 40)
     ;;,-------------------------------------------------
-    ;;| @FIXME: This will broken partly `eldoc', too bad
+    ;;| FIXME: This will broken partly `eldoc', too bad
     ;;`-------------------------------------------------
     ;; (rebox-mode 1)
     )
@@ -1294,7 +1305,8 @@ This is workaround for Mac OS X system."
 
 ;;; Tools and utilities
 (use-package projectile                 ; Project management
-  :ensure t
+  ;; :ensure t
+  :load-path "~/wip/projectile"
   :config
   ;;,----------------------------------------------------------------------------------------------------------
   ;;| http://emacs.stackexchange.com/questions/10465/turn-on-projectile-mode-only-for-files-in-actual-projects
@@ -1312,7 +1324,8 @@ This is workaround for Mac OS X system."
 
   ;; helm
   (use-package helm-projectile
-    :ensure t
+    ;; :ensure t
+    :load-path "~/wip/projectile"
     :config
     (setq projectile-completion-system 'helm)
     (helm-projectile-on)

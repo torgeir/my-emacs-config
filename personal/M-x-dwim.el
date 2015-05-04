@@ -11,7 +11,7 @@
   ;; Man
   (require 'man)
   (let ((man-args (Man-default-man-entry)))
-    ;; @TODO: Make sure man-args is available.
+    ;; TODO: Make sure man-args is available.
     (if (string= man-args "")
         (message "No item under point")
       (man man-args)))

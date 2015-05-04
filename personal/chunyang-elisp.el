@@ -40,7 +40,7 @@ See also `describe-function-or-variable'."
              fdoc-short
              vdoc-short)
             :margin t
-            ;; @TODO: customize `popup-tip-face', read '(info (elisp) Faces)'
+            ;; TODO: customize `popup-tip-face', read '(info (elisp) Faces)'
             )))))
 
 ;;;###autoload
@@ -192,18 +192,18 @@ See also `describe-function-or-variable'."
 
 ;; ;;; Add magit to `helm-source-ls-git'
 ;; ;;
-;; (defmethod helm-setup-user-source ((source helm-ls-git-source))
-;;   (let ((actions (oref source :action)))
-;;     (set-slot-value
-;;      source
-;;      'action
-;;      (helm-append-at-nth
-;;       actions
-;;       (helm-make-actions
-;;        "Magit status"
-;;        (lambda (_candidate)
-;;          (magit-status (helm-default-directory))))
-;;       1))))
+(defmethod helm-setup-user-source ((source helm-ls-git-source))
+  (let ((actions (oref source :action)))
+    (set-slot-value
+     source
+     'action
+     (helm-append-at-nth
+      actions
+      (helm-make-actions
+       "Magit status"
+       (lambda (_candidate)
+         (magit-status (helm-default-directory))))
+      1))))
 
 ;; (defmethod helm-setup-user-source ((source helm-source-buffers))
 ;;   (set-slot-value source 'candidate-number-limit 200))

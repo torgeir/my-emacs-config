@@ -136,7 +136,7 @@ prefix argument, the process's buffer is displayed."
   "Reports on changes in `chunyang-launch'ed applications."
   (message (format "%s: %s" proc event)))
 
-;;; @TODO: finish this.
+;;; TODO: finish this.
 (defun chunyang-kill-all-buffer ()
   "Kill almost all buffers."
   (interactive)
@@ -162,10 +162,13 @@ prefix argument, the process's buffer is displayed."
   (if (string= url "") (error "Empty URL."))
   (if (file-exists-p file) (error "Existing file (%s)." file))
   (unless (require 'spinner nil t) (error "Package `spinner' not found."))
-  ;; Looks cool. Let's do it.
+  ;;,-----------------------------------
+  ;;| Looks cool. Let's do it.
+  ;;`-----------------------------------
+  ;; FIXME: update this useage, `spinner-create' supports better way
   (unless (alist-get 'download spinner-types)
     (push '(download . ["下" "载" "中"]) spinner-types))
-  ;; @TODO: this process reporter is not working.
+  ;; TODO: this process reporter is not working.
   (spinner-start 'download 3)
   (unwind-protect
       (if (zerop (call-process "curl" nil nil nil
@@ -189,7 +192,7 @@ prefix argument, the process's buffer is displayed."
      (list url file)))
   (unless (alist-get 'download spinner-types)
     (push '(download . ["下" "载" "中"]) spinner-types))
-  ;; @TODO: this process reporter is not working.
+  ;; TODO: this process reporter is not working.
   (spinner-start 'download 3)
   (url-copy-file url file)
   (spinner-stop))
@@ -334,12 +337,12 @@ The original idea is from `tramp-debug-message'."
 
 ;;; key Binding --- Repeat for a while
 
-;; @TODO: single key sequence is not supported for now
+;; TODO: single key sequence is not supported for now
 ;; recenter-top-bottom
 ;; move-to-window-line-top-bottom
 
 
-;;; @TODO:
+;;; TODO:
 ;; (helm-define-key-with-subkeys global-map
 ;;   (kbd "C-x v n") ?n #'git-gutter:next-hunk
 ;;   '((?p . git-gutter:previous-hunk)))

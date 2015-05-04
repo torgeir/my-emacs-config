@@ -35,7 +35,7 @@
                   for description = (cadr (assoc-default 'description item))
                   when link
                   collect (cons description link))))
-    ;; @TODO: consider language and description is nil
+    ;; TODO: consider language and description is nil
     (mapc
      (lambda (elt)
        (let* ((tmp (split-string (car elt) "\n"))

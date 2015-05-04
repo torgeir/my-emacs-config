@@ -32,7 +32,7 @@
 (require 'json)
 (require 'browse-url)
 
-(defvar helm-hackernews-url "http://api.ihackernews.com/page") ; @FIXME: Not work
+(defvar helm-hackernews-url "http://api.ihackernews.com/page") ; FIXME: Not work
 
 (defun helm-hackernews-get-posts ()
   (with-temp-buffer
