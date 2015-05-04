@@ -201,14 +201,10 @@ prefix argument, the process's buffer is displayed."
   ""
   (interactive
    (let* ((repo (read-string "Repo URL:"))
-          (guess (file-name-nondirectory repo))
-          (dir
-           (read-directory-name
-            (format
-             (if guess
-                 (format "Clone %s to (default %s): " repo (concat default-directory guess))
-               (format "Clone %s to: " repo)))
-            nil (concat default-directory guess))))
+          (guess (file-name-base repo))
+          (dir (read-directory-name
+                (format "Clone %s to: " repo)
+                nil nil nil guess)))
      (list repo dir)))
   (let* ((command (format "git clone %s %s" repo dir))
          (output-buffer "*git-clone-output*")

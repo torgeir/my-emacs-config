@@ -1116,6 +1116,14 @@ This is workaround for Mac OS X system."
 (use-package ielm                       ; Emacs Lisp REPL
   )
 
+(use-package imenu
+  :defer t
+  :config
+  (defun imenu-use-package ()
+    (add-to-list 'imenu-generic-expression
+                 '("Package" "^\\s-*(use-package\\s-+\\(\\(\\sw\\|\\s_\\)+\\)[[:space:]]+[^)]" 1)))
+  (add-hook 'emacs-lisp-mode-hook #'imenu-use-package))
+
 (use-package eshell
   :config
   (bind-key "C-!" #'eshell-command))
