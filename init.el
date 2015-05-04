@@ -154,6 +154,10 @@
   (exec-path-from-shell-copy-env "LANG")
   (exec-path-from-shell-copy-env "INFOPATH"))
 
+(use-package info
+  :defer t
+  :config (add-to-list 'Info-directory-list "/opt/local/share/info"))
+
 
 ;;; Customization interface
 (use-package cus-edit
