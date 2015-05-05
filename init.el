@@ -90,9 +90,9 @@
 
   ;; (setq org-clock-string-limit 80)
 
-  (setq org-todo-keyword-faces
-        '(("TODO" . org-warning) ("STARTED" . "yellow")
-          ("CANCELED" . (:foreground "blue" :weight bold))))
+  ;; (setq org-todo-keyword-faces
+  ;;       '(("TODO" . org-warning) ("STARTED" . "yellow")
+  ;;         ("CANCELED" . (:foreground "blue" :weight bold))))
 
   (defvar *is-a-mac* (eq 'darwin system-type))
   (when *is-a-mac*
@@ -118,6 +118,26 @@
     (select-frame-by-name "remember")
     (org-capture))
   )
+
+;;,------------------------------------------------------------------------------------
+;;| Show org-mode clock in Mac OS X menubar
+;;| [[https://github.com/koddo/org-clock-statusbar-app][koddo/org-clock-statusbar-app]]
+;;`------------------------------------------------------------------------------------
+(add-hook 'org-clock-in-hook
+          (lambda ()
+            (call-process
+             "/usr/bin/osascript" nil 0 nil
+             "-e"
+             (concat
+              "tell application \"org-clock-statusbar\" to clock in \""
+              org-clock-current-task
+              "\""))))
+
+(add-hook 'org-clock-out-hook
+          (lambda ()
+            (call-process
+             "/usr/bin/osascript" nil 0 nil
+             "-e" "tell application \"org-clock-statusbar\" to clock out")))
 
 ;;,-------------------------------------
 ;;| use Org Mode links in other modes
@@ -223,8 +243,8 @@ Homebrew: brew install trash")))
   (setq dynamic-fonts-preferred-monospace-fonts
         '(
           ;; Best fonts
-          "Source Code Pro"     ; https://github.com/adobe-fonts/source-code-pro
-          "Anonymous Pro" ; http://www.marksimonson.com/fonts/view/anonymous-pro
+          "Source Code Pro" ; https://github.com/adobe-fonts/source-code-pro
+          "Anonymous Pro"   ; http://www.marksimonson.com/fonts/view/anonymous-pro
           ;; Consolas and its free alternative.  Ok, but not my preference
           "Inconsolata"
           "Consolas"
@@ -345,8 +365,8 @@ Homebrew: brew install trash")))
 
 ;;; The minibuffer
 (use-package helm                       ; FIXME: not work, use-package & imenu setup
-  ;; :ensure t
-  :load-path "~/wip/helm"
+  :ensure t
+  ;; :load-path "~/wip/helm"
   :diminish helm-mode
   :config
   ;; Old value is "C-x c", needs to be changed before loading helm-config
@@ -369,24 +389,24 @@ Homebrew: brew install trash")))
              ("z" . helm-complex-command-history) ; TODO: worth a shorter key binding
              )
   ;; Global map
-  (bind-keys ([remap execute-extended-command] . helm-M-x)            ; M-x
+  (bind-keys ([remap execute-extended-command] . helm-M-x)                ; M-x
              ;; File
-             ([remap find-file]                . helm-find-files)     ; C-x C-f
-             ([remap set-fill-column]          . helm-recentf)        ; C-x f
+             ([remap find-file]                . helm-find-files)         ; C-x C-f
+             ([remap set-fill-column]          . helm-recentf)            ; C-x f
              ;; Buffer
-             ([remap switch-to-buffer]         . helm-buffers-list) ; C-x b
-             ([remap downcase-word]            . helm-mini)           ; M-l
+             ([remap switch-to-buffer]         . helm-buffers-list)       ; C-x b
+             ([remap downcase-word]            . helm-mini)               ; M-l
              ;; Kill ring
-             ([remap yank-pop]                 . helm-show-kill-ring) ; M-y
-             ([remap suspend-frame]            . helm-resume)         ; C-z
+             ([remap yank-pop]                 . helm-show-kill-ring)     ; M-y
+             ([remap suspend-frame]            . helm-resume)             ; C-z
              ;; Register
              ([remap jump-to-register]         . helm-register)
              ;; Help
-             ([remap apropos-command]          . helm-apropos)        ; C-h a
+             ([remap apropos-command]          . helm-apropos)            ; C-h a
              ;; Bookmark
              ([remap bookmark-jump]            . helm-filtered-bookmarks) ; C-x r b
              ;; Project (Git)
-             ([remap list-directory]           . helm-browse-project) ; C-x C-d
+             ([remap list-directory]           . helm-browse-project)     ; C-x C-d
              ;; TAGS
              ;; ([remap xref-find-definitions]    . helm-etags-select)
              )
@@ -1090,11 +1110,9 @@ This is workaround for Mac OS X system."
 ;;; Programming utilities
 (use-package compile                    ; Compile from Emacs
   :config
-  (setq compilation-ask-about-save nil  ; Just save before compiling
-        compilation-always-kill t       ; Just kill old compile processes before
-                                        ; starting the new one
-        compilation-scroll-output 'first-error ; Automatically scroll to first
-                                        ; error
+  (setq compilation-ask-about-save nil         ; Just save before compiling
+        compilation-always-kill t
+        compilation-scroll-output 'first-error ; Automatically scroll to first error
         ))
 
 (use-package highlight-numbers          ; Fontify number literals
@@ -1207,8 +1225,12 @@ This is workaround for Mac OS X system."
   :diminish rebox-mode
   :config
   (defun chunyang--elisp-comment-setup ()
-    (setq-local rebox-style-loop '(21 25 27))
+    (setq-local rebox-style-loop '(21 23 25 27))
     ;; Style 21
+
+    ;; ------------------------------ ;;
+    ;; Style 23                       ;;
+    ;; ------------------------------ ;;
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Style 25                       ;;
@@ -1493,7 +1515,7 @@ This is workaround for Mac OS X system."
   :ensure t
   :config
   (setq notmuch-fcc-dirs "[Gmail].Sent Mail") ; stores sent mail to the specified directory
-  (setq message-directory "[Gmail].Drafts") ; stores postponed messages to the specified directory
+  (setq message-directory "[Gmail].Drafts")   ; stores postponed messages to the specified directory
   ;; (setq notmuch-saved-searches
   ;;       '((:name "inbox" :query "tag:inbox")
   ;;         (:name "unread" :query "tag:inbox AND tag:unread")))
