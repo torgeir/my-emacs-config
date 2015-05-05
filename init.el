@@ -344,7 +344,7 @@ Homebrew: brew install trash")))
 
 
 ;;; The minibuffer
-(use-package helm
+(use-package helm                       ; FIXME: not work, use-package & imenu setup
   ;; :ensure t
   :load-path "~/wip/helm"
   :diminish helm-mode
@@ -374,8 +374,8 @@ Homebrew: brew install trash")))
              ([remap find-file]                . helm-find-files)     ; C-x C-f
              ([remap set-fill-column]          . helm-recentf)        ; C-x f
              ;; Buffer
-             ([remap switch-to-buffer]         . helm-mini)           ; C-x b
-             ([remap downcase-word]            . helm-buffers-list)   ; M-l
+             ([remap switch-to-buffer]         . helm-buffers-list) ; C-x b
+             ([remap downcase-word]            . helm-mini)           ; M-l
              ;; Kill ring
              ([remap yank-pop]                 . helm-show-kill-ring) ; M-y
              ([remap suspend-frame]            . helm-resume)         ; C-z
@@ -545,6 +545,10 @@ Homebrew: brew install trash")))
 (use-package windmove
   :config (windmove-default-keybindings))
 
+(use-package window-numbering
+  :disabled t
+  :ensure t)
+
 (use-package desktop                    ; Save buffers, windows and frames
   :config
   (desktop-save-mode)
@@ -617,7 +621,7 @@ This is workaround for Mac OS X system."
 
 (use-package recentf                    ; Save recently visited files
   :config
-  (setq recentf-max-saved-items 200
+  (setq recentf-max-saved-items 30
         recentf-max-menu-items 15
         ;; Cleanup recent files only when Emacs is idle, but not when the mode
         ;; is enabled, because that unnecessarily slows down Emacs. My Emacs
@@ -627,6 +631,7 @@ This is workaround for Mac OS X system."
                               "/elpa/.*\\'"   ; Package files
                               "/itsalltext/"  ; It's all text temp files
                               ".*\\.gz\\'"
+                              "TAGS"
                               ".*-autoloads\\.el\\'"))
   (recentf-mode))
 
@@ -1151,7 +1156,7 @@ This is workaround for Mac OS X system."
 
 (unless
     (use-package elisp-slime-nav
-      :disabled t
+      ;; :disabled t
       :ensure t
       :diminish elisp-slime-nav-mode
       :config
