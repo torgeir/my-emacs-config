@@ -817,6 +817,15 @@ This is workaround for Mac OS X system."
   :config (dolist (hook '(text-mode-hook prog-mode-hook))
             (add-hook hook #'outline-minor-mode)))
 
+(use-package imenu
+  :defer t
+  :config
+  (defun imenu-use-package ()
+    (add-to-list 'imenu-generic-expression
+                 '("Package" "^\\s-*(defvar\\s-+\\(\\(\\sw\\|\\s_\\)+\\)[[:space:]
+]+[^)]" 1)))
+  (add-hook 'emacs-lisp-mode-hook #'imenu-use-package))
+
 (use-package imenu-anywhere             ; Helm-based imenu across open buffers
   :ensure t
   :bind (("C-c i" . helm-imenu-anywhere)))
@@ -1131,14 +1140,6 @@ This is workaround for Mac OS X system."
 ;;; Emacs Lisp
 (use-package ielm                       ; Emacs Lisp REPL
   )
-
-(use-package imenu
-  :defer t
-  :config
-  (defun imenu-use-package ()
-    (add-to-list 'imenu-generic-expression
-                 '("Package" "^\\s-*(use-package\\s-+\\(\\(\\sw\\|\\s_\\)+\\)[[:space:]]+[^)]" 1)))
-  (add-hook 'emacs-lisp-mode-hook #'imenu-use-package))
 
 (use-package eshell
   :config
