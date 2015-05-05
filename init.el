@@ -118,6 +118,13 @@
     (select-frame-by-name "remember")
     (org-capture))
   )
+
+;;,-------------------------------------
+;;| use Org Mode links in other modes
+;;`-------------------------------------
+(use-package orglink
+  :ensure t)
+
 
 ;;; Requires
 
@@ -264,18 +271,6 @@ Homebrew: brew install trash")))
 (use-package zenburn-theme :ensure t)
 (use-package color-theme-sanityinc-tomorrow :ensure t)
 (use-package solarized-theme :ensure t)
-
-(use-package moe-theme
-  :disabled t
-  :ensure t
-  :config
-  ;; Show highlighted buffer-id as decoration. (Default: nil)
-  (setq moe-theme-highlight-buffer-id t)
-
-  ;; Choose a color for mode-line.(Default: blue)
-  ;; (moe-theme-set-color 'purple)
-
-  (moe-dark))
 
 (use-package yascroll
   :ensure t)
@@ -540,7 +535,12 @@ Homebrew: brew install trash")))
 (use-package ace-window
   :disabled t
   :ensure t
-  :config (bind-key "M-o" #'ace-window))
+  :config
+  (setq avi-keys
+        '(?a ?s ?d ?e ?f ?h ?j ?k ?l ?n ?m ?v ?r ?u))
+  (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l))
+  (bind-key "C-c t"   #'avi-goto-word-1)
+  (bind-key "C-x C-o" #'ace-window))
 
 (use-package windmove
   :config (windmove-default-keybindings))

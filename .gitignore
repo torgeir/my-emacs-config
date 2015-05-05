@@ -21,3 +21,6 @@ helm-adaptive-history
 srecode-map.el
 semanticdb
 projectile*
+
+/.cask
+/tramp

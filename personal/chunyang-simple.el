@@ -148,6 +148,17 @@ prefix argument, the process's buffer is displayed."
            (member (buffer-name elt)
                    '("*scratch*" "*Messages*" "*Help*" "*info*")))
          (buffer-list))))
+
+
+(defun chunyang-buffer-name-kill-ring-save (arg)
+  "Push name of current buffer to kill-ring.
+With prefix ARG, use filename."
+  (interactive "P")
+  (if arg
+      (and buffer-file-name
+           (kill-new buffer-file-name))
+    (kill-new (buffer-name))))
+
 
 ;;; Download stuffs
 (defun chunyang-download-file-old (url file)
