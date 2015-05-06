@@ -205,11 +205,14 @@ With prefix ARG, use filename."
     (push '(download . ["下" "载" "中"]) spinner-types))
   ;; TODO: this process reporter is not working.
   (spinner-start 'download 3)
-  (url-copy-file url file)
+  (url-copy-file url file)              ; TODO: try `url-retrieve'
   (spinner-stop))
 
-(defvar chunyang-git-clone-deon-action #'dired
+(defvar chunyang-git-clone-done-action #'dired
   "Funcall called by `chunyang-git-clone'.")
+
+(defvar chunyang-git--spinner-stop nil
+  "Holds the function that stops the spinner.")
 
 (defun chunyang-git-clone (repo dir)
   ""
@@ -220,20 +223,27 @@ With prefix ARG, use filename."
                 (format "Clone %s to: " repo)
                 nil nil nil guess)))
      (list repo dir)))
+  (setq chunyang-git--spinner-stop (spinner-start))
   (let* ((command (format "git clone %s %s" repo dir))
          (output-buffer "*git-clone-output*")
-         (ret (let ((progress-reporter
-                     (make-progress-reporter (format "Running '%s'..." command)
-                                             nil nil)))
-                (prog1 (call-process-shell-command command nil output-buffer)
-                  (progress-reporter-done progress-reporter)))))
-    (if (zerop ret)
-        (progn
-          (kill-buffer output-buffer)
-          (message "Git clone done.")
-          (when (fboundp chunyang-git-clone-deon-action)
-            (funcall chunyang-git-clone-deon-action dir)))
-      (error "Git clone failed, see %s buffer for details" output-buffer))))
+         (proc (start-process-shell-command "git-clone" output-buffer command)))
+    (set-process-sentinel
+     proc
+     (lambda (process event)
+       (unless (string-equal event "finished\n")
+         (progn
+           (when (functionp paradox--spinner-stop)
+             (funcall paradox--spinner-stop)
+             (setq paradox--spinner-stop nil))
+           (error "Git clone failed, see %s buffer for details" output-buffer)))
+       ;; Done
+       (kill-buffer output-buffer)
+       (message "Git clone done.")
+       (when (functionp paradox--spinner-stop)
+         (funcall paradox--spinner-stop)
+         (setq paradox--spinner-stop nil))
+       (when (fboundp chunyang-git-clone-done-action)
+         (funcall chunyang-git-clone-done-action dir))))))
 
 
 ;;; Misc

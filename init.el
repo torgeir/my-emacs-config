@@ -145,6 +145,16 @@
 (use-package orglink
   :ensure t)
 
+;;,-------------------------------------
+;;| org calendar
+;;`-------------------------------------
+(use-package calfw
+  :ensure t
+  :config
+  (require 'calfw-org) ;; Then, M-x cfw:open-org-calendar
+  )
+
+
 
 ;;; Requires
 
