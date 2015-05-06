@@ -215,7 +215,7 @@ With prefix ARG, use filename."
   "Holds the function that stops the spinner.")
 
 (defun chunyang-git-clone (repo dir)
-  ""
+  "Git clone asynchronously."
   (interactive
    (let* ((repo (read-string "Repo URL:"))
           (guess (file-name-base repo))
@@ -223,6 +223,7 @@ With prefix ARG, use filename."
                 (format "Clone %s to: " repo)
                 nil nil nil guess)))
      (list repo dir)))
+  ;; Run out spinner
   (setq chunyang-git--spinner-stop (spinner-start))
   (let* ((command (format "git clone %s %s" repo dir))
          (output-buffer "*git-clone-output*")
@@ -230,20 +231,18 @@ With prefix ARG, use filename."
     (set-process-sentinel
      proc
      (lambda (process event)
-       (unless (string-equal event "finished\n")
-         (progn
-           (when (functionp paradox--spinner-stop)
-             (funcall paradox--spinner-stop)
-             (setq paradox--spinner-stop nil))
-           (error "Git clone failed, see %s buffer for details" output-buffer)))
-       ;; Done
-       (kill-buffer output-buffer)
-       (message "Git clone done.")
+       (unwind-protect)
+       (if (string-equal event "finished\n")
+           (progn
+             (kill-buffer output-buffer)
+             (message "Git clone done.")
+             (when (fboundp chunyang-git-clone-done-action)
+               (funcall chunyang-git-clone-done-action dir)))
+         (error "Git clone failed, see %s buffer for details" output-buffer))
+       ;; Stop spinner no matter successes or fails
        (when (functionp paradox--spinner-stop)
          (funcall paradox--spinner-stop)
-         (setq paradox--spinner-stop nil))
-       (when (fboundp chunyang-git-clone-done-action)
-         (funcall chunyang-git-clone-done-action dir))))))
+         (setq paradox--spinner-stop nil))))))
 
 
 ;;; Misc

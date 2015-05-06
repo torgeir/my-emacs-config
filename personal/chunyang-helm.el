@@ -13,6 +13,10 @@
 ;;| https://github.com/emacs-helm/helm/issues/1014
 ;;`--------------------------------------------------------------------
 
+;; ------------------------------------------------------- ;;
+;; FIXME: remove this, is has beeen addded to helm itself. ;;
+;; ------------------------------------------------------- ;;
+
 (defun helm-ff-goto-line (candidate)
   (let ((linum (let ((str (with-helm-current-buffer
                             (buffer-substring-no-properties

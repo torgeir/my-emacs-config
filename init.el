@@ -87,6 +87,7 @@
   (setq org-clock-persist 'history)
   (org-clock-persistence-insinuate)
   (setq org-clock-persist t)
+  (setq org-clock-persist-query-resume nil)
 
   ;; (setq org-clock-string-limit 80)
 
@@ -108,6 +109,7 @@
   (setq org-edit-src-auto-save-idle-delay 5)
 
   (setq org-src-fontify-natively t)
+  (setq org-edit-src-content-indentation 0)
   (setq org-src-tab-acts-natively t)
 
   (defun chunyang-org-make-orgcapture-frame ()
@@ -852,7 +854,7 @@ This is workaround for Mac OS X system."
   :config
   (defun imenu-use-package ()
     (add-to-list 'imenu-generic-expression
-                 '("Package" "^\\s-*(defvar\\s-+\\(\\(\\sw\\|\\s_\\)+\\)[[:space:]
+                 '("Package" "^\\s-*(use-package\\s-+\\(\\(\\sw\\|\\s_\\)+\\)[[:space:]
 ]+[^)]" 1)))
   (add-hook 'emacs-lisp-mode-hook #'imenu-use-package))
 
