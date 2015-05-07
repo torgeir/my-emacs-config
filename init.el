@@ -29,10 +29,6 @@
 ;; (setq debug-on-error t)
 (setq ad-redefinition-action 'accept)
 
-(add-to-list 'load-path "/Users/xcy/repos/benchmark-init-el")
-(require 'benchmark-init-loaddefs)
-(benchmark-init/activate)
-
 (unless noninteractive
   (message "Loading %s..." load-file-name))
 
@@ -306,34 +302,6 @@ Homebrew: brew install trash")))
 
 (use-package yascroll
   :ensure t)
-
-(defcustom chunyang-theme-favourites nil
-  "My favourite color themes."
-  :type '(list symbol))
-
-(require 'helm)
-(defvar chunyang-theme-helm-source
-  (helm-build-sync-source "My favourite color themes"
-    :candidates (lambda () chunyang-theme-favourites) ; Dynamically
-    :action (helm-make-actions
-             "Enable theme"
-             (lambda (candicate)
-               (let ((current-theme (car custom-enabled-themes))
-                     (new-theme     (intern candicate)))
-                 (disable-theme current-theme)
-                 (load-theme new-theme t))))))
-
-(defun chunyang-switch-theme ()
-  "Load one of my favourite themes."
-  (interactive)
-  (helm :sources '(chunyang-theme-helm-source)
-        :buffer "*helm chunyang theme*"))
-
-(setq chunyang-theme-favourites
-      '(zenburn
-        solarized-dark
-        sanityinc-tomorrow-eighties
-        sanityinc-tomorrow-night))
 
 ;;; The mode line
 
@@ -377,8 +345,8 @@ Homebrew: brew install trash")))
 
 ;;; The minibuffer
 (use-package helm                       ; FIXME: not work, use-package & imenu setup
-  :ensure t
-  ;; :load-path "~/wip/helm"
+  ;; :ensure t
+  :load-path "~/wip/helm"
   :diminish helm-mode
   :config
   ;; Old value is "C-x c", needs to be changed before loading helm-config

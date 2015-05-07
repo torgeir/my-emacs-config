@@ -382,6 +382,31 @@ The original idea is from `tramp-debug-message'."
 ;; (helm-define-key-with-subkeys global-map
 ;;   (kbd "C-x [") ?\[ #'backward-page
 ;;   '((?\] . forward-page)))
+
+(require 'helm)
+(defvar chunyang-theme-helm-source
+  (helm-build-sync-source "My favourite color themes"
+    :candidates (lambda () chunyang-theme-favourites) ; Dynamically
+    :action (helm-make-actions
+             "Enable theme"
+             (lambda (candicate)
+               (let ((current-theme (car custom-enabled-themes))
+                     (new-theme     (intern candicate)))
+                 (disable-theme current-theme)
+                 (load-theme new-theme t))))))
 
+(defun chunyang-switch-theme ()
+  "Load one of my favourite themes."
+  (interactive)
+  (helm :sources '(chunyang-theme-helm-source)
+        :buffer "*helm chunyang theme*"))
+
+(setq chunyang-theme-favourites
+      '(zenburn
+        solarized-dark
+        sanityinc-tomorrow-eighties
+        sanityinc-tomorrow-night))
+
+
 (provide 'chunyang-simple)
 ;;; chunyang-simple.el ends here
